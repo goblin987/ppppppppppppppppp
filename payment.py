@@ -1,4 +1,4 @@
-﻿# --- START OF FILE payment.py ---
+# --- START OF FILE payment.py ---
 
 import logging
 import sqlite3
@@ -28,7 +28,7 @@ from utils import ( # Ensure utils imports are correct
     get_db_connection, MEDIA_DIR, PRODUCT_TYPES, DEFAULT_PRODUCT_EMOJI, # Added PRODUCT_TYPES/Emoji
     clear_expired_basket, # Added import
     _get_lang_data, # <--- *** ADDED IMPORT HERE ***
-    log_admin_action,
+    log_admin_action, # <<< IMPORT log_admin_action >>>
     get_first_primary_admin_id, # Admin helper function for notifications
     # NEW: Import rate-limited media functions for 100% delivery
     send_media_with_retry, send_media_group_with_retry,
@@ -38,7 +38,7 @@ from utils import ( # Ensure utils imports are correct
 
 # Import Solana payment functions
 from payment_solana import create_solana_payment
-
+# <<< IMPORT USER MODULE >>>
 import user
 
 # --- Import Reseller Helper ---
@@ -107,7 +107,7 @@ async def handle_select_refill_crypto(update: Update, context: ContextTypes.DEFA
     preparing_invoice_msg = lang_data.get("preparing_invoice", "⏳ Preparing your Solana payment...")
     failed_invoice_creation_msg = lang_data.get("failed_invoice_creation", "❌ Failed to create payment. Please try again later or contact support.")
     back_to_profile_button = lang_data.get("back_profile_button", "Back to Profile")
-    back_button_markup = InlineKeyboardMarkup([[InlineKeyboardButton(f"✅️ {back_to_profile_button}", callback_data="profile")]])
+    back_button_markup = InlineKeyboardMarkup([[InlineKeyboardButton(f"⬅️ {back_to_profile_button}", callback_data="profile")]])
 
     try:
         await query.edit_message_text(preparing_invoice_msg, reply_markup=None, parse_mode=None)
@@ -180,7 +180,7 @@ async def handle_select_basket_crypto(update: Update, context: ContextTypes.DEFA
     if basket_snapshot is None or final_total_eur_float is None:
         logger.error(f"Basket payment context lost before crypto selection for user {user_id}.")
         await query.edit_message_text("❌ Error: Payment context lost. Please go back to your basket.",
-                                       reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ View Basket", callback_data="view_basket")]]),
+                                       reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ View Basket", callback_data="view_basket")]]),
                                        parse_mode=None)
         context.user_data.pop('state', None)
         context.user_data.pop('basket_pay_snapshot', None)
@@ -194,7 +194,7 @@ async def handle_select_basket_crypto(update: Update, context: ContextTypes.DEFA
     preparing_invoice_msg = lang_data.get("preparing_invoice", "⏳ Preparing your Solana payment...")
     failed_invoice_creation_msg = lang_data.get("failed_invoice_creation", "❌ Failed to create payment. Please try again later or contact support.")
     back_to_basket_button = lang_data.get("back_basket_button", "Back to Basket")
-    back_button_markup = InlineKeyboardMarkup([[InlineKeyboardButton(f"✅️ {back_to_basket_button}", callback_data="view_basket")]])
+    back_button_markup = InlineKeyboardMarkup([[InlineKeyboardButton(f"⬅️ {back_to_basket_button}", callback_data="view_basket")]])
 
     try:
         await query.edit_message_text(preparing_invoice_msg, reply_markup=None, parse_mode=None)
@@ -323,7 +323,7 @@ async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_T
         back_button_text = lang_data.get("back_profile_button", "Back to Profile") if not is_purchase else lang_data.get("back_basket_button", "Back to Basket")
         back_callback = "profile" if not is_purchase else "view_basket"
         
-        keyboard = [[InlineKeyboardButton(f"✅️ {back_button_text}", callback_data=back_callback)]]
+        keyboard = [[InlineKeyboardButton(f"⬅️ {back_button_text}", callback_data=back_callback)]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         # Send message
@@ -430,7 +430,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
         c = conn.cursor()
         
         # Use IMMEDIATE lock to reduce lock conflicts while still preventing race conditions
-        logger.info(f"�Ÿ”„ Starting purchase finalization for user {user_id} with {len(basket_snapshot)} items")
+        logger.info(f"🔄 Starting purchase finalization for user {user_id} with {len(basket_snapshot)} items")
         c.execute("BEGIN IMMEDIATE")
         purchase_time_iso = datetime.now(timezone.utc).isoformat()
 
@@ -485,7 +485,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
             item_price_paid_decimal = item_original_price_decimal
             
             try:
-                logger.info(f"�Ÿ”„ BULLETPROOF: Calculating reseller discount for user {user_id}, product {item_product_type}")
+                logger.info(f"🔄 BULLETPROOF: Calculating reseller discount for user {user_id}, product {item_product_type}")
                 item_reseller_discount_percent = await get_reseller_discount_with_connection(c, user_id, item_product_type)
                 item_reseller_discount_amount = (item_original_price_decimal * item_reseller_discount_percent / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
                 item_price_paid_decimal = item_original_price_decimal - item_reseller_discount_amount
@@ -581,7 +581,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
         media_delivery_successful = True
         if chat_id:
             try:
-                success_title = lang_data.get("purchase_success", "�ŸŽ‰ Purchase Complete! Pickup details below:")
+                success_title = lang_data.get("purchase_success", "🎉 Purchase Complete! Pickup details below:")
                 await send_message_with_retry(bot, chat_id, success_title, parse_mode=None)
 
                 for prod_id in processed_product_ids:
@@ -590,7 +590,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
                     item_details = item_details_list[0] # First (and likely only) entry for this prod_id
                     item_name, item_size = item_details['name'], item_details['size']
                     item_original_text = item_details['text'] or "(No specific pickup details provided)"
-                    product_type = item_details['type']
+                    product_type = item_details['type'] # <<< USE TYPE FROM SNAPSHOT DATA
                     product_emoji = PRODUCT_TYPES.get(product_type, DEFAULT_PRODUCT_EMOJI)
                     item_header = f"--- Item: {product_emoji} {item_name} {item_size} ---"
 
@@ -772,7 +772,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
 
                 # --- Final Message to User ---
                 leave_review_button = lang_data.get("leave_review_button", "Leave a Review")
-                keyboard = [[InlineKeyboardButton(f"✅️ {leave_review_button}", callback_data="leave_review_now")]]
+                keyboard = [[InlineKeyboardButton(f"✍️ {leave_review_button}", callback_data="leave_review_now")]]
                 await send_message_with_retry(bot, chat_id, "Thank you for your purchase!", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
                 
             except Exception as media_error:
@@ -1095,7 +1095,7 @@ async def credit_user_balance(user_id: int, amount_eur: Decimal, reason: str, co
             lang_data = LANGUAGES.get(lang, LANGUAGES['en'])
 
 
-           
+            # <<< TODO: Add these messages to LANGUAGES dictionary >>>
             if "Overpayment" in reason:
                 # Example message key: "credit_overpayment_purchase"
                 notify_msg_template = lang_data.get("credit_overpayment_purchase", "✅ Your purchase was successful! Additionally, an overpayment of {amount} EUR has been credited to your balance. Your new balance is {new_balance} EUR.")
@@ -1179,7 +1179,7 @@ async def handle_cancel_crypto_payment(update: Update, context: ContextTypes.DEF
     back_button_text = lang_data.get("back_basket_button", "Back to Basket")
     back_callback = "view_basket"
     
-    keyboard = [[InlineKeyboardButton(f"✅️ {back_button_text}", callback_data=back_callback)]]
+    keyboard = [[InlineKeyboardButton(f"⬅️ {back_button_text}", callback_data=back_callback)]]
     
     try:
         await query.edit_message_text(

@@ -1,11 +1,11 @@
-﻿import sqlite3
+import sqlite3
 import time
 import logging
 import asyncio
 import os # Import os for path joining
 from datetime import datetime, timezone
 from collections import defaultdict, Counter
-from decimal import Decimal, ROUND_DOWN
+from decimal import Decimal, ROUND_DOWN # <<< Added ROUND_DOWN
 
 # --- Telegram Imports ---
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -23,16 +23,16 @@ from utils import (
     SOLANA_ADMIN_WALLET, # Check if Solana is configured
     get_db_connection, MEDIA_DIR, # Import helper and MEDIA_DIR
     DEFAULT_PRODUCT_EMOJI, # Import default emoji
-    load_active_welcome_message,
-    DEFAULT_WELCOME_MESSAGE,
-    _get_lang_data,
-    _unreserve_basket_items,
+    load_active_welcome_message, # <<< Import welcome message loader (though we'll modify its usage)
+    DEFAULT_WELCOME_MESSAGE, # <<< Import default welcome message fallback
+    _get_lang_data, # <<< IMPORT THE HELPER FROM UTILS >>>
+    _unreserve_basket_items, # <<< IMPORT UNRESERVE HELPER >>>
     is_primary_admin, is_secondary_admin, is_any_admin, # Admin helper functions
     SECONDARY_ADMIN_IDS, is_user_banned, # Import ban check helper
     update_user_broadcast_status # Import broadcast tracking helper
 )
-import json
-import payment
+import json # <<< Make sure json is imported
+import payment # <<< Make sure payment module is imported
 
 # --- Import Reseller Helper ---
 try:
@@ -50,23 +50,23 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Emojis (Defaults/Placeholders)
-EMOJI_CITY = "�Ÿ�™️"
+EMOJI_CITY = "🏙️"
 EMOJI_DISTRICT = "🏘️"
 # EMOJI_PRODUCT = "💎" # No longer primary source
-EMOJI_HERB = "🌐" # Keep for potential specific logic if needed
-EMOJI_PRICE = "👤"
-EMOJI_QUANTITY = "🔧"
+EMOJI_HERB = "🌿" # Keep for potential specific logic if needed
+EMOJI_PRICE = "💰"
+EMOJI_QUANTITY = "🔢"
 EMOJI_BASKET = "🛒"
-EMOJI_PROFILE = "�Ÿ‘�"
-EMOJI_REFILL = "👤"
-EMOJI_REVIEW = "📦"
+EMOJI_PROFILE = "👤"
+EMOJI_REFILL = "💸"
+EMOJI_REVIEW = "📝"
 EMOJI_PRICELIST = "📋"
 EMOJI_LANG = "🌐"
-EMOJI_BACK = "✅️"
-EMOJI_HOME = "💥"
-EMOJI_SHOP = "🛒"
-EMOJI_DISCOUNT = "💥️"
-EMOJI_PAY_NOW = "👤"
+EMOJI_BACK = "⬅️"
+EMOJI_HOME = "🏠"
+EMOJI_SHOP = "🛍️"
+EMOJI_DISCOUNT = "🏷️"
+EMOJI_PAY_NOW = "💳" # <<< ADDED Emoji for Pay Now
 
 # --- Supported Crypto Assets ---
 # Currently supporting Solana (SOL) only
@@ -174,10 +174,10 @@ def _build_start_menu_content(user_id: int, username: str, lang_data: dict, cont
         )
     except KeyError as e:
         logger.error(f"Placeholder error formatting welcome message template. Missing key: {e}. Template: '{welcome_template_to_use[:100]}...' Using fallback.")
-        full_welcome = f"�Ÿ‘‹ Welcome, {username}!\n\n👤 Balance: {balance_str} EUR"
+        full_welcome = f"👋 Welcome, {username}!\n\n💰 Balance: {balance_str} EUR"
     except Exception as format_e:
         logger.error(f"Unexpected error formatting welcome message: {format_e}. Template: '{welcome_template_to_use[:100]}...' Using fallback.")
-        full_welcome = f"�Ÿ‘‹ Welcome, {username}!\n\n👤 Balance: {balance_str} EUR"
+        full_welcome = f"👋 Welcome, {username}!\n\n💰 Balance: {balance_str} EUR"
 
     # --- Build Keyboard ---
     shop_button_text = lang_data.get("shop_button", "Shop")
@@ -296,18 +296,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"start: CRITICAL - _build_start_menu_content failed for user {user_id}: {e}", exc_info=True)
         # Create a fallback menu
-        full_welcome = f"�Ÿ‘‹ Welcome, {username}!\n\nPlease use the buttons below to navigate."
+        full_welcome = f"👋 Welcome, {username}!\n\nPlease use the buttons below to navigate."
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton("🛒 Shop", callback_data="shop")],
-            [InlineKeyboardButton("�Ÿ‘� Profile", callback_data="profile"),
-             InlineKeyboardButton("👤 Top Up", callback_data="refill")]
+            [InlineKeyboardButton("👤 Profile", callback_data="profile"),
+             InlineKeyboardButton("💳 Top Up", callback_data="refill")]
         ])
     
     # Validate message content
     if not full_welcome or not reply_markup:
         logger.error(f"start: Empty welcome message or markup for user {user_id}! welcome={bool(full_welcome)}, markup={bool(reply_markup)}")
-        full_welcome = full_welcome or f"�Ÿ‘‹ Welcome! Please try /start again."
+        full_welcome = full_welcome or f"👋 Welcome! Please try /start again."
         if not reply_markup:
             from telegram import InlineKeyboardButton, InlineKeyboardMarkup
             reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🛒 Shop", callback_data="shop")]])
@@ -464,7 +464,7 @@ async def handle_city_selection(update: Update, context: ContextTypes.DEFAULT_TY
                             escaped_qty = helpers.escape_markdown(str(prod['quantity']), version=2)
                             # Create the formatted line WITH a standard Python newline \n
                             # Removed the quantity display per admin request
-                            message_text_parts.append(f"    �€� {prod_emoji} {escaped_type} {escaped_size} \\({escaped_price}�‚�\\)\n")
+                            message_text_parts.append(f"    • {prod_emoji} {escaped_type} {escaped_size} \\({escaped_price}€\\)\n")
 
                         # Add a blank line for spacing after the district's products
                         message_text_parts.append("\n")
@@ -601,10 +601,10 @@ async def handle_district_selection(update: Update, context: ContextTypes.DEFAUL
                 await query.answer("Error updating view")
 
 
-
+# <<< MODIFIED: Incorporate Reseller Discount Display >>>
 async def handle_type_selection(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     query = update.callback_query
-    user_id = query.from_user.id
+    user_id = query.from_user.id # <<< GET USER ID
     lang, lang_data = _get_lang_data(context)
     if not params or len(params) < 3: logger.warning("handle_type_selection missing params."); await query.answer("Error: City/District/Type missing.", show_alert=True); return
     city_id, dist_id, p_type = params
@@ -631,27 +631,27 @@ async def handle_type_selection(update: Update, context: ContextTypes.DEFAULT_TY
         else:
             keyboard = []
             available_label_short = lang_data.get("available_label_short", "Av")
-           
+            # <<< Fetch reseller discount ONCE >>>
             reseller_discount_percent = await asyncio.to_thread(get_reseller_discount, user_id, p_type)
-           
+            # <<< End Fetch >>>
 
             for row in products:
                 size, original_price_decimal, count = row['size'], Decimal(str(row['price'])), row['count_available']
                 original_price_str = format_currency(original_price_decimal)
                 original_price_callback_str = f"{original_price_decimal:.2f}" # Use original price for callback
 
-               
+                # <<< Apply Reseller Discount for Display >>>
                 discounted_price_str = original_price_str # Default to original
                 if reseller_discount_percent > Decimal('0.0'):
                     discount_amount = (original_price_decimal * reseller_discount_percent / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
                     discounted_price_decimal = original_price_decimal - discount_amount
                     discounted_price_str = format_currency(discounted_price_decimal)
                     # Use simple plain text for original price notation
-                    button_text = f"{product_emoji} {size} ({discounted_price_str}�‚� / Orig: {original_price_str}�‚�) - {available_label_short}: {count}"
+                    button_text = f"{product_emoji} {size} ({discounted_price_str}€ / Orig: {original_price_str}€) - {available_label_short}: {count}"
                 else:
                     # No discount, show original price only
-                    button_text = f"{product_emoji} {size} ({original_price_str}�‚�) - {available_label_short}: {count}"
-               
+                    button_text = f"{product_emoji} {size} ({original_price_str}€) - {available_label_short}: {count}"
+                # <<< End Apply >>>
 
                 # Callback still uses original price
                 callback_data = f"product|{city_id}|{dist_id}|{p_type}|{size}|{original_price_callback_str}"
@@ -667,7 +667,7 @@ async def handle_type_selection(update: Update, context: ContextTypes.DEFAULT_TY
 
 # --- END OF handle_type_selection ---
 
-
+# <<< MODIFIED: Add Pay Now Button & Logic for Single Item Discount Flow >>>
 async def handle_product_selection(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     query = update.callback_query
     user_id = query.from_user.id
@@ -710,7 +710,7 @@ async def handle_product_selection(update: Update, context: ContextTypes.DEFAULT
             if reseller_discount_percent > Decimal('0.0'):
                 discount_amount = (original_price * reseller_discount_percent / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
                 discounted_price = original_price - discount_amount
-                display_price_str = f"{format_currency(discounted_price)} (Orig: {original_price_formatted}�‚�)"
+                display_price_str = f"{format_currency(discounted_price)} (Orig: {original_price_formatted}€)"
 
             msg = (f"{EMOJI_CITY} {city} | {EMOJI_DISTRICT} {district}\n"
                    f"{product_emoji} {p_type} - {size}\n"
@@ -736,15 +736,15 @@ async def handle_product_selection(update: Update, context: ContextTypes.DEFAULT
 
 # --- END handle_product_selection ---
 
-
+# <<< MODIFIED: Incorporate Reseller Discount Calculation & Display >>>
 async def handle_add_to_basket(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     query = update.callback_query
-    user_id = query.from_user.id
+    user_id = query.from_user.id # <<< GET USER ID
     lang, lang_data = _get_lang_data(context)
     if not params or len(params) < 5: logger.warning("handle_add_to_basket missing params."); await query.answer("Error: Incomplete product data.", show_alert=True); return
     city_id, dist_id, p_type, size, price_str = params # price_str is ORIGINAL price
 
-    try: original_price = Decimal(price_str)
+    try: original_price = Decimal(price_str) # <<< Store original price
     except ValueError: logger.warning(f"Invalid price format add_to_basket: {price_str}"); await query.edit_message_text("❌ Error: Invalid product data.", parse_mode=None); return
 
     city = CITIES.get(city_id); district = DISTRICTS.get(city_id, {}).get(dist_id)
@@ -762,9 +762,9 @@ async def handle_add_to_basket(update: Update, context: ContextTypes.DEFAULT_TYP
     shop_more_button_text = lang_data.get("shop_more_button", "Shop More"); expires_label = lang_data.get("expires_label", "Expires in")
     error_adding_db = lang_data.get("error_adding_db", "Error: Database issue adding item."); error_adding_unexpected = lang_data.get("error_adding_unexpected", "Error: An unexpected issue occurred.")
     added_msg_template = lang_data.get("added_to_basket", "✅ Item Reserved!\n\n{item} is in your basket for {timeout} minutes! ⏳")
-    pay_msg_template = lang_data.get("pay", "👤 Total to Pay: {amount} EUR")
+    pay_msg_template = lang_data.get("pay", "💳 Total to Pay: {amount} EUR")
     apply_discount_button_text = lang_data.get("apply_discount_button", "Apply Discount Code")
-    reseller_discount_label = lang_data.get("reseller_discount_label", "Reseller Discount")
+    reseller_discount_label = lang_data.get("reseller_discount_label", "Reseller Discount") # <<< NEW
 
     try:
         conn = get_db_connection()
@@ -801,14 +801,14 @@ async def handle_add_to_basket(update: Update, context: ContextTypes.DEFAULT_TYP
         conn.commit()
 
         if "basket" not in context.user_data or not isinstance(context.user_data["basket"], list): context.user_data["basket"] = []
-       
+        # <<< Store product_type along with original price >>>
         context.user_data["basket"].append({
             "product_id": product_id_reserved,
             "price": original_price, # Store original price
             "product_type": p_type, # Store product type
             "timestamp": timestamp
         })
-       
+        # <<< End store >>>
         logger.info(f"User {user_id} added product {product_id_reserved} (type: {p_type}) to basket.")
 
         timeout_minutes = BASKET_TIMEOUT // 60
@@ -855,7 +855,7 @@ async def handle_add_to_basket(update: Update, context: ContextTypes.DEFAULT_TYP
 
         # --- Build Message ---
         item_price_str = format_currency(original_price)
-        item_desc = f"{product_emoji} {p_type} {size} ({item_price_str}�‚�)"
+        item_desc = f"{product_emoji} {p_type} {size} ({item_price_str}€)"
         expiry_dt = datetime.fromtimestamp(timestamp + BASKET_TIMEOUT); expiry_time_str = expiry_dt.strftime('%H:%M:%S')
         reserved_msg = (added_msg_template.format(timeout=timeout_minutes, item=item_desc) + "\n\n" + f"⏳ {expires_label}: {expiry_time_str}\n\n")
 
@@ -876,7 +876,7 @@ async def handle_add_to_basket(update: Update, context: ContextTypes.DEFAULT_TYP
         district_btn_text = district[:15]
 
         keyboard = [
-            [InlineKeyboardButton(f"👤 {pay_now_button_text}", callback_data="confirm_pay"), InlineKeyboardButton(f"{EMOJI_REFILL} {top_up_button_text}", callback_data="refill")],
+            [InlineKeyboardButton(f"💳 {pay_now_button_text}", callback_data="confirm_pay"), InlineKeyboardButton(f"{EMOJI_REFILL} {top_up_button_text}", callback_data="refill")],
             [InlineKeyboardButton(f"{basket_emoji} {view_basket_button_text} ({len(current_basket_list)})", callback_data="view_basket"), InlineKeyboardButton(f"{basket_emoji} {clear_basket_button_text}", callback_data="clear_basket")],
             [InlineKeyboardButton(f"{EMOJI_DISCOUNT} {apply_discount_button_text}", callback_data="apply_discount_start")],
             [InlineKeyboardButton(f"➕ {shop_more_button_text} ({district_btn_text})", callback_data=f"dist|{city_id}|{dist_id}")],
@@ -923,7 +923,7 @@ async def handle_profile(update: Update, context: ContextTypes.DEFAULT_TYPE, par
         status_label = lang_data.get("status_label", "Status"); balance_label = lang_data.get("balance_label", "Balance")
         purchases_label = lang_data.get("purchases_label", "Total Purchases"); basket_label = lang_data.get("basket_label", "Basket Items")
         profile_title = lang_data.get("profile_title", "Your Profile")
-        profile_msg = (f"�ŸŽ‰ {profile_title}\n\n" f"�Ÿ‘� {status_label}: {status} {progress_bar}\n" f"👤 {balance_label}: {balance_str} EUR\n"
+        profile_msg = (f"🎉 {profile_title}\n\n" f"👤 {status_label}: {status} {progress_bar}\n" f"💰 {balance_label}: {balance_str} EUR\n"
                        f"📦 {purchases_label}: {purchases}\n" f"🛒 {basket_label}: {basket_count}")
 
         top_up_button_text = lang_data.get("top_up_button", "Top Up"); view_basket_button_text = lang_data.get("view_basket_button", "View Basket")
@@ -1199,7 +1199,7 @@ def validate_and_apply_discount_atomic(code_text: str, base_total_float: float, 
 # --- END ATOMIC DISCOUNT VALIDATION ---
 
 # --- Basket Handlers ---
-
+# <<< MODIFIED: Incorporate Reseller Discount Calculation & Display >>>
 async def handle_view_basket(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     query = update.callback_query
     user_id = query.from_user.id
@@ -1215,7 +1215,7 @@ async def handle_view_basket(update: Update, context: ContextTypes.DEFAULT_TYPE,
         basket_empty_msg = lang_data.get("basket_empty", "🛒 Your Basket is Empty!")
         add_items_prompt = lang_data.get("add_items_prompt", "Add items to start shopping!")
         shop_button_text = lang_data.get("shop_button", "Shop"); home_button_text = lang_data.get("home_button", "Home")
-        full_empty_msg = basket_empty_msg + "\n\n" + add_items_prompt + " �Ÿ˜Š"
+        full_empty_msg = basket_empty_msg + "\n\n" + add_items_prompt + " 😊"
         keyboard = [[InlineKeyboardButton(f"{EMOJI_SHOP} {shop_button_text}", callback_data="shop"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button_text}", callback_data="back_start")]]
         try: await query.edit_message_text(full_empty_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         except telegram_error.BadRequest as e:
@@ -1278,7 +1278,7 @@ async def handle_view_basket(update: Update, context: ContextTypes.DEFAULT_TYPE,
         basket_empty_msg = lang_data.get("basket_empty", "🛒 Your Basket is Empty!"); items_expired_note = lang_data.get("items_expired_note", "Items may have expired or were removed.")
         shop_button_text = lang_data.get("shop_button", "Shop"); home_button_text = lang_data.get("home_button", "Home")
         full_empty_msg = basket_empty_msg + "\n\n" + items_expired_note
-        keyboard = [[InlineKeyboardButton(f"🛒 {shop_button_text}", callback_data="shop"), InlineKeyboardButton(f"💥 {home_button_text}", callback_data="back_start")]]; await query.edit_message_text(full_empty_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None); return
+        keyboard = [[InlineKeyboardButton(f"🛍️ {shop_button_text}", callback_data="shop"), InlineKeyboardButton(f"🏠 {home_button_text}", callback_data="back_start")]]; await query.edit_message_text(full_empty_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None); return
 
 
     final_total = total_after_reseller
@@ -1315,13 +1315,13 @@ async def handle_view_basket(update: Update, context: ContextTypes.DEFAULT_TYPE,
         price_display = format_currency(item_detail['discounted_price'])
         if item_detail['has_reseller_discount']:
             original_price_formatted = format_currency(item_detail['original_price'])
-            price_display += f" (Orig: {original_price_formatted}�‚�)"
+            price_display += f" (Orig: {original_price_formatted}€)"
         timestamp = item_detail['timestamp']
         remaining_time = max(0, int(BASKET_TIMEOUT - (current_time - timestamp)))
         time_str = f"{remaining_time // 60} min {remaining_time % 60} sec"
         msg += (f"{index + 1}. {item_desc_base} ({price_display})\n"
                 f"   ⏳ {expires_in_label}: {time_str}\n")
-        remove_button_text = f"�Ÿ—‘️ {remove_button_label} {item_desc_base}"[:60]
+        remove_button_text = f"🗑️ {remove_button_label} {item_desc_base}"[:60]
         keyboard_items.append([InlineKeyboardButton(remove_button_text, callback_data=f"remove|{prod_id}")])
 
     subtotal_label = lang_data.get("subtotal_label", "Subtotal"); total_label = lang_data.get("total_label", "Total")
@@ -1332,14 +1332,14 @@ async def handle_view_basket(update: Update, context: ContextTypes.DEFAULT_TYPE,
         reseller_discount_str = format_currency(total_reseller_discount_amount)
         msg += f"\n{EMOJI_DISCOUNT} {reseller_discount_label}: -{reseller_discount_str} EUR"
     msg += discount_applied_str
-    msg += f"\n👤 **{total_label}: {final_total_str} EUR**"
+    msg += f"\n💳 **{total_label}: {final_total_str} EUR**"
 
     pay_now_button_text = lang_data.get("pay_now_button", "Pay Now"); clear_all_button_text = lang_data.get("clear_all_button", "Clear All")
     remove_discount_button_text = lang_data.get("remove_discount_button", "Remove Discount"); apply_discount_button_text = lang_data.get("apply_discount_button", "Apply Discount Code")
     shop_more_button_text = lang_data.get("shop_more_button", "Shop More"); home_button_text = lang_data.get("home_button", "Home")
 
     action_buttons = [
-        [InlineKeyboardButton(f"👤 {pay_now_button_text}", callback_data="confirm_pay"), InlineKeyboardButton(f"{basket_emoji} {clear_all_button_text}", callback_data="clear_basket")],
+        [InlineKeyboardButton(f"💳 {pay_now_button_text}", callback_data="confirm_pay"), InlineKeyboardButton(f"{basket_emoji} {clear_all_button_text}", callback_data="clear_basket")],
         *([[InlineKeyboardButton(f"❌ {remove_discount_button_text}", callback_data="remove_discount")]] if context.user_data.get('applied_discount') else []),
         [InlineKeyboardButton(f"{EMOJI_DISCOUNT} {apply_discount_button_text}", callback_data="apply_discount_start")],
         [InlineKeyboardButton(f"{EMOJI_SHOP} {shop_more_button_text}", callback_data="shop"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button_text}", callback_data="back_start")]
@@ -1392,7 +1392,7 @@ async def remove_discount(update: Update, context: ContextTypes.DEFAULT_TYPE, pa
     else: no_discount_answer = lang_data.get("no_discount_answer", "No discount applied."); await query.answer(no_discount_answer, show_alert=False)
     await handle_view_basket(update, context) # Refresh basket view
 
-
+# <<< MODIFIED: Calculate base total AFTER reseller discounts >>>
 async def handle_user_discount_code_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles user entering a general discount code."""
     user_id = update.effective_user.id
@@ -1411,7 +1411,7 @@ async def handle_user_discount_code_message(update: Update, context: ContextType
 
     clear_expired_basket(context, user_id)
     basket = context.user_data.get("basket", [])
-    total_after_reseller_decimal = Decimal('0.0')
+    total_after_reseller_decimal = Decimal('0.0') # <<< Base total for validation
 
     if basket:
          try:
@@ -1546,7 +1546,7 @@ async def handle_clear_basket(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["basket"] = []; context.user_data.pop('applied_discount', None)
         logger.info(f"Cleared basket/discount user {user_id}.")
         shop_button_text = lang_data.get("shop_button", "Shop"); home_button_text = lang_data.get("home_button", "Home")
-        cleared_msg = lang_data.get("basket_cleared", "�Ÿ—‘️ Basket Cleared!")
+        cleared_msg = lang_data.get("basket_cleared", "🗑️ Basket Cleared!")
         keyboard = [[InlineKeyboardButton(f"{EMOJI_SHOP} {shop_button_text}", callback_data="shop"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button_text}", callback_data="back_start")]]
         await query.edit_message_text(cleared_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -1629,7 +1629,7 @@ async def handle_confirm_pay(update: Update, context: ContextTypes.DEFAULT_TYPE,
              context.user_data['basket'] = []
              context.user_data.pop('applied_discount', None)
              logger.warning(f"All items unavailable user {user_id} payment confirm.")
-             keyboard_back = [[InlineKeyboardButton("✅️ Back", callback_data="view_basket")]]
+             keyboard_back = [[InlineKeyboardButton("⬅️ Back", callback_data="view_basket")]]
              try: await query.edit_message_text("❌ Error: All items unavailable.", reply_markup=InlineKeyboardMarkup(keyboard_back), parse_mode=None)
              except telegram_error.BadRequest: await send_message_with_retry(context.bot, chat_id, "❌ Error: All items unavailable.", reply_markup=InlineKeyboardMarkup(keyboard_back), parse_mode=None)
              return
@@ -1656,7 +1656,7 @@ async def handle_confirm_pay(update: Update, context: ContextTypes.DEFAULT_TYPE,
     except (sqlite3.Error, Exception) as e:
         logger.error(f"Error during payment confirm data processing user {user_id}: {e}", exc_info=True)
         error_occurred = True
-        kb = [[InlineKeyboardButton("✅️ Back", callback_data="view_basket")]]
+        kb = [[InlineKeyboardButton("⬅️ Back", callback_data="view_basket")]]
         try: await query.edit_message_text("❌ Error preparing payment.", reply_markup=InlineKeyboardMarkup(kb), parse_mode=None)
         except Exception as edit_err: logger.error(f"Failed to edit message in error handler: {edit_err}")
     finally:
@@ -1684,13 +1684,13 @@ async def handle_confirm_pay(update: Update, context: ContextTypes.DEFAULT_TYPE,
         insufficient_msg_template = lang_data.get("insufficient_balance_pay_option", "⚠️ Insufficient Balance! ({balance} / {required} EUR)")
         insufficient_msg = insufficient_msg_template.format(balance=format_currency(user_balance), required=format_currency(final_total))
         prompt_msg = lang_data.get("prompt_discount_or_pay", "Do you have a discount code to apply before paying with crypto?")
-        pay_crypto_button = lang_data.get("pay_crypto_button", "👤 Pay with Crypto")
-        apply_discount_button = lang_data.get("apply_discount_pay_button", "💥️ Apply Discount Code")
+        pay_crypto_button = lang_data.get("pay_crypto_button", "💳 Pay with Crypto")
+        apply_discount_button = lang_data.get("apply_discount_pay_button", "🏷️ Apply Discount Code")
         back_basket_button = lang_data.get("back_basket_button", "Back to Basket")
         keyboard = [
              [InlineKeyboardButton(pay_crypto_button, callback_data="skip_discount_basket_pay")],
              [InlineKeyboardButton(apply_discount_button, callback_data="apply_discount_basket_pay")],
-             [InlineKeyboardButton(f"✅️ {back_basket_button}", callback_data="view_basket")]
+             [InlineKeyboardButton(f"⬅️ {back_basket_button}", callback_data="view_basket")]
         ]
         await query.edit_message_text(f"{insufficient_msg}\n\n{prompt_msg}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         await query.answer()
@@ -1784,7 +1784,7 @@ async def handle_skip_discount_basket_pay(update: Update, context: ContextTypes.
 
 
 # --- NEW: Helper to Show Crypto Choices for Basket Payment ---
-
+# <<< MODIFIED: Skip selection when only SOL available - go directly to invoice >>>
 async def _show_crypto_choices_for_basket(update: Update, context: ContextTypes.DEFAULT_TYPE, edit_message: bool = False):
     """Creates Solana payment directly since only SOL is supported."""
     query = update.callback_query # May be None if called from message handler
@@ -1810,7 +1810,7 @@ async def _show_crypto_choices_for_basket(update: Update, context: ContextTypes.
     if total_eur_float is None:
         logger.error("Cannot create payment: total EUR missing from context.")
         msg = "Error: Payment amount missing. Returning to previous screen."
-        kb = [[InlineKeyboardButton("✅️ Back", callback_data=cancel_callback)]]
+        kb = [[InlineKeyboardButton("⬅️ Back", callback_data=cancel_callback)]]
         if query and edit_message: await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(kb), parse_mode=None)
         else: await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(kb), parse_mode=None)
         if query: await query.answer("Error: Amount missing.", show_alert=True)
@@ -1921,24 +1921,24 @@ async def handle_pay_single_item(update: Update, context: ContextTypes.DEFAULT_T
         price_display_str = format_currency(price_after_reseller)
         
         # Get translated prompt
-        payment_summary = lang_data.get("payment_summary", "👤 Payment Summary")
+        payment_summary = lang_data.get("payment_summary", "💳 Payment Summary")
         product_label = lang_data.get("product_label", "Product")
         price_label = lang_data.get("price_label", "Price")
         location_label = lang_data.get("location_label", "Location")
         
         prompt_msg = (f"{payment_summary}\n\n"
                       f"📦 {product_label}: {item_name_display}\n"
-                      f"👤 {price_label}: {price_display_str} EUR\n"
-                      f"📦 {location_label}: {city}, {district}\n\n"
+                      f"💰 {price_label}: {price_display_str} EUR\n"
+                      f"📍 {location_label}: {city}, {district}\n\n"
                       f"{lang_data.get('prompt_discount_or_pay', 'Do you have a discount code to apply?')}")
         pay_now_direct_button_text = lang_data.get("pay_now_button", "Pay Now")
-        apply_discount_button_text = lang_data.get("apply_discount_pay_button", "💥️ Apply Discount Code")
+        apply_discount_button_text = lang_data.get("apply_discount_pay_button", "🏷️ Apply Discount Code")
         back_to_product_button_text = lang_data.get("back_options_button", "Back to Product")
 
         keyboard = [
              [InlineKeyboardButton(pay_now_direct_button_text, callback_data="skip_discount_single_pay")],
              [InlineKeyboardButton(apply_discount_button_text, callback_data="apply_discount_single_pay")],
-             [InlineKeyboardButton(f"✅️ {back_to_product_button_text}", callback_data=f"product|{city_id}|{dist_id}|{p_type}|{size}|{price_str}")]
+             [InlineKeyboardButton(f"⬅️ {back_to_product_button_text}", callback_data=f"product|{city_id}|{dist_id}|{p_type}|{size}|{price_str}")]
         ]
         try:
             await query.edit_message_text(prompt_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -1983,7 +1983,7 @@ async def handle_view_history(update: Update, context: ContextTypes.DEFAULT_TYPE
             p_name = purchase.get('product_name', 'N/A') # Use name from purchase record if available
             p_size = purchase.get('product_size', 'N/A')
             p_price = format_currency(purchase.get('price_paid', 0))
-            msg += f"  - {date_str}: {p_emoji} {p_size} ({p_price}�‚�)\n" # Simplified item display
+            msg += f"  - {date_str}: {p_emoji} {p_size} ({p_price}€)\n" # Simplified item display
         keyboard = [[InlineKeyboardButton(f"{EMOJI_BACK} {back_profile_button}", callback_data="profile"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]]
 
     try: await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -2025,12 +2025,12 @@ async def handle_language_selection(update: Update, context: ContextTypes.DEFAUL
                 language_set_answer = new_lang_data.get("language_set_answer", "Language set!")
                 await query.answer(language_set_answer.format(lang=new_lang.upper()))
 
-               
+                # <<< FIX: Rebuild and edit start menu >>>
                 logger.info(f"Rebuilding start menu in {new_lang} for user {user_id}")
                 start_menu_text, start_menu_markup = _build_start_menu_content(user_id, username, new_lang_data, context)
                 await query.edit_message_text(start_menu_text, reply_markup=start_menu_markup, parse_mode=None)
                 logger.info(f"Successfully edited message to show start menu in {new_lang}")
-               
+                # <<< END FIX >>>
 
             except sqlite3.Error as e:
                 logger.error(f"DB error updating language user {user_id}: {e}");
@@ -2129,15 +2129,15 @@ async def handle_price_list_city(update: Update, context: ContextTypes.DEFAULT_T
                 prod_emoji = PRODUCT_TYPES.get(p_type, DEFAULT_PRODUCT_EMOJI)
                 for price, size in sorted_price_size:
                     districts_list = type_data[(price, size)]; price_str = format_currency(price)
-                    msg += f"\n{prod_emoji} {p_type} {size} ({price_str}�‚�)\n"
+                    msg += f"\n{prod_emoji} {p_type} {size} ({price_str}€)\n"
                     districts_list.sort(key=lambda x: x[0])
-                    for district, quantity in districts_list: msg += f"  �€� {EMOJI_DISTRICT} {district}\n"
+                    for district, quantity in districts_list: msg += f"  • {EMOJI_DISTRICT} {district}\n"
 
         back_city_list_button = lang_data.get("back_city_list_button", "Back to City List"); home_button = lang_data.get("home_button", "Home")
         keyboard = [[InlineKeyboardButton(f"{EMOJI_BACK} {back_city_list_button}", callback_data="price_list"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]]
 
         try:
-            if len(msg) > 4000: truncated_note = lang_data.get("message_truncated_note", "Message truncated."); msg = msg[:4000] + f"\n\n�œ‚️ ... {truncated_note}"; logger.warning(f"Price list message truncated {city_name}.")
+            if len(msg) > 4000: truncated_note = lang_data.get("message_truncated_note", "Message truncated."); msg = msg[:4000] + f"\n\n✂️ ... {truncated_note}"; logger.warning(f"Price list message truncated {city_name}.")
             await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         except telegram_error.BadRequest as e:
              if "message is not modified" not in str(e).lower():
@@ -2163,13 +2163,13 @@ async def handle_price_list_city(update: Update, context: ContextTypes.DEFAULT_T
 async def handle_reviews_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     query = update.callback_query
     lang, lang_data = _get_lang_data(context)
-    review_prompt = lang_data.get("reviews", "📦 Reviews Menu")
+    review_prompt = lang_data.get("reviews", "📝 Reviews Menu")
     view_reviews_button = lang_data.get("view_reviews_button", "View Reviews")
     leave_review_button = lang_data.get("leave_review_button", "Leave a Review")
     home_button = lang_data.get("home_button", "Home")
     keyboard = [
-        [InlineKeyboardButton(f"�Ÿ‘€ {view_reviews_button}", callback_data="view_reviews|0")],
-        [InlineKeyboardButton(f"✅️ {leave_review_button}", callback_data="leave_review")],
+        [InlineKeyboardButton(f"👀 {view_reviews_button}", callback_data="view_reviews|0")],
+        [InlineKeyboardButton(f"✍️ {leave_review_button}", callback_data="leave_review")],
         [InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -2180,7 +2180,7 @@ async def handle_leave_review(update: Update, context: ContextTypes.DEFAULT_TYPE
     query = update.callback_query
     lang, lang_data = _get_lang_data(context)
     context.user_data["state"] = "awaiting_review"
-    enter_review_prompt = lang_data.get("enter_review_prompt", "Please type your review message and send it."); cancel_button_text = lang_data.get("cancel_button", "Cancel"); prompt_msg = f"✅️ {enter_review_prompt}"
+    enter_review_prompt = lang_data.get("enter_review_prompt", "Please type your review message and send it."); cancel_button_text = lang_data.get("cancel_button", "Cancel"); prompt_msg = f"✍️ {enter_review_prompt}"
     keyboard = [[InlineKeyboardButton(f"❌ {cancel_button_text}", callback_data="reviews")]]
     try:
         await query.edit_message_text(prompt_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -2235,7 +2235,7 @@ async def handle_leave_review_message(update: Update, context: ContextTypes.DEFA
         context.user_data.pop("state", None)
 
         success_msg = f"✅ {review_thanks}"
-        keyboard = [[InlineKeyboardButton(f"�Ÿ‘€ {view_reviews_button}", callback_data="view_reviews|0"),
+        keyboard = [[InlineKeyboardButton(f"👀 {view_reviews_button}", callback_data="view_reviews|0"),
                      InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]]
         await send_message_with_retry(context.bot, chat_id, success_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -2264,7 +2264,7 @@ async def handle_view_reviews(update: Update, context: ContextTypes.DEFAULT_TYPE
     msg = f"{EMOJI_REVIEW} {user_reviews_title}\n\n"; keyboard = []
     if not reviews_data:
         if offset == 0: msg += no_reviews_yet; keyboard = [[InlineKeyboardButton(f"{EMOJI_BACK} {back_review_menu_button}", callback_data="reviews")]]
-        else: msg += no_more_reviews; keyboard = [[InlineKeyboardButton(f"✅️ {prev_button}", callback_data=f"view_reviews|{max(0, offset - reviews_per_page)}")], [InlineKeyboardButton(f"{EMOJI_BACK} {back_review_menu_button}", callback_data="reviews")]]
+        else: msg += no_more_reviews; keyboard = [[InlineKeyboardButton(f"⬅️ {prev_button}", callback_data=f"view_reviews|{max(0, offset - reviews_per_page)}")], [InlineKeyboardButton(f"{EMOJI_BACK} {back_review_menu_button}", callback_data="reviews")]]
     else:
         has_more = len(reviews_data) > reviews_per_page; reviews_to_show = reviews_data[:reviews_per_page]
         for review in reviews_to_show:
@@ -2278,8 +2278,8 @@ async def handle_view_reviews(update: Update, context: ContextTypes.DEFAULT_TYPE
                 review_text = review.get('review_text', ''); msg += f"{EMOJI_PROFILE} {username_display} ({formatted_date}):\n{review_text}\n\n"
             except Exception as e: logger.error(f"Error formatting review: {review}, Error: {e}"); msg += f"({error_displaying_review})\n\n"
         nav_buttons = []
-        if offset > 0: nav_buttons.append(InlineKeyboardButton(f"✅️ {prev_button}", callback_data=f"view_reviews|{max(0, offset - reviews_per_page)}"))
-        if has_more: nav_buttons.append(InlineKeyboardButton(f"�ž�️ {next_button}", callback_data=f"view_reviews|{offset + reviews_per_page}"))
+        if offset > 0: nav_buttons.append(InlineKeyboardButton(f"⬅️ {prev_button}", callback_data=f"view_reviews|{max(0, offset - reviews_per_page)}"))
+        if has_more: nav_buttons.append(InlineKeyboardButton(f"➡️ {next_button}", callback_data=f"view_reviews|{offset + reviews_per_page}"))
         if nav_buttons: keyboard.append(nav_buttons)
         keyboard.append([InlineKeyboardButton(f"{EMOJI_BACK} {back_review_menu_button}", callback_data="reviews")])
     try: await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -2326,7 +2326,7 @@ async def handle_refill(update: Update, context: ContextTypes.DEFAULT_TYPE, para
         else: await query.answer(enter_amount_answer)
     except Exception as e: logger.error(f"Unexpected error handle_refill: {e}", exc_info=True); error_occurred_answer = lang_data.get("error_occurred_answer", "An error occurred."); await query.answer(error_occurred_answer, show_alert=True)
 
-
+# <<< MODIFIED: Use SUPPORTED_CRYPTO dictionary >>>
 async def handle_refill_amount_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id

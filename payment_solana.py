@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 import json
 import time
 import asyncio
@@ -61,7 +61,7 @@ def save_sol_price_to_db(price):
         """, (str(price),))
         conn.commit()
         conn.close()
-        logger.debug(f"👤 Saved SOL price to DB: {price} EUR")
+        logger.debug(f"💾 Saved SOL price to DB: {price} EUR")
     except Exception as e:
         logger.debug(f"Could not save price to DB: {e}")
 
@@ -99,7 +99,7 @@ def get_sol_price_eur():
     # Layer 1: Memory cache
     if _price_cache['price'] and (now - _price_cache['timestamp']) < PRICE_CACHE_TTL:
         cache_age = int(now - _price_cache['timestamp'])
-        logger.info(f"👤 Memory cached SOL price: {_price_cache['price']} EUR (age: {cache_age}s)")
+        logger.info(f"💰 Memory cached SOL price: {_price_cache['price']} EUR (age: {cache_age}s)")
         return _price_cache['price']
     
     # Layer 2: Database cache
@@ -156,7 +156,7 @@ async def refresh_price_cache(context=None):
     """
     Background job: Proactively refresh price cache every 4 minutes
     """
-    logger.info("�Ÿ”„ Background price refresh triggered")
+    logger.info("🔄 Background price refresh triggered")
     
     old_timestamp = _price_cache['timestamp']
     _price_cache['timestamp'] = 0
@@ -354,7 +354,7 @@ async def _process_payment_result(result, context):
                         if price:
                             surplus_eur = (surplus * price).quantize(Decimal("0.01"))
                             if surplus_eur > 0:
-                                logger.info(f"👤 Overpayment of {surplus} SOL ({surplus_eur} EUR) detected for {order_id}")
+                                logger.info(f"💰 Overpayment of {surplus} SOL ({surplus_eur} EUR) detected for {order_id}")
                                 from payment import credit_user_balance
                                 await credit_user_balance(user_id, surplus_eur, f"Overpayment bonus for order {order_id}", context)
                     except Exception as over_e:
@@ -411,7 +411,7 @@ async def _process_payment_result(result, context):
                 if not check:
                     return
                 
-                logger.info(f"�Ÿ“‰ Underpayment detected for {order_id} ({sol_balance} SOL). Refunding immediately.")
+                logger.info(f"📉 Underpayment detected for {order_id} ({sol_balance} SOL). Refunding immediately.")
                 
                 try:
                     price = get_sol_price_eur()
@@ -477,7 +477,7 @@ async def check_solana_deposits(context):
         
         # Convert to list of dicts for parallel processing
         pending_list = [dict(row) for row in pending]
-        logger.info(f"🔧 Checking {len(pending_list)} pending wallets...")
+        logger.info(f"🔍 Checking {len(pending_list)} pending wallets...")
         
         # PARALLEL: Check all wallets concurrently (with rate limiting via semaphore)
         tasks = [_check_single_wallet(wallet, context) for wallet in pending_list]
@@ -542,7 +542,7 @@ async def sweep_wallet(wallet_data, current_lamports=0):
         if amount_to_send <= 0:
             return
 
-        logger.info(f"💥 Sweeping {amount_to_send} lamports from {wallet_data['public_key']} to {ADMIN_WALLET}...")
+        logger.info(f"🧹 Sweeping {amount_to_send} lamports from {wallet_data['public_key']} to {ADMIN_WALLET}...")
 
         # Create Transaction
         ix = transfer(

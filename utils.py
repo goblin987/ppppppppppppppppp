@@ -1,4 +1,4 @@
-﻿import sqlite3
+import sqlite3
 import time
 import os
 import logging
@@ -136,10 +136,10 @@ for bot_info in BOT_TOKENS:
 
 # --- Constants ---
 THEMES = {
-    "default": {"product": "💎", "basket": "🛒", "review": "📦"},
-    "neon": {"product": "💎", "basket": "🛒", "review": "✅"},
+    "default": {"product": "💎", "basket": "🛒", "review": "📝"},
+    "neon": {"product": "💎", "basket": "🛍️", "review": "✨"},
     "stealth": {"product": "🌑", "basket": "🛒", "review": "🌟"},
-    "nature": {"product": "🌐", "basket": "💥", "review": "🌐"}
+    "nature": {"product": "🌿", "basket": "🧺", "review": "🌸"}
 }
 
 # ==============================================================
@@ -151,7 +151,7 @@ LANGUAGES = {
     "en": {
         "native_name": "English",
         # --- General & Menu ---
-        "welcome": "👋 Welcome, {username}!\n\n👤 Status: {status} {progress_bar}\n💰 Balance: {balance_str} EUR\n📦 Total Purchases: {purchases}\n🛒 Basket Items: {basket_count}\n\nStart shopping or explore your options below.\n\n⚠️ Note: No refunds.",
+        "welcome": "Welcome, {username}!\n\nStatus: {status} {progress_bar}\nBalance: {balance_str} EUR\nTotal Purchases: {purchases}\nBasket Items: {basket_count}\n\nStart shopping or explore your options below.\n\nNote: No refunds.",
         "status_label": "Status",
         "balance_label": "Balance",
         "purchases_label": "Total Purchases",
@@ -216,25 +216,25 @@ LANGUAGES = {
         "remove_button_label": "Remove",
         "basket_already_empty": "Basket is already empty.",
         "basket_cleared": "🗑️ Basket Cleared!",
-        "pay": "👤 Total to Pay: {amount} EUR",
-        "insufficient_balance": "⚠️ Insufficient Balance!\n\nPlease top up to continue! 👤", # Keep generic one for /profile
-        "insufficient_balance_pay_option": "⚠️ Insufficient Balance! ({balance} / {required} EUR)",
-        "pay_crypto_button": "👤 Pay with Crypto",
-        "apply_discount_pay_button": "💥️ Apply Discount Code",
-        "skip_discount_button": "⏩ Skip Discount",
-        "prompt_discount_or_pay": "Do you have a discount code to apply before paying with crypto?",
-        "basket_pay_enter_discount": "Please enter discount code for this purchase:",
-        "basket_pay_code_applied": "✅ Code '{code}' applied. New total: {total} EUR. Choose crypto:",
-        "basket_pay_code_invalid": "❌ Code invalid: {reason}. Choose crypto to pay {total} EUR:",
-        "choose_crypto_for_purchase": "Choose crypto to pay {amount} EUR for your basket:",
-        "payment_summary": "👤 Payment Summary",
+        "pay": "💳 Total to Pay: {amount} EUR",
+        "insufficient_balance": "⚠️ Insufficient Balance!\n\nPlease top up to continue! 💸", # Keep generic one for /profile
+        "insufficient_balance_pay_option": "⚠️ Insufficient Balance! ({balance} / {required} EUR)", # <<< ADDED
+        "pay_crypto_button": "💳 Pay with Crypto", # <<< ADDED
+        "apply_discount_pay_button": "🏷️ Apply Discount Code", # <<< ADDED
+        "skip_discount_button": "⏩ Skip Discount", # <<< ADDED
+        "prompt_discount_or_pay": "Do you have a discount code to apply before paying with crypto?", # <<< ADDED
+        "basket_pay_enter_discount": "Please enter discount code for this purchase:", # <<< ADDED
+        "basket_pay_code_applied": "✅ Code '{code}' applied. New total: {total} EUR. Choose crypto:", # <<< ADDED
+        "basket_pay_code_invalid": "❌ Code invalid: {reason}. Choose crypto to pay {total} EUR:", # <<< ADDED
+        "choose_crypto_for_purchase": "Choose crypto to pay {amount} EUR for your basket:", # <<< ADDED
+        "payment_summary": "💳 Payment Summary",
         "product_label": "Product",
         "price_label": "Price",
         "location_label": "Location",
-        "crypto_purchase_success": "Payment Confirmed! Your purchase details are being sent.",
-        "crypto_purchase_failed": "Payment Failed/Expired. Your items are no longer reserved.",
-        "payment_timeout_notification": "⏰ Payment Timeout: Your payment for basket items has expired after 2 hours. Reserved items have been released.",
-        "basket_pay_too_low": "Basket total {basket_total} EUR is below minimum for {currency}.",
+        "crypto_purchase_success": "Payment Confirmed! Your purchase details are being sent.", # <<< ADDED
+        "crypto_purchase_failed": "Payment Failed/Expired. Your items are no longer reserved.", # <<< ADDED
+        "payment_timeout_notification": "⏰ Payment Timeout: Your payment for basket items has expired after 2 hours. Reserved items have been released.", # <<< NEW
+        "basket_pay_too_low": "Basket total {basket_total} EUR is below minimum for {currency}.", # <<< ADDED
         "balance_changed_error": "❌ Transaction failed: Your balance changed. Please check your balance and try again.",
         "order_failed_all_sold_out_balance": "❌ Order Failed: All items in your basket became unavailable during processing. Your balance was not charged.",
         "error_processing_purchase_contact_support": "❌ An error occurred while processing your purchase. Please contact support.",
@@ -244,7 +244,7 @@ LANGUAGES = {
         "back_basket_button": "Back to Basket",
         "error_adding_db": "Error: Database issue adding item to basket.",
         "error_adding_unexpected": "Error: An unexpected issue occurred.",
-        "reseller_discount_label": "Reseller Discount",
+        "reseller_discount_label": "Reseller Discount", # <<< NEW
 
         # --- Discounts ---
         "discount_no_items": "Your basket is empty. Add items first.",
@@ -304,7 +304,7 @@ LANGUAGES = {
         "available_label": "available", # Used in price list
 
         # --- Reviews ---
-        "reviews": "📦 Reviews Menu",
+        "reviews": "📝 Reviews Menu",
         "view_reviews_button": "View Reviews",
         "leave_review_button": "Leave a Review",
         "enter_review_prompt": "Please type your review message and send it.",
@@ -375,10 +375,10 @@ LANGUAGES = {
         "webhook_db_update_failed": "Critical Error: Payment {payment_id} confirmed, but DB balance update failed for user {user_id}. Manual action required.",
         "webhook_pending_not_found": "Webhook Warning: Received update for payment ID {payment_id}, but no pending deposit found in DB.",
         "webhook_price_fetch_error": "Webhook Error: Could not fetch price for {currency} to confirm EUR value for payment {payment_id}.",
-        "payment_cancelled_user": "Payment cancelled. Reserved items (if any) have been released.",
-        "payment_cancel_error": "Could not cancel payment (already processed or context lost).",
-        "cancel_payment_button": "Cancel Payment",
-        "proceeding_to_payment_answer": "Proceeding to payment options...",
+        "payment_cancelled_user": "Payment cancelled. Reserved items (if any) have been released.", # <<< NEW
+        "payment_cancel_error": "Could not cancel payment (already processed or context lost).", # <<< NEW
+        "cancel_payment_button": "Cancel Payment", # <<< NEW
+        "proceeding_to_payment_answer": "Proceeding to payment options...", # <<< ADDED
         "credit_overpayment_purchase": "✅ Your purchase was successful! Additionally, an overpayment of {amount} EUR has been credited to your balance. Your new balance is {new_balance} EUR.",
         "credit_underpayment_purchase": "ℹ️ Your purchase failed due to underpayment, but the received amount ({amount} EUR) has been credited to your balance. Your new balance is {new_balance} EUR.",
         "crypto_purchase_underpaid_credited": "⚠️ Purchase Failed: Underpayment detected. Amount needed was {needed_eur} EUR. Your balance has been credited with the received value ({paid_eur} EUR). Your items were not delivered.",
@@ -387,37 +387,37 @@ LANGUAGES = {
 
         # --- Admin ---
         "admin_menu": "🔧 Admin Panel\n\nManage the bot from here:",
-        "admin_select_city": "🏳️ Select City to Edit\n\nChoose a city:",
+        "admin_select_city": "🏙️ Select City to Edit\n\nChoose a city:",
         "admin_select_district": "🏘️ Select District in {city}\n\nPick a district:",
         "admin_select_type": "💎 Select Product Type\n\nChoose or create a type:",
         "admin_choose_action": "📦 Manage {type} in {city}, {district}\n\nWhat would you like to do?",
-        "set_media_prompt_plain": "📦 Send a photo, video, or GIF to display above all messages:",
+        "set_media_prompt_plain": "📸 Send a photo, video, or GIF to display above all messages:",
         "state_error": "❌ Error: Invalid State\n\nPlease start the 'Add New Product' process again from the Admin Panel.",
         "support": "📞 Need Help?\n\nContact {support} for assistance!",
         "file_download_error": "❌ Error: Failed to Download Media\n\nPlease try again or contact {support}. ",
-        "admin_enter_type_emoji": "✅️ Please reply with a single emoji for the product type:",
+        "admin_enter_type_emoji": "✍️ Please reply with a single emoji for the product type:",
         "admin_type_emoji_set": "Emoji set to {emoji}.",
-        "admin_edit_type_emoji_button": "✅️ Change Emoji",
+        "admin_edit_type_emoji_button": "✏️ Change Emoji",
         "admin_invalid_emoji": "❌ Invalid input. Please send a single emoji.",
         "admin_type_emoji_updated": "✅ Emoji updated successfully for {type_name}!",
-        "admin_edit_type_menu": "💥 Editing Type: {type_name}\n\nCurrent Emoji: {emoji}\nDescription: {description}\n\nWhat would you like to do?", # Added {description}
-        "admin_edit_type_desc_button": "📦 Edit Description", #<<< NEW
+        "admin_edit_type_menu": "🧩 Editing Type: {type_name}\n\nCurrent Emoji: {emoji}\nDescription: {description}\n\nWhat would you like to do?", # Added {description}
+        "admin_edit_type_desc_button": "📝 Edit Description", #<<< NEW
         # --- Broadcast Translations ---
-        "broadcast_select_target": "📦 Broadcast Message\n\nSelect the target audience:",
-        "broadcast_target_all": "�Ÿ‘� All Users",
-        "broadcast_target_city": "🏳️ By Last Purchased City",
-        "broadcast_target_status": "�Ÿ‘‘ By User Status",
+        "broadcast_select_target": "📢 Broadcast Message\n\nSelect the target audience:",
+        "broadcast_target_all": "👥 All Users",
+        "broadcast_target_city": "🏙️ By Last Purchased City",
+        "broadcast_target_status": "👑 By User Status",
         "broadcast_target_inactive": "⏳ By Inactivity (Days)",
-        "broadcast_select_city_target": "🏳️ Select City to Target\n\nUsers whose last purchase was in:",
-        "broadcast_select_status_target": "�Ÿ‘‘ Select Status to Target:",
-        "broadcast_status_vip": "VIP �Ÿ‘‘",
+        "broadcast_select_city_target": "🏙️ Select City to Target\n\nUsers whose last purchase was in:",
+        "broadcast_select_status_target": "👑 Select Status to Target:",
+        "broadcast_status_vip": "VIP 👑",
         "broadcast_status_regular": "Regular ⭐",
-        "broadcast_status_new": "New 🌐",
+        "broadcast_status_new": "New 🌱",
         "broadcast_enter_inactive_days": "⏳ Enter Inactivity Period\n\nPlease reply with the number of days since the user's last purchase (or since registration if no purchases). Users inactive for this many days or more will receive the message.",
         "broadcast_invalid_days": "❌ Invalid number of days. Please enter a positive whole number.",
         "broadcast_days_too_large": "❌ Number of days is too large. Please enter a smaller number.",
-        "broadcast_ask_message": "📦 Now send the message content (text, photo, video, or GIF with caption):",
-        "broadcast_confirm_title": "📦 Confirm Broadcast",
+        "broadcast_ask_message": "📝 Now send the message content (text, photo, video, or GIF with caption):",
+        "broadcast_confirm_title": "📢 Confirm Broadcast",
         "broadcast_confirm_target_all": "Target: All Users",
         "broadcast_confirm_target_city": "Target: Last Purchase in {city}",
         "broadcast_confirm_target_status": "Target: Status - {status}",
@@ -426,54 +426,54 @@ LANGUAGES = {
         "broadcast_confirm_ask": "Send this message?",
         "broadcast_no_users_found_target": "⚠️ Broadcast Warning: No users found matching the target criteria.",
         # --- User Management Translations ---
-        "manage_users_title": "�Ÿ‘� Manage Users",
+        "manage_users_title": "👤 Manage Users",
         "manage_users_prompt": "Select a user to view details or manage:",
         "manage_users_no_users": "No users found.",
-        "view_user_profile_title": "�Ÿ‘� User Profile: @{username} (ID: {user_id})",
+        "view_user_profile_title": "👤 User Profile: @{username} (ID: {user_id})",
         "user_profile_status": "Status",
         "user_profile_balance": "Balance",
         "user_profile_purchases": "Total Purchases",
         "user_profile_banned": "Banned Status",
-        "user_profile_is_banned": "Yes ⚠",
+        "user_profile_is_banned": "Yes 🚫",
         "user_profile_not_banned": "No ✅",
-        "user_profile_button_adjust_balance": "👤 Adjust Balance",
-        "user_profile_button_ban": "🚨 Ban User",
+        "user_profile_button_adjust_balance": "💰 Adjust Balance",
+        "user_profile_button_ban": "🚫 Ban User",
         "user_profile_button_unban": "✅ Unban User",
-        "user_profile_button_back_list": "�✅️ Back to User List",
+        "user_profile_button_back_list": "⬅️ Back to User List",
         "adjust_balance_prompt": "Reply with the amount to adjust balance for @{username} (ID: {user_id}).\nUse a positive number to add (e.g., 10.50) or a negative number to subtract (e.g., -5.00).",
         "adjust_balance_reason_prompt": "Please reply with a brief reason for this balance adjustment ({amount} EUR):",
         "adjust_balance_invalid_amount": "❌ Invalid amount. Please enter a non-zero number (e.g., 10.5 or -5).",
         "adjust_balance_reason_empty": "❌ Reason cannot be empty. Please provide a reason.",
         "adjust_balance_success": "✅ Balance adjusted successfully for @{username}. New balance: {new_balance} EUR.",
         "adjust_balance_db_error": "❌ Database error adjusting balance.",
-        "ban_success": "🚨 User @{username} (ID: {user_id}) has been banned.",
+        "ban_success": "🚫 User @{username} (ID: {user_id}) has been banned.",
         "unban_success": "✅ User @{username} (ID: {user_id}) has been unbanned.",
         "ban_db_error": "❌ Database error updating ban status.",
         "ban_cannot_ban_admin": "❌ Cannot ban the primary admin.",
-       
+        # <<< Welcome Message Management >>>
         "manage_welcome_title": "⚙️ Manage Welcome Messages",
         "manage_welcome_prompt": "Select a template to manage or activate:",
         "welcome_template_active": " (Active ✅)",
         "welcome_template_inactive": "",
         "welcome_button_activate": "✅ Activate",
-        "welcome_button_edit": "✅️ Edit",
-        "welcome_button_delete": "�Ÿ—‘️ Delete",
+        "welcome_button_edit": "✏️ Edit",
+        "welcome_button_delete": "🗑️ Delete",
         "welcome_button_add_new": "➕ Add New Template",
-        "welcome_button_reset_default": "�Ÿ”„ Reset to Built-in Default",
-        "welcome_button_edit_text": "Edit Text",
-        "welcome_button_edit_desc": "Edit Description",
-        "welcome_button_preview": "�Ÿ‘�️ Preview",
-        "welcome_button_save": "👤 Save Template",
+        "welcome_button_reset_default": "🔄 Reset to Built-in Default", # <<< NEW
+        "welcome_button_edit_text": "Edit Text", # <<< NEW
+        "welcome_button_edit_desc": "Edit Description", # <<< NEW
+        "welcome_button_preview": "👁️ Preview", # <<< NEW
+        "welcome_button_save": "💾 Save Template", # <<< NEW
         "welcome_activate_success": "✅ Template '{name}' activated.",
         "welcome_activate_fail": "❌ Failed to activate template '{name}'.",
         "welcome_add_name_prompt": "Enter a unique short name for the new template (e.g., 'default', 'promo_weekend'):",
         "welcome_add_name_exists": "❌ Error: A template with the name '{name}' already exists.",
         "welcome_add_text_prompt": "Template Name: {name}\n\nPlease reply with the full welcome message text. Available placeholders:\n`{placeholders}`", # Escaped placeholders
-        "welcome_add_description_prompt": "Optional: Enter a short description for this template (admin view only). Send '-' to skip.",
+        "welcome_add_description_prompt": "Optional: Enter a short description for this template (admin view only). Send '-' to skip.", # <<< NEW
         "welcome_add_success": "✅ Welcome message template '{name}' added.",
         "welcome_add_fail": "❌ Failed to add welcome message template.",
         "welcome_edit_text_prompt": "Editing Text for '{name}'. Current text:\n\n{current_text}\n\nPlease reply with the new text. Available placeholders:\n`{placeholders}`", # Escaped placeholders
-        "welcome_edit_description_prompt": "Editing description for '{name}'. Current: '{current_desc}'.\n\nEnter new description or send '-' to keep current.",
+        "welcome_edit_description_prompt": "Editing description for '{name}'. Current: '{current_desc}'.\n\nEnter new description or send '-' to keep current.", # <<< NEW
         "welcome_edit_success": "✅ Template '{name}' updated.",
         "welcome_edit_fail": "❌ Failed to update template '{name}'.",
         "welcome_delete_confirm_title": "⚠️ Confirm Deletion",
@@ -484,60 +484,60 @@ LANGUAGES = {
         "welcome_delete_success": "✅ Template '{name}' deleted.",
         "welcome_delete_fail": "❌ Failed to delete template '{name}'.",
         "welcome_delete_not_found": "❌ Template '{name}' not found for deletion.",
-        "welcome_cannot_delete_active": "❌ Cannot delete the active template. Activate another first.",
-        "welcome_reset_confirm_title": "⚠️ Confirm Reset",
-        "welcome_reset_confirm_text": "Are you sure you want to reset the text of the 'default' template to the built-in version and activate it?",
-        "welcome_reset_button_yes": "✅ Yes, Reset & Activate",
-        "welcome_reset_success": "✅ 'default' template reset and activated.",
-        "welcome_reset_fail": "❌ Failed to reset 'default' template.",
-        "welcome_preview_title": "--- Welcome Message Preview ---",
-        "welcome_preview_name": "Name",
-        "welcome_preview_desc": "Desc",
-        "welcome_preview_confirm": "Save this template?",
-        "welcome_save_error_context": "❌ Error: Save data lost. Cannot save template.",
-        "welcome_invalid_placeholder": "⚠️ Formatting Error! Missing placeholder: `{key}`\n\nRaw Text:\n{text}",
-        "welcome_formatting_error": "⚠️ Unexpected Formatting Error!\n\nRaw Text:\n{text}",
+        "welcome_cannot_delete_active": "❌ Cannot delete the active template. Activate another first.", # <<< NEW
+        "welcome_reset_confirm_title": "⚠️ Confirm Reset", # <<< NEW
+        "welcome_reset_confirm_text": "Are you sure you want to reset the text of the 'default' template to the built-in version and activate it?", # <<< NEW
+        "welcome_reset_button_yes": "✅ Yes, Reset & Activate", # <<< NEW
+        "welcome_reset_success": "✅ 'default' template reset and activated.", # <<< NEW
+        "welcome_reset_fail": "❌ Failed to reset 'default' template.", # <<< NEW
+        "welcome_preview_title": "--- Welcome Message Preview ---", # <<< NEW
+        "welcome_preview_name": "Name", # <<< NEW
+        "welcome_preview_desc": "Desc", # <<< NEW
+        "welcome_preview_confirm": "Save this template?", # <<< NEW
+        "welcome_save_error_context": "❌ Error: Save data lost. Cannot save template.", # <<< NEW
+        "welcome_invalid_placeholder": "⚠️ Formatting Error! Missing placeholder: `{key}`\n\nRaw Text:\n{text}", # <<< NEW
+        "welcome_formatting_error": "⚠️ Unexpected Formatting Error!\n\nRaw Text:\n{text}", # <<< NEW
     },
     # --- Lithuanian ---
     "lt": {
         "native_name": "Lietuvių",
         # --- General & Menu ---
-        "welcome": "�Ÿ‘‹ Sveiki, {username}!\n\n�Ÿ‘� Būsena: {status} {progress_bar}\n👤 Balansas: {balance_str} EUR\n📦 Viso pirkimų: {purchases}\n🛒 Krepšelyje: {basket_count} prek�—(s)\n\nPrad�—kite apsipirkti arba naršykite parinktis žemiau.\n\n⚠️ Pastaba: Pinigai negr✅žinami.",
+        "welcome": "👋 Sveiki, {username}!\n\n👤 Būsena: {status} {progress_bar}\n💰 Balansas: {balance_str} EUR\n📦 Viso pirkimų: {purchases}\n🛒 Krepšelyje: {basket_count} prekė(s)\n\nPradėkite apsipirkti arba naršykite parinktis žemiau.\n\n⚠️ Pastaba: Pinigai negrąžinami.",
         "status_label": "Būsena",
         "balance_label": "Balansas",
         "purchases_label": "Viso pirkimų",
         "basket_label": "Krepšelyje",
-        "shopping_prompt": "Prad�—kite apsipirkti arba naršykite parinktis žemiau.",
-        "refund_note": "Pastaba: Pinigai negr✅žinami.",
-        "shop_button": "Parduotuv�—", # <-- Example Translation
+        "shopping_prompt": "Pradėkite apsipirkti arba naršykite parinktis žemiau.",
+        "refund_note": "Pastaba: Pinigai negrąžinami.",
+        "shop_button": "Parduotuvė", # <-- Example Translation
         "profile_button": "Profilis", # <-- Example Translation
         "top_up_button": "Papildyti", # <-- Example Translation
         "reviews_button": "Atsiliepimai", # <-- Example Translation
         "price_list_button": "Kainoraštis", # <-- Example Translation
         "language_button": "Kalba", # <-- Example Translation
-        "admin_button": "🔧 Admino Panel�—",
+        "admin_button": "🔧 Admino Panelė",
         "home_button": "Pradžia", # <-- Example Translation
         "back_button": "Atgal", # <-- Example Translation
         "cancel_button": "Atšaukti", # <-- Example Translation
-        "error_occurred_answer": "Įvyko klaida. Bandykite dar kart✅.",
+        "error_occurred_answer": "Įvyko klaida. Bandykite dar kartą.",
         "success_label": "Pavyko!",
-        "error_unexpected": "Įvyko netik�—ta klaida",
+        "error_unexpected": "Įvyko netikėta klaida",
 
         # --- Shopping Flow ---
-        "choose_city_title": "Pasirinkite miest✅",
-        "select_location_prompt": "Pasirinkite savo viet✅:",
-        "no_cities_available": "Šiuo metu n�—ra miestų. Patikrinkite v�—liau.",
+        "choose_city_title": "Pasirinkite miestą",
+        "select_location_prompt": "Pasirinkite savo vietą:",
+        "no_cities_available": "Šiuo metu nėra miestų. Patikrinkite vėliau.",
         "error_city_not_found": "Klaida: Miestas nerastas.",
-        "choose_district_prompt": "Pasirinkite rajon✅:",
-        "no_districts_available": "Šiame mieste dar n�—ra rajonų.",
+        "choose_district_prompt": "Pasirinkite rajoną:",
+        "no_districts_available": "Šiame mieste dar nėra rajonų.",
         "back_cities_button": "Atgal į miestus",
         "error_district_city_not_found": "Klaida: Rajonas ar miestas nerastas.",
-        "select_type_prompt": "Pasirinkite produkto tip✅:",
-        "no_types_available": "Šiuo metu čia n�—ra šio tipo produktų.",
+        "select_type_prompt": "Pasirinkite produkto tipą:",
+        "no_types_available": "Šiuo metu čia nėra šio tipo produktų.",
         "error_loading_types": "Klaida: Nepavyko įkelti produktų tipų",
         "back_districts_button": "Atgal į rajonus",
         "available_options_prompt": "Galimos parinktys:",
-        "no_items_of_type": "Šiuo metu čia n�—ra šio tipo prekių.",
+        "no_items_of_type": "Šiuo metu čia nėra šio tipo prekių.",
         "error_loading_products": "Klaida: Nepavyko įkelti produktų",
         "back_types_button": "Atgal į tipus",
         "price_label": "Kaina",
@@ -545,83 +545,83 @@ LANGUAGES = {
         "available_label_short": "Yra",
         "add_to_basket_button": "Į krepšelį",
         "error_location_mismatch": "Klaida: Vietos duomenų neatitikimas.",
-        "drop_unavailable": "Prek�— neprieinama! Ši parinktis k✅ tik buvo parduota ar rezervuota.",
+        "drop_unavailable": "Prekė neprieinama! Ši parinktis ką tik buvo parduota ar rezervuota.",
         "error_loading_details": "Klaida: Nepavyko įkelti produkto detalių",
         "back_options_button": "Atgal į parinktis",
-        "no_products_in_city_districts": "Šiuo metu n�—ra produktų jokiuose šio miesto rajonuose.",
-        "error_loading_districts": "Klaida įkeliant rajonus. Bandykite dar kart✅.",
+        "no_products_in_city_districts": "Šiuo metu nėra produktų jokiuose šio miesto rajonuose.",
+        "error_loading_districts": "Klaida įkeliant rajonus. Bandykite dar kartą.",
 
         # --- Basket & Payment ---
-        "added_to_basket": "✅ Prek�— Rezervuota!\n\n{item} yra jūsų krepšelyje {timeout} minutes! ⏳",
+        "added_to_basket": "✅ Prekė Rezervuota!\n\n{item} yra jūsų krepšelyje {timeout} minutes! ⏳",
         "expires_label": "Galioja iki",
         "your_basket_title": "Jūsų krepšelis",
         "basket_empty": "🛒 Jūsų krepšelis tuščias!",
-        "add_items_prompt": "Prid�—kite prekių, kad prad�—tum�—te apsipirkti!",
-        "items_expired_note": "Prek�—s gal�—jo baigtis arba buvo pašalintos.",
-        "subtotal_label": "Tarpin�— suma",
+        "add_items_prompt": "Pridėkite prekių, kad pradėtumėte apsipirkti!",
+        "items_expired_note": "Prekės galėjo baigtis arba buvo pašalintos.",
+        "subtotal_label": "Tarpinė suma",
         "total_label": "Viso",
-        "pay_now_button": "Mok�—ti dabar",
-        "clear_all_button": "Išvalyti visk✅",
-        "view_basket_button": "Peržiūr�—ti krepšelį",
+        "pay_now_button": "Mokėti dabar",
+        "clear_all_button": "Išvalyti viską",
+        "view_basket_button": "Peržiūrėti krepšelį",
         "clear_basket_button": "Išvalyti krepšelį",
         "remove_button_label": "Pašalinti",
         "basket_already_empty": "Krepšelis jau tuščias.",
-        "basket_cleared": "�Ÿ—‘️ Krepšelis išvalytas!",
-        "pay": "👤 Mok�—ti viso: {amount} EUR",
-        "insufficient_balance": "⚠️ Nepakankamas balansas!\n\nPrašome papildyti, kad t�™stum�—te! 👤",
+        "basket_cleared": "🗑️ Krepšelis išvalytas!",
+        "pay": "💳 Mokėti viso: {amount} EUR",
+        "insufficient_balance": "⚠️ Nepakankamas balansas!\n\nPrašome papildyti, kad tęstumėte! 💸",
         "insufficient_balance_pay_option": "⚠️ Nepakankamas balansas! ({balance} / {required} EUR)",
-        "pay_crypto_button": "👤 Mok�—ti Crypto",
-        "apply_discount_pay_button": "💥️ Panaudoti nuolaidos kod✅",
-        "skip_discount_button": "⏩ Praleisti nuolaid✅",
-        "prompt_discount_or_pay": "Ar turite nuolaidos kod✅, kurį norite panaudoti prieš mokant kriptovaliuta?",
-        "basket_pay_enter_discount": "Įveskite nuolaidos kod✅ šiam pirkiniui:",
-        "basket_pay_code_applied": "✅ Kodas '{code}' pritaikytas. Nauja suma: {total} EUR. Pasirinkite kriptovaliut✅:",
-        "basket_pay_code_invalid": "❌ Kodas negalioja: {reason}. Pasirinkite kriptovaliut✅ mok�—ti {total} EUR:",
-        "choose_crypto_for_purchase": "Pasirinkite kriptovaliut✅ mok�—ti {amount} EUR už jūsų krepšelį:",
-        "payment_summary": "👤 Mok�—jimo suvestin�—",
-        "product_label": "Prek�—",
+        "pay_crypto_button": "💳 Mokėti Crypto",
+        "apply_discount_pay_button": "🏷️ Panaudoti nuolaidos kodą",
+        "skip_discount_button": "⏩ Praleisti nuolaidą",
+        "prompt_discount_or_pay": "Ar turite nuolaidos kodą, kurį norite panaudoti prieš mokant kriptovaliuta?",
+        "basket_pay_enter_discount": "Įveskite nuolaidos kodą šiam pirkiniui:",
+        "basket_pay_code_applied": "✅ Kodas '{code}' pritaikytas. Nauja suma: {total} EUR. Pasirinkite kriptovaliutą:",
+        "basket_pay_code_invalid": "❌ Kodas negalioja: {reason}. Pasirinkite kriptovaliutą mokėti {total} EUR:",
+        "choose_crypto_for_purchase": "Pasirinkite kriptovaliutą mokėti {amount} EUR už jūsų krepšelį:",
+        "payment_summary": "💳 Mokėjimo suvestinė",
+        "product_label": "Prekė",
         "price_label": "Kaina",
         "location_label": "Vieta",
-        "crypto_purchase_success": "Mok�—jimas patvirtintas! Jūsų pirkimo detal�—s siunčiamos.",
-        "crypto_purchase_failed": "Mok�—jimas nepavyko/baig�—si. Jūsų prek�—s neb�—ra rezervuotos.",
-        "payment_timeout_notification": "⏰ Mok�—jimo Laikas Baig�—si: Jūsų mok�—jimas už krepšelio prekes pasibaig�— po 2 valandų. Rezervuotos prek�—s buvo atlaisvintos.",
-        "basket_pay_too_low": "Krepšelio suma {basket_total} EUR yra mažesn�— nei minimali {currency}.",
-        "balance_changed_error": "❌ Transakcija nepavyko: Jūsų balansas pasikeit�—. Patikrinkite balans✅ ir bandykite dar kart✅.",
-        "order_failed_all_sold_out_balance": "❌ Užsakymas nepavyko: Visos prek�—s krepšelyje tapo neprieinamos apdorojimo metu. Jūsų balansas nebuvo apmokestintas.",
-        "error_processing_purchase_contact_support": "❌ Apdorojant jūsų pirkim✅ įvyko klaida. Susisiekite su pagalba.",
-        "purchase_success": "�ŸŽ‰ Pirkimas baigtas!",
-        "sold_out_note": "⚠️ Pastaba: Šios prek�—s tapo neprieinamos apdorojimo metu ir nebuvo įtrauktos: {items}. Už jas nebuvote apmokestinti.",
-        "leave_review_now": "Palikti atsiliepim✅ dabar",
+        "crypto_purchase_success": "Mokėjimas patvirtintas! Jūsų pirkimo detalės siunčiamos.",
+        "crypto_purchase_failed": "Mokėjimas nepavyko/baigėsi. Jūsų prekės nebėra rezervuotos.",
+        "payment_timeout_notification": "⏰ Mokėjimo Laikas Baigėsi: Jūsų mokėjimas už krepšelio prekes pasibaigė po 2 valandų. Rezervuotos prekės buvo atlaisvintos.", # <<< NEW
+        "basket_pay_too_low": "Krepšelio suma {basket_total} EUR yra mažesnė nei minimali {currency}.",
+        "balance_changed_error": "❌ Transakcija nepavyko: Jūsų balansas pasikeitė. Patikrinkite balansą ir bandykite dar kartą.",
+        "order_failed_all_sold_out_balance": "❌ Užsakymas nepavyko: Visos prekės krepšelyje tapo neprieinamos apdorojimo metu. Jūsų balansas nebuvo apmokestintas.",
+        "error_processing_purchase_contact_support": "❌ Apdorojant jūsų pirkimą įvyko klaida. Susisiekite su pagalba.",
+        "purchase_success": "🎉 Pirkimas baigtas!",
+        "sold_out_note": "⚠️ Pastaba: Šios prekės tapo neprieinamos apdorojimo metu ir nebuvo įtrauktos: {items}. Už jas nebuvote apmokestinti.",
+        "leave_review_now": "Palikti atsiliepimą dabar",
         "back_basket_button": "Atgal į krepšelį",
-        "error_adding_db": "Klaida: Duomenų baz�—s problema dedant prek�™ į krepšelį.",
-        "error_adding_unexpected": "Klaida: Įvyko netik�—ta problema.",
-        "reseller_discount_label": "Perpardav�—jo nuolaida",
+        "error_adding_db": "Klaida: Duomenų bazės problema dedant prekę į krepšelį.",
+        "error_adding_unexpected": "Klaida: Įvyko netikėta problema.",
+        "reseller_discount_label": "Perpardavėjo nuolaida", # <<< NEW
 
         # --- Discounts ---
-        "discount_no_items": "Jūsų krepšelis tuščias. Pirmiausia prid�—kite prekių.",
-        "enter_discount_code_prompt": "Įveskite savo nuolaidos kod✅:",
-        "enter_code_answer": "Įveskite kod✅ pokalbyje.",
-        "apply_discount_button": "Pritaikyti nuolaidos kod✅",
+        "discount_no_items": "Jūsų krepšelis tuščias. Pirmiausia pridėkite prekių.",
+        "enter_discount_code_prompt": "Įveskite savo nuolaidos kodą:",
+        "enter_code_answer": "Įveskite kodą pokalbyje.",
+        "apply_discount_button": "Pritaikyti nuolaidos kodą",
         "no_code_provided": "Kodas neįvestas.",
         "discount_code_not_found": "Nuolaidos kodas nerastas.",
         "discount_code_inactive": "Šis nuolaidos kodas neaktyvus.",
-        "discount_code_expired": "Šio nuolaidos kodo galiojimas baig�—si.",
+        "discount_code_expired": "Šio nuolaidos kodo galiojimas baigėsi.",
         "invalid_code_expiry_data": "Neteisingi kodo galiojimo duomenys.",
-        "code_limit_reached": "Kodas pasiek�— naudojimo limit✅.",
-        "internal_error_discount_type": "Vidin�— klaida apdorojant nuolaidos tip✅.",
-        "db_error_validating_code": "Duomenų baz�—s klaida tikrinant kod✅.",
-        "unexpected_error_validating_code": "Įvyko netik�—ta klaida.",
+        "code_limit_reached": "Kodas pasiekė naudojimo limitą.",
+        "internal_error_discount_type": "Vidinė klaida apdorojant nuolaidos tipą.",
+        "db_error_validating_code": "Duomenų bazės klaida tikrinant kodą.",
+        "unexpected_error_validating_code": "Įvyko netikėta klaida.",
         "discount_min_order_not_met": "Šiam nuolaidos kodui nepasiekta minimali užsakymo suma.",
         "code_applied_message": "Kodas '{code}' ({value}) pritaikytas. Nuolaida: -{amount} EUR",
         "discount_applied_label": "Pritaikyta nuolaida",
-        "discount_value_label": "Vert�—",
+        "discount_value_label": "Vertė",
         "discount_removed_note": "Nuolaidos kodas {code} pašalintas: {reason}",
-        "discount_removed_invalid_basket": "Nuolaida pašalinta (krepšelis pasikeit�—).",
-        "remove_discount_button": "Pašalinti nuolaid✅",
+        "discount_removed_invalid_basket": "Nuolaida pašalinta (krepšelis pasikeitė).",
+        "remove_discount_button": "Pašalinti nuolaidą",
         "discount_removed_answer": "Nuolaida pašalinta.",
         "no_discount_answer": "Nuolaida nepritaikyta.",
-        "send_text_please": "Siųskite nuolaidos kod✅ kaip tekst✅.",
-        "error_calculating_total": "Klaida skaičiuojant sum✅.",
+        "send_text_please": "Siųskite nuolaidos kodą kaip tekstą.",
+        "error_calculating_total": "Klaida skaičiuojant sumą.",
         "returning_to_basket": "Grįžtama į krepšelį.",
         "basket_empty_no_discount": "Krepšelis tuščias. Negalima pritaikyti nuolaidos kodo.",
 
@@ -636,138 +636,138 @@ LANGUAGES = {
 
         # --- Language ---
         "language_set_answer": "Kalba nustatyta į {lang}!",
-        "error_saving_language": "Klaida išsaugant kalbos nustatym✅.",
+        "error_saving_language": "Klaida išsaugant kalbos nustatymą.",
         "invalid_language_answer": "Pasirinkta neteisinga kalba.",
         "language": "🌐 Kalba", # Menu title
 
         # --- Price List ---
-        "no_cities_for_prices": "N�—ra miestų, kuriuose būtų galima peržiūr�—ti kainas.",
+        "no_cities_for_prices": "Nėra miestų, kuriuose būtų galima peržiūrėti kainas.",
         "price_list_title": "Kainoraštis",
-        "select_city_prices_prompt": "Pasirinkite miest✅, kad pamatytum�—te galimus produktus ir kainas:",
+        "select_city_prices_prompt": "Pasirinkite miestą, kad pamatytumėte galimus produktus ir kainas:",
         "price_list_title_city": "Kainoraštis: {city_name}",
-        "no_products_in_city": "Šiame mieste šiuo metu n�—ra produktų.",
-        "back_city_list_button": "Atgal į miestų s✅raš✅",
-        "message_truncated_note": "Žinut�— sutrumpinta d�—l ilgio limito. Naudokite 'Parduotuv�—' pilnai informacijai.",
+        "no_products_in_city": "Šiame mieste šiuo metu nėra produktų.",
+        "back_city_list_button": "Atgal į miestų sąrašą",
+        "message_truncated_note": "Žinutė sutrumpinta dėl ilgio limito. Naudokite 'Parduotuvė' pilnai informacijai.",
         "error_loading_prices_db": "Klaida: Nepavyko įkelti kainoraščio {city_name}",
         "error_displaying_prices": "Klaida rodant kainoraštį.",
-        "error_unexpected_prices": "Klaida: Įvyko netik�—ta problema generuojant kainoraštį.",
+        "error_unexpected_prices": "Klaida: Įvyko netikėta problema generuojant kainoraštį.",
         "available_label": "yra", # Used in price list
 
         # --- Reviews ---
-        "reviews": "📦 Atsiliepimų Meniu",
-        "view_reviews_button": "Peržiūr�—ti atsiliepimus",
-        "leave_review_button": "Palikti atsiliepim✅",
-        "enter_review_prompt": "Įveskite savo atsiliepimo žinut�™ ir išsiųskite.",
-        "enter_review_answer": "Įveskite savo atsiliepim✅ pokalbyje.",
-        "send_text_review_please": "Siųskite tik tekst✅ savo atsiliepimui.",
-        "review_not_empty": "Atsiliepimas negali būti tuščias. Bandykite dar kart✅ arba atšaukite.",
+        "reviews": "📝 Atsiliepimų Meniu",
+        "view_reviews_button": "Peržiūrėti atsiliepimus",
+        "leave_review_button": "Palikti atsiliepimą",
+        "enter_review_prompt": "Įveskite savo atsiliepimo žinutę ir išsiųskite.",
+        "enter_review_answer": "Įveskite savo atsiliepimą pokalbyje.",
+        "send_text_review_please": "Siųskite tik tekstą savo atsiliepimui.",
+        "review_not_empty": "Atsiliepimas negali būti tuščias. Bandykite dar kartą arba atšaukite.",
         "review_too_long": "Atsiliepimas per ilgas (maks. 1000 simbolių). Prašome sutrumpinti.",
-        "review_thanks": "Ačiū už jūsų atsiliepim✅! Jūsų nuomon�— padeda mums tobul�—ti.",
-        "error_saving_review_db": "Klaida: Nepavyko išsaugoti jūsų atsiliepimo d�—l duomenų baz�—s problemos.",
-        "error_saving_review_unexpected": "Klaida: Įvyko netik�—ta problema saugant jūsų atsiliepim✅.",
+        "review_thanks": "Ačiū už jūsų atsiliepimą! Jūsų nuomonė padeda mums tobulėti.",
+        "error_saving_review_db": "Klaida: Nepavyko išsaugoti jūsų atsiliepimo dėl duomenų bazės problemos.",
+        "error_saving_review_unexpected": "Klaida: Įvyko netikėta problema saugant jūsų atsiliepimą.",
         "user_reviews_title": "Vartotojų atsiliepimai",
-        "no_reviews_yet": "Dar n�—ra paliktų atsiliepimų.",
-        "no_more_reviews": "Neb�—ra daugiau atsiliepimų.",
+        "no_reviews_yet": "Dar nėra paliktų atsiliepimų.",
+        "no_more_reviews": "Nebėra daugiau atsiliepimų.",
         "prev_button": "Ankst.",
         "next_button": "Kitas",
         "back_review_menu_button": "Atgal į Atsiliepimų Meniu",
         "unknown_date_label": "Nežinoma data",
-        "error_displaying_review": "Klaida rodant atsiliepim✅",
-        "error_updating_review_list": "Klaida atnaujinant atsiliepimų s✅raš✅.",
+        "error_displaying_review": "Klaida rodant atsiliepimą",
+        "error_updating_review_list": "Klaida atnaujinant atsiliepimų sąrašą.",
 
         # --- Refill / Crypto Payments ---
-        "payment_amount_too_low_api": "❌ Mok�—jimo Suma Per Maža: {target_eur_amount} EUR atitikmuo {currency} \\({crypto_amount}\\) yra mažesnis už minimalų reikalaujam✅ mok�—jimo teik�—jo \\({min_amount} {currency}\\)\\. Bandykite didesn�™ EUR sum✅\\.",
-        "payment_amount_too_low_with_min_eur": "❌ Mok�—jimo Suma Per Maža: {target_eur_amount} EUR yra mažesn�— už minimalų {currency} mok�—jimų sum✅ \\(minimalus: {min_eur_amount} EUR\\)\\. Bandykite didesn�™ sum✅ arba pasirinkite kit✅ kriptovaliut✅\\.",
-        "error_min_amount_fetch": "❌ Klaida: Nepavyko gauti minimalios mok�—jimo sumos {currency}\\. Bandykite v�—liau arba pasirinkite kit✅ valiut✅\\.",
-        "invoice_title_refill": "*S✅skaita Papildymui Sukurta*",
-        "invoice_title_purchase": "*S✅skaita Pirkimui Sukurta*",
-        "invoice_important_notice": "⚠️ *Svarbu:* Siųskite tiksli✅ sum✅ šiuo adresu.",
+        "payment_amount_too_low_api": "❌ Mokėjimo Suma Per Maža: {target_eur_amount} EUR atitikmuo {currency} \\({crypto_amount}\\) yra mažesnis už minimalų reikalaujamą mokėjimo teikėjo \\({min_amount} {currency}\\)\\. Bandykite didesnę EUR sumą\\.",
+        "payment_amount_too_low_with_min_eur": "❌ Mokėjimo Suma Per Maža: {target_eur_amount} EUR yra mažesnė už minimalų {currency} mokėjimų sumą \\(minimalus: {min_eur_amount} EUR\\)\\. Bandykite didesnę sumą arba pasirinkite kitą kriptovaliutą\\.",
+        "error_min_amount_fetch": "❌ Klaida: Nepavyko gauti minimalios mokėjimo sumos {currency}\\. Bandykite vėliau arba pasirinkite kitą valiutą\\.",
+        "invoice_title_refill": "*Sąskaita Papildymui Sukurta*",
+        "invoice_title_purchase": "*Sąskaita Pirkimui Sukurta*",
+        "invoice_important_notice": "⚠️ *Svarbu:* Siųskite tikslią sumą šiuo adresu.",
         "invoice_confirmation_notice": "✅ Auto-patvirtinta per ~1-2 min.",
         "invoice_valid_notice": "⏱️ *Galioja 30 minučių*",
         "min_amount_label": "*Minimali Suma:*",
-        "payment_address_label": "*Mok�—jimo Adresas:*",
+        "payment_address_label": "*Mokėjimo Adresas:*",
         "amount_label": "*Suma:*",
         "expires_at_label": "*Galioja iki:*",
-        "send_warning_template": "⚠️ *Svarbu:* Siųskite *tiksliai* ši✅ {asset} sum✅ šiuo adresu\\.",
-        "overpayment_note": "ℹ️ _Siųsti daugiau nei nurodyta suma yra gerai\\! Jūsų balansas bus papildytas pagal gaut✅ sum✅ po tinklo patvirtinimo\\._",
+        "send_warning_template": "⚠️ *Svarbu:* Siųskite *tiksliai* šią {asset} sumą šiuo adresu\\.",
+        "overpayment_note": "ℹ️ _Siųsti daugiau nei nurodyta suma yra gerai\\! Jūsų balansas bus papildytas pagal gautą sumą po tinklo patvirtinimo\\._",
         "confirmation_note": "✅ Patvirtinimas automatinis per webhook po tinklo patvirtinimo\\.",
         "invoice_amount_label_text": "Suma",
-        "invoice_send_following_amount": "Prašome siųsti ši✅ sum✅:",
-        "invoice_payment_deadline": "Mok�—jimas turi būti atliktas per 20 minučių nuo s✅skaitos sukūrimo.",
-        "error_estimate_failed": "❌ Klaida: Nepavyko įvertinti kriptovaliutos sumos. Bandykite dar kart✅ arba pasirinkite kit✅ valiut✅.",
-        "error_estimate_currency_not_found": "❌ Klaida: Valiuta {currency} nepalaikoma įvertinimui. Pasirinkite kit✅ valiut✅.",
-        "error_discount_invalid_payment": "❌ Jūsų nuolaidos kodas nebegalioja: {reason}. Grįžkite į krepšelį, kad t�™stum�—te be nuolaidos.",
-        "error_discount_mismatch_payment": "❌ Aptiktas mok�—jimo sumos neatitikimas. Grįžkite į krepšelį ir bandykite dar kart✅.",
+        "invoice_send_following_amount": "Prašome siųsti šią sumą:",
+        "invoice_payment_deadline": "Mokėjimas turi būti atliktas per 20 minučių nuo sąskaitos sukūrimo.",
+        "error_estimate_failed": "❌ Klaida: Nepavyko įvertinti kriptovaliutos sumos. Bandykite dar kartą arba pasirinkite kitą valiutą.",
+        "error_estimate_currency_not_found": "❌ Klaida: Valiuta {currency} nepalaikoma įvertinimui. Pasirinkite kitą valiutą.",
+        "error_discount_invalid_payment": "❌ Jūsų nuolaidos kodas nebegalioja: {reason}. Grįžkite į krepšelį, kad tęstumėte be nuolaidos.",
+        "error_discount_mismatch_payment": "❌ Aptiktas mokėjimo sumos neatitikimas. Grįžkite į krepšelį ir bandykite dar kartą.",
         "crypto_payment_disabled": "Balanso papildymas šiuo metu išjungtas.",
-        "top_up_title": "Papildyti balans✅",
-        "enter_refill_amount_prompt": "Atsakykite su suma EUR, kuri✅ norite prid�—ti prie balanso (pvz., 10 arba 25.50).",
+        "top_up_title": "Papildyti balansą",
+        "enter_refill_amount_prompt": "Atsakykite su suma EUR, kurią norite pridėti prie balanso (pvz., 10 arba 25.50).",
         "min_top_up_note": "Minimalus papildymas: {amount} EUR",
-        "enter_amount_answer": "Įveskite papildymo sum✅.",
-        "send_amount_as_text": "Siųskite sum✅ kaip tekst✅ (pvz., 10 arba 25.50).",
-        "amount_too_low_msg": "Suma per maža. Minimalus papildymas yra {amount} EUR. Įveskite didesn�™ sum✅.",
-        "amount_too_high_msg": "Suma per didel�—. Įveskite mažesn�™ sum✅.",
+        "enter_amount_answer": "Įveskite papildymo sumą.",
+        "send_amount_as_text": "Siųskite sumą kaip tekstą (pvz., 10 arba 25.50).",
+        "amount_too_low_msg": "Suma per maža. Minimalus papildymas yra {amount} EUR. Įveskite didesnę sumą.",
+        "amount_too_high_msg": "Suma per didelė. Įveskite mažesnę sumą.",
         "invalid_amount_format_msg": "Neteisingas sumos formatas. Įveskite skaičių (pvz., 10 arba 25.50).",
-        "unexpected_error_msg": "Įvyko netik�—ta klaida. Bandykite v�—liau.",
-        "choose_crypto_prompt": "Norite papildyti {amount} EUR. Pasirinkite kriptovaliut✅, kuria norite mok�—ti:",
-        "cancel_top_up_button": "Atšaukti papildym✅",
-        "preparing_invoice": "⏳ Ruošiama jūsų mok�—jimo s✅skaita...",
-        "failed_invoice_creation": "❌ Nepavyko sukurti mok�—jimo s✅skaitos. Tai gali būti laikina problema su mok�—jimo teik�—ju arba API rakto problema. Bandykite v�—liau arba susisiekite su pagalba.",
-        "error_preparing_payment": "❌ Ruošiant mok�—jimo detales įvyko klaida. Bandykite v�—liau.",
-        "top_up_success_title": "✅ Papildymas S�—kmingas!",
-        "amount_added_label": "Prid�—ta suma",
+        "unexpected_error_msg": "Įvyko netikėta klaida. Bandykite vėliau.",
+        "choose_crypto_prompt": "Norite papildyti {amount} EUR. Pasirinkite kriptovaliutą, kuria norite mokėti:",
+        "cancel_top_up_button": "Atšaukti papildymą",
+        "preparing_invoice": "⏳ Ruošiama jūsų mokėjimo sąskaita...",
+        "failed_invoice_creation": "❌ Nepavyko sukurti mokėjimo sąskaitos. Tai gali būti laikina problema su mokėjimo teikėju arba API rakto problema. Bandykite vėliau arba susisiekite su pagalba.",
+        "error_preparing_payment": "❌ Ruošiant mokėjimo detales įvyko klaida. Bandykite vėliau.",
+        "top_up_success_title": "✅ Papildymas Sėkmingas!",
+        "amount_added_label": "Pridėta suma",
         "new_balance_label": "Jūsų naujas balansas",
-        "error_nowpayments_api": "❌ Mok�—jimo API Klaida: Nepavyko sukurti mok�—jimo. Bandykite v�—liau arba susisiekite su pagalba.",
-        "error_invalid_nowpayments_response": "❌ Mok�—jimo API Klaida: Gautas neteisingas atsakymas. Susisiekite su pagalba.",
-        "error_nowpayments_api_key": "❌ Mok�—jimo API Klaida: Neteisingas API raktas. Susisiekite su pagalba.",
-        "payment_pending_db_error": "❌ Duomenų Baz�—s Klaida: Nepavyko įrašyti laukiančio mok�—jimo. Susisiekite su pagalba.",
-        "payment_cancelled_or_expired": "Mok�—jimo Būsena: Jūsų mok�—jimas ({payment_id}) buvo atšauktas arba baig�—si galiojimas.",
-        "webhook_processing_error": "Webhook Klaida: Nepavyko apdoroti mok�—jimo atnaujinimo {payment_id}.",
-        "webhook_db_update_failed": "Kritin�— Klaida: Mok�—jimas {payment_id} patvirtintas, bet DB balanso atnaujinimas vartotojui {user_id} nepavyko. Reikalingas rankinis veiksmas.",
-        "webhook_pending_not_found": "Webhook Įsp�—jimas: Gautas mok�—jimo ID {payment_id} atnaujinimas, bet DB nerasta laukiančio įrašo.",
-        "webhook_price_fetch_error": "Webhook Klaida: Nepavyko gauti {currency} kainos patvirtinti EUR vert�™ mok�—jimui {payment_id}.",
-        "payment_cancelled_user": "Mok�—jimas atšauktas. Rezervuotos prek�—s (jei buvo) paleistos.",
-        "payment_cancel_error": "Nepavyko atšaukti mok�—jimo (jau apdorotas arba prarastas kontekstas).",
-        "cancel_payment_button": "Atšaukti mok�—jim✅",
-        "proceeding_to_payment_answer": "Pereinama prie mok�—jimo parinkčių...",
-        "credit_overpayment_purchase": "✅ Jūsų pirkimas buvo s�—kmingas! Papildomai, permoka {amount} EUR buvo įskaityta į jūsų balans✅. Jūsų naujas balansas: {new_balance} EUR.",
-        "credit_underpayment_purchase": "ℹ️ Jūsų pirkimas nepavyko d�—l nepakankamo mok�—jimo, tačiau gauta suma ({amount} EUR) buvo įskaityta į jūsų balans✅. Jūsų naujas balansas: {new_balance} EUR.",
-        "crypto_purchase_underpaid_credited": "⚠️ Pirkimas nepavyko: Aptiktas nepakankamas mok�—jimas. Reikalinga suma buvo {needed_eur} EUR. Jūsų balansas buvo papildytas gauta verte ({paid_eur} EUR). Jūsų prek�—s nebuvo pristatytos.",
+        "error_nowpayments_api": "❌ Mokėjimo API Klaida: Nepavyko sukurti mokėjimo. Bandykite vėliau arba susisiekite su pagalba.",
+        "error_invalid_nowpayments_response": "❌ Mokėjimo API Klaida: Gautas neteisingas atsakymas. Susisiekite su pagalba.",
+        "error_nowpayments_api_key": "❌ Mokėjimo API Klaida: Neteisingas API raktas. Susisiekite su pagalba.",
+        "payment_pending_db_error": "❌ Duomenų Bazės Klaida: Nepavyko įrašyti laukiančio mokėjimo. Susisiekite su pagalba.",
+        "payment_cancelled_or_expired": "Mokėjimo Būsena: Jūsų mokėjimas ({payment_id}) buvo atšauktas arba baigėsi galiojimas.",
+        "webhook_processing_error": "Webhook Klaida: Nepavyko apdoroti mokėjimo atnaujinimo {payment_id}.",
+        "webhook_db_update_failed": "Kritinė Klaida: Mokėjimas {payment_id} patvirtintas, bet DB balanso atnaujinimas vartotojui {user_id} nepavyko. Reikalingas rankinis veiksmas.",
+        "webhook_pending_not_found": "Webhook Įspėjimas: Gautas mokėjimo ID {payment_id} atnaujinimas, bet DB nerasta laukiančio įrašo.",
+        "webhook_price_fetch_error": "Webhook Klaida: Nepavyko gauti {currency} kainos patvirtinti EUR vertę mokėjimui {payment_id}.",
+        "payment_cancelled_user": "Mokėjimas atšauktas. Rezervuotos prekės (jei buvo) paleistos.", # <<< NEW
+        "payment_cancel_error": "Nepavyko atšaukti mokėjimo (jau apdorotas arba prarastas kontekstas).", # <<< NEW
+        "cancel_payment_button": "Atšaukti mokėjimą", # <<< NEW
+        "proceeding_to_payment_answer": "Pereinama prie mokėjimo parinkčių...",
+        "credit_overpayment_purchase": "✅ Jūsų pirkimas buvo sėkmingas! Papildomai, permoka {amount} EUR buvo įskaityta į jūsų balansą. Jūsų naujas balansas: {new_balance} EUR.",
+        "credit_underpayment_purchase": "ℹ️ Jūsų pirkimas nepavyko dėl nepakankamo mokėjimo, tačiau gauta suma ({amount} EUR) buvo įskaityta į jūsų balansą. Jūsų naujas balansas: {new_balance} EUR.",
+        "crypto_purchase_underpaid_credited": "⚠️ Pirkimas nepavyko: Aptiktas nepakankamas mokėjimas. Reikalinga suma buvo {needed_eur} EUR. Jūsų balansas buvo papildytas gauta verte ({paid_eur} EUR). Jūsų prekės nebuvo pristatytos.",
         "credit_refill": "✅ Jūsų balansas buvo papildytas {amount} EUR. Priežastis: {reason}. Naujas balansas: {new_balance} EUR.",
 
 
         # --- Admin ---
         "admin_menu": "🔧 Admin Panel\n\nManage the bot from here:",
-        "admin_select_city": "🏳️ Select City to Edit\n\nChoose a city:",
+        "admin_select_city": "🏙️ Select City to Edit\n\nChoose a city:",
         "admin_select_district": "🏘️ Select District in {city}\n\nPick a district:",
         "admin_select_type": "💎 Select Product Type\n\nChoose or create a type:",
         "admin_choose_action": "📦 Manage {type} in {city}, {district}\n\nWhat would you like to do?",
-        "set_media_prompt_plain": "📦 Send a photo, video, or GIF to display above all messages:",
+        "set_media_prompt_plain": "📸 Send a photo, video, or GIF to display above all messages:",
         "state_error": "❌ Error: Invalid State\n\nPlease start the 'Add New Product' process again from the Admin Panel.",
         "support": "📞 Need Help?\n\nContact {support} for assistance!",
         "file_download_error": "❌ Error: Failed to Download Media\n\nPlease try again or contact {support}. ",
-        "admin_enter_type_emoji": "✅️ Please reply with a single emoji for the product type:",
+        "admin_enter_type_emoji": "✍️ Please reply with a single emoji for the product type:",
         "admin_type_emoji_set": "Emoji set to {emoji}.",
-        "admin_edit_type_emoji_button": "✅️ Change Emoji",
+        "admin_edit_type_emoji_button": "✏️ Change Emoji",
         "admin_invalid_emoji": "❌ Invalid input. Please send a single emoji.",
         "admin_type_emoji_updated": "✅ Emoji updated successfully for {type_name}!",
-        "admin_edit_type_menu": "💥 Editing Type: {type_name}\n\nCurrent Emoji: {emoji}\nDescription: {description}\n\nWhat would you like to do?", # Added {description}
-        "admin_edit_type_desc_button": "📦 Edit Description", #<<< NEW
+        "admin_edit_type_menu": "🧩 Editing Type: {type_name}\n\nCurrent Emoji: {emoji}\nDescription: {description}\n\nWhat would you like to do?", # Added {description}
+        "admin_edit_type_desc_button": "📝 Edit Description", #<<< NEW
         # --- Broadcast Translations ---
-        "broadcast_select_target": "📦 Broadcast Message\n\nSelect the target audience:",
-        "broadcast_target_all": "�Ÿ‘� All Users",
-        "broadcast_target_city": "🏳️ By Last Purchased City",
-        "broadcast_target_status": "�Ÿ‘‘ By User Status",
+        "broadcast_select_target": "📢 Broadcast Message\n\nSelect the target audience:",
+        "broadcast_target_all": "👥 All Users",
+        "broadcast_target_city": "🏙️ By Last Purchased City",
+        "broadcast_target_status": "👑 By User Status",
         "broadcast_target_inactive": "⏳ By Inactivity (Days)",
-        "broadcast_select_city_target": "🏳️ Select City to Target\n\nUsers whose last purchase was in:",
-        "broadcast_select_status_target": "�Ÿ‘‘ Select Status to Target:",
-        "broadcast_status_vip": "VIP �Ÿ‘‘",
+        "broadcast_select_city_target": "🏙️ Select City to Target\n\nUsers whose last purchase was in:",
+        "broadcast_select_status_target": "👑 Select Status to Target:",
+        "broadcast_status_vip": "VIP 👑",
         "broadcast_status_regular": "Regular ⭐",
-        "broadcast_status_new": "New 🌐",
+        "broadcast_status_new": "New 🌱",
         "broadcast_enter_inactive_days": "⏳ Enter Inactivity Period\n\nPlease reply with the number of days since the user's last purchase (or since registration if no purchases). Users inactive for this many days or more will receive the message.",
         "broadcast_invalid_days": "❌ Invalid number of days. Please enter a positive whole number.",
         "broadcast_days_too_large": "❌ Number of days is too large. Please enter a smaller number.",
-        "broadcast_ask_message": "📦 Now send the message content (text, photo, video, or GIF with caption):",
-        "broadcast_confirm_title": "📦 Confirm Broadcast",
+        "broadcast_ask_message": "📝 Now send the message content (text, photo, video, or GIF with caption):",
+        "broadcast_confirm_title": "📢 Confirm Broadcast",
         "broadcast_confirm_target_all": "Target: All Users",
         "broadcast_confirm_target_city": "Target: Last Purchase in {city}",
         "broadcast_confirm_target_status": "Target: Status - {status}",
@@ -776,54 +776,54 @@ LANGUAGES = {
         "broadcast_confirm_ask": "Send this message?",
         "broadcast_no_users_found_target": "⚠️ Broadcast Warning: No users found matching the target criteria.",
         # --- User Management Translations ---
-        "manage_users_title": "�Ÿ‘� Manage Users",
+        "manage_users_title": "👤 Manage Users",
         "manage_users_prompt": "Select a user to view details or manage:",
         "manage_users_no_users": "No users found.",
-        "view_user_profile_title": "�Ÿ‘� User Profile: @{username} (ID: {user_id})",
+        "view_user_profile_title": "👤 User Profile: @{username} (ID: {user_id})",
         "user_profile_status": "Status",
         "user_profile_balance": "Balance",
         "user_profile_purchases": "Total Purchases",
         "user_profile_banned": "Banned Status",
-        "user_profile_is_banned": "Yes ⚠",
+        "user_profile_is_banned": "Yes 🚫",
         "user_profile_not_banned": "No ✅",
-        "user_profile_button_adjust_balance": "👤 Adjust Balance",
-        "user_profile_button_ban": "🚨 Ban User",
+        "user_profile_button_adjust_balance": "💰 Adjust Balance",
+        "user_profile_button_ban": "🚫 Ban User",
         "user_profile_button_unban": "✅ Unban User",
-        "user_profile_button_back_list": "�✅️ Back to User List",
+        "user_profile_button_back_list": "⬅️ Back to User List",
         "adjust_balance_prompt": "Reply with the amount to adjust balance for @{username} (ID: {user_id}).\nUse a positive number to add (e.g., 10.50) or a negative number to subtract (e.g., -5.00).",
         "adjust_balance_reason_prompt": "Please reply with a brief reason for this balance adjustment ({amount} EUR):",
         "adjust_balance_invalid_amount": "❌ Invalid amount. Please enter a non-zero number (e.g., 10.5 or -5).",
         "adjust_balance_reason_empty": "❌ Reason cannot be empty. Please provide a reason.",
         "adjust_balance_success": "✅ Balance adjusted successfully for @{username}. New balance: {new_balance} EUR.",
         "adjust_balance_db_error": "❌ Database error adjusting balance.",
-        "ban_success": "🚨 User @{username} (ID: {user_id}) has been banned.",
+        "ban_success": "🚫 User @{username} (ID: {user_id}) has been banned.",
         "unban_success": "✅ User @{username} (ID: {user_id}) has been unbanned.",
         "ban_db_error": "❌ Database error updating ban status.",
         "ban_cannot_ban_admin": "❌ Cannot ban the primary admin.",
-       
+        # <<< Welcome Message Management >>>
         "manage_welcome_title": "⚙️ Manage Welcome Messages",
         "manage_welcome_prompt": "Select a template to manage or activate:",
         "welcome_template_active": " (Active ✅)",
         "welcome_template_inactive": "",
         "welcome_button_activate": "✅ Activate",
-        "welcome_button_edit": "✅️ Edit",
-        "welcome_button_delete": "�Ÿ—‘️ Delete",
+        "welcome_button_edit": "✏️ Edit",
+        "welcome_button_delete": "🗑️ Delete",
         "welcome_button_add_new": "➕ Add New Template",
-        "welcome_button_reset_default": "�Ÿ”„ Reset to Built-in Default",
-        "welcome_button_edit_text": "Edit Text",
-        "welcome_button_edit_desc": "Edit Description",
-        "welcome_button_preview": "�Ÿ‘�️ Preview",
-        "welcome_button_save": "👤 Save Template",
+        "welcome_button_reset_default": "🔄 Reset to Built-in Default", # <<< NEW
+        "welcome_button_edit_text": "Edit Text", # <<< NEW
+        "welcome_button_edit_desc": "Edit Description", # <<< NEW
+        "welcome_button_preview": "👁️ Preview", # <<< NEW
+        "welcome_button_save": "💾 Save Template", # <<< NEW
         "welcome_activate_success": "✅ Template '{name}' activated.",
         "welcome_activate_fail": "❌ Failed to activate template '{name}'.",
         "welcome_add_name_prompt": "Enter a unique short name for the new template (e.g., 'default', 'promo_weekend'):",
         "welcome_add_name_exists": "❌ Error: A template with the name '{name}' already exists.",
         "welcome_add_text_prompt": "Template Name: {name}\n\nPlease reply with the full welcome message text. Available placeholders:\n`{placeholders}`", # Escaped placeholders
-        "welcome_add_description_prompt": "Optional: Enter a short description for this template (admin view only). Send '-' to skip.",
+        "welcome_add_description_prompt": "Optional: Enter a short description for this template (admin view only). Send '-' to skip.", # <<< NEW
         "welcome_add_success": "✅ Welcome message template '{name}' added.",
         "welcome_add_fail": "❌ Failed to add welcome message template.",
         "welcome_edit_text_prompt": "Editing Text for '{name}'. Current text:\n\n{current_text}\n\nPlease reply with the new text. Available placeholders:\n`{placeholders}`", # Escaped placeholders
-        "welcome_edit_description_prompt": "Editing description for '{name}'. Current: '{current_desc}'.\n\nEnter new description or send '-' to keep current.",
+        "welcome_edit_description_prompt": "Editing description for '{name}'. Current: '{current_desc}'.\n\nEnter new description or send '-' to keep current.", # <<< NEW
         "welcome_edit_success": "✅ Template '{name}' updated.",
         "welcome_edit_fail": "❌ Failed to update template '{name}'.",
         "welcome_delete_confirm_title": "⚠️ Confirm Deletion",
@@ -834,262 +834,262 @@ LANGUAGES = {
         "welcome_delete_success": "✅ Template '{name}' deleted.",
         "welcome_delete_fail": "❌ Failed to delete template '{name}'.",
         "welcome_delete_not_found": "❌ Template '{name}' not found for deletion.",
-        "welcome_cannot_delete_active": "❌ Cannot delete the active template. Activate another first.",
-        "welcome_reset_confirm_title": "⚠️ Confirm Reset",
-        "welcome_reset_confirm_text": "Are you sure you want to reset the text of the 'default' template to the built-in version and activate it?",
-        "welcome_reset_button_yes": "✅ Yes, Reset & Activate",
-        "welcome_reset_success": "✅ 'default' template reset and activated.",
-        "welcome_reset_fail": "❌ Failed to reset 'default' template.",
-        "welcome_preview_title": "--- Welcome Message Preview ---",
-        "welcome_preview_name": "Name",
-        "welcome_preview_desc": "Desc",
-        "welcome_preview_confirm": "Save this template?",
-        "welcome_save_error_context": "❌ Error: Save data lost. Cannot save template.",
-        "welcome_invalid_placeholder": "⚠️ Formatting Error! Missing placeholder: `{key}`\n\nRaw Text:\n{text}",
-        "welcome_formatting_error": "⚠️ Unexpected Formatting Error!\n\nRaw Text:\n{text}",
+        "welcome_cannot_delete_active": "❌ Cannot delete the active template. Activate another first.", # <<< NEW
+        "welcome_reset_confirm_title": "⚠️ Confirm Reset", # <<< NEW
+        "welcome_reset_confirm_text": "Are you sure you want to reset the text of the 'default' template to the built-in version and activate it?", # <<< NEW
+        "welcome_reset_button_yes": "✅ Yes, Reset & Activate", # <<< NEW
+        "welcome_reset_success": "✅ 'default' template reset and activated.", # <<< NEW
+        "welcome_reset_fail": "❌ Failed to reset 'default' template.", # <<< NEW
+        "welcome_preview_title": "--- Welcome Message Preview ---", # <<< NEW
+        "welcome_preview_name": "Name", # <<< NEW
+        "welcome_preview_desc": "Desc", # <<< NEW
+        "welcome_preview_confirm": "Save this template?", # <<< NEW
+        "welcome_save_error_context": "❌ Error: Save data lost. Cannot save template.", # <<< NEW
+        "welcome_invalid_placeholder": "⚠️ Formatting Error! Missing placeholder: `{key}`\n\nRaw Text:\n{text}", # <<< NEW
+        "welcome_formatting_error": "⚠️ Unexpected Formatting Error!\n\nRaw Text:\n{text}", # <<< NEW
     },
     # --- Russian ---
     "ru": {
-        "native_name": "Р�ƒсский",
+        "native_name": "Русский",
         # --- General & Menu ---
-        "welcome": "�Ÿ‘‹ �”об�€о пожалова�‚�Œ, {username}!\n\n�Ÿ‘� С�‚а�‚�ƒс: {status} {progress_bar}\n👤 �‘аланс: {balance_str} EUR\n📦 �’сего пок�ƒпок: {purchases}\n🛒 �’ ко�€зине: {basket_count} �‚ова�€(ов)\n\nНа�‡ни�‚е пок�ƒпки или из�ƒ�‡и�‚е оп�†ии ниже.\n\n⚠️ �Ÿ�€име�‡ание: �’озв�€а�‚ с�€едс�‚в невозможен.",
-        "status_label": "С�‚а�‚�ƒс",
-        "balance_label": "�‘аланс",
-        "purchases_label": "�’сего пок�ƒпок",
-        "basket_label": "�’ ко�€зине",
-        "shopping_prompt": "На�‡ни�‚е пок�ƒпки или из�ƒ�‡и�‚е оп�†ии ниже.",
-        "refund_note": "�Ÿ�€име�‡ание: �’озв�€а�‚ с�€едс�‚в невозможен.",
-        "shop_button": "�œагазин", # <-- Example Translation
-        "profile_button": "�Ÿ�€о�„ил�Œ", # <-- Example Translation
-        "top_up_button": "�Ÿополни�‚�Œ", # <-- Example Translation
-        "reviews_button": "�ž�‚з�‹в�‹", # <-- Example Translation
-        "price_list_button": "�Ÿ�€айс-лис�‚", # <-- Example Translation
-        "language_button": "Яз�‹к", # <-- Example Translation
-        "admin_button": "🔧 �Ÿанел❌ Админа",
-        "home_button": "�“лавная", # <-- Example Translation
+        "welcome": "👋 Добро пожаловать, {username}!\n\n👤 Статус: {status} {progress_bar}\n💰 Баланс: {balance_str} EUR\n📦 Всего покупок: {purchases}\n🛒 В корзине: {basket_count} товар(ов)\n\nНачните покупки или изучите опции ниже.\n\n⚠️ Примечание: Возврат средств невозможен.",
+        "status_label": "Статус",
+        "balance_label": "Баланс",
+        "purchases_label": "Всего покупок",
+        "basket_label": "В корзине",
+        "shopping_prompt": "Начните покупки или изучите опции ниже.",
+        "refund_note": "Примечание: Возврат средств невозможен.",
+        "shop_button": "Магазин", # <-- Example Translation
+        "profile_button": "Профиль", # <-- Example Translation
+        "top_up_button": "Пополнить", # <-- Example Translation
+        "reviews_button": "Отзывы", # <-- Example Translation
+        "price_list_button": "Прайс-лист", # <-- Example Translation
+        "language_button": "Язык", # <-- Example Translation
+        "admin_button": "🔧 Панель Админа",
+        "home_button": "Главная", # <-- Example Translation
         "back_button": "Назад", # <-- Example Translation
-        "cancel_button": "�ž�‚мена", # <-- Example Translation
-        "error_occurred_answer": "�Ÿ�€оизо�ˆла о�ˆибка. �Ÿожал�ƒйс�‚а, поп�€об�ƒй�‚е е�‰е �€аз.",
-        "success_label": "Успе�ˆно!",
-        "error_unexpected": "�Ÿ�€оизо�ˆла неп�€едвиденная о�ˆибка",
+        "cancel_button": "Отмена", # <-- Example Translation
+        "error_occurred_answer": "Произошла ошибка. Пожалуйста, попробуйте еще раз.",
+        "success_label": "Успешно!",
+        "error_unexpected": "Произошла непредвиденная ошибка",
 
         # --- Shopping Flow ---
-        "choose_city_title": "�’�‹бе�€и�‚е го�€од",
-        "select_location_prompt": "�’�‹бе�€и�‚е ва�ˆе мес�‚оположение:",
-        "no_cities_available": "На данн�‹й момен�‚ не�‚ дос�‚�ƒпн�‹✅ го�€одов. �Ÿожал�ƒйс�‚а, зайди�‚е позже.",
-        "error_city_not_found": "�ž�ˆибка: �“о�€од не найден.",
-        "choose_district_prompt": "�’�‹бе�€и�‚е �€айон:",
-        "no_districts_available": "�’ э�‚ом го�€оде пока не�‚ дос�‚�ƒпн�‹✅ �€айонов.",
-        "back_cities_button": "Назад к го�€одам",
-        "error_district_city_not_found": "�ž�ˆибка: Район или го�€од не найден.",
-        "select_type_prompt": "�’�‹бе�€и�‚е �‚ип п�€од�ƒк�‚а:",
-        "no_types_available": "�’ данн�‹й момен�‚ здес❌ не�‚ �‚ова�€ов э�‚ого �‚ипа.",
-        "error_loading_types": "�ž�ˆибка: Не �ƒдалос❌ заг�€�ƒзи�‚❌ �‚ип�‹ п�€од�ƒк�‚ов",
-        "back_districts_button": "Назад к �€айонам",
-        "available_options_prompt": "�”ос�‚�ƒпн�‹е ва�€иан�‚�‹:",
-        "no_items_of_type": "�’ данн�‹й момен�‚ здес❌ не�‚ �‚ова�€ов э�‚ого �‚ипа.",
-        "error_loading_products": "�ž�ˆибка: Не �ƒдалос❌ заг�€�ƒзи�‚❌ п�€од�ƒк�‚�‹",
-        "back_types_button": "Назад к �‚ипам",
+        "choose_city_title": "Выберите город",
+        "select_location_prompt": "Выберите ваше местоположение:",
+        "no_cities_available": "На данный момент нет доступных городов. Пожалуйста, зайдите позже.",
+        "error_city_not_found": "Ошибка: Город не найден.",
+        "choose_district_prompt": "Выберите район:",
+        "no_districts_available": "В этом городе пока нет доступных районов.",
+        "back_cities_button": "Назад к городам",
+        "error_district_city_not_found": "Ошибка: Район или город не найден.",
+        "select_type_prompt": "Выберите тип продукта:",
+        "no_types_available": "В данный момент здесь нет товаров этого типа.",
+        "error_loading_types": "Ошибка: Не удалось загрузить типы продуктов",
+        "back_districts_button": "Назад к районам",
+        "available_options_prompt": "Доступные варианты:",
+        "no_items_of_type": "В данный момент здесь нет товаров этого типа.",
+        "error_loading_products": "Ошибка: Не удалось загрузить продукты",
+        "back_types_button": "Назад к типам",
         "price_label": "Цена",
-        "available_label_long": "�”ос�‚�ƒпно",
-        "available_label_short": "�”ос�‚",
-        "add_to_basket_button": "�’ ко�€зин�ƒ",
-        "error_location_mismatch": "�ž�ˆибка: Несоо�‚ве�‚с�‚вие данн�‹✅ о мес�‚оположении.",
-        "drop_unavailable": "Това�€ недос�‚�ƒпен! Э�‚о�‚ ва�€иан�‚ �‚ол�Œко �‡�‚о б�‹л �€асп�€одан или за�€езе�€ви�€ован кем-�‚о д�€�ƒгим.",
-        "error_loading_details": "�ž�ˆибка: Не �ƒдалос❌ заг�€�ƒзи�‚❌ де�‚али п�€од�ƒк�‚а",
-        "back_options_button": "Назад к ва�€иан�‚ам",
-        "no_products_in_city_districts": "�’ нас�‚оя�‰ее в�€емя не�‚ дос�‚�ƒпн�‹✅ �‚ова�€ов ни в одном �€айоне э�‚ого го�€ода.",
-        "error_loading_districts": "�ž�ˆибка заг�€�ƒзки �€айонов. �Ÿожал�ƒйс�‚а, поп�€об�ƒй�‚е е�‰е �€аз.",
+        "available_label_long": "Доступно",
+        "available_label_short": "Дост",
+        "add_to_basket_button": "В корзину",
+        "error_location_mismatch": "Ошибка: Несоответствие данных о местоположении.",
+        "drop_unavailable": "Товар недоступен! Этот вариант только что был распродан или зарезервирован кем-то другим.",
+        "error_loading_details": "Ошибка: Не удалось загрузить детали продукта",
+        "back_options_button": "Назад к вариантам",
+        "no_products_in_city_districts": "В настоящее время нет доступных товаров ни в одном районе этого города.",
+        "error_loading_districts": "Ошибка загрузки районов. Пожалуйста, попробуйте еще раз.",
 
         # --- Basket & Payment ---
-        "added_to_basket": "✅ Това�€ за�€езе�€ви�€ован!\n\n{item} в ва�ˆей ко�€зине на {timeout} мин�ƒ�‚! ⏳",
-        "expires_label": "�˜с�‚екае�‚ �‡е�€ез",
-        "your_basket_title": "�’а�ˆа ко�€зина",
-        "basket_empty": "🛒 �’а�ˆа ко�€зина п�ƒс�‚а!",
-        "add_items_prompt": "�”обав�Œ�‚е �‚ова�€�‹, �‡�‚об�‹ на�‡а�‚❌ пок�ƒпки!",
-        "items_expired_note": "С�€ок дейс�‚вия �‚ова�€ов мог ис�‚е�‡❌ или они б�‹ли �ƒдален�‹.",
-        "subtotal_label": "�Ÿод�‹�‚ог",
-        "total_label": "�˜�‚ого",
-        "pay_now_button": "�žпла�‚и�‚❌ сей�‡ас",
-        "clear_all_button": "�ž�‡ис�‚и�‚❌ все",
-        "view_basket_button": "�Ÿосмо�‚�€е�‚❌ ко�€зин�ƒ",
-        "clear_basket_button": "�ž�‡ис�‚и�‚❌ ко�€зин�ƒ",
-        "remove_button_label": "Удали�‚�Œ",
-        "basket_already_empty": "�šо�€зина �ƒже п�ƒс�‚а.",
-        "basket_cleared": "�Ÿ—‘️ �šо�€зина о�‡и�‰ена!",
-        "pay": "👤 �š опла�‚е: {amount} EUR",
-        "insufficient_balance": "⚠️ Недос�‚а�‚о�‡но с�€едс�‚в!\n\n�Ÿожал�ƒйс�‚а, пополни�‚е баланс, �‡�‚об�‹ п�€одолжи�‚�Œ! 👤",
-        "insufficient_balance_pay_option": "⚠️ Недос�‚а�‚о�‡но с�€едс�‚в! ({balance} / {required} EUR)",
-        "pay_crypto_button": "👤 �žпла�‚и�‚❌ Crypto",
-        "apply_discount_pay_button": "💥️ �Ÿ�€имени�‚❌ п�€омокод",
-        "skip_discount_button": "⏩ �Ÿ�€оп�ƒс�‚и�‚❌ скидк�ƒ",
-        "prompt_discount_or_pay": "У вас ес�‚❌ п�€омокод для п�€именения пе�€ед опла�‚ой к�€ип�‚овал�Ž�‚ой?",
-        "basket_pay_enter_discount": "�’веди�‚е п�€омокод для э�‚ой пок�ƒпки:",
-        "basket_pay_code_applied": "✅ �šод '{code}' п�€именен. Новая с�ƒмма: {total} EUR. �’�‹бе�€и�‚е к�€ип�‚овал�Ž�‚�ƒ:",
-        "basket_pay_code_invalid": "❌ �šод недейс�‚ви�‚елен: {reason}. �’�‹бе�€и�‚е к�€ип�‚овал�Ž�‚�ƒ для опла�‚�‹ {total} EUR:",
-        "choose_crypto_for_purchase": "�’�‹бе�€и�‚е к�€ип�‚овал�Ž�‚�ƒ для опла�‚�‹ {amount} EUR за ва�ˆ�ƒ ко�€зин�ƒ:",
-        "payment_summary": "👤 Сводка пла�‚ежа",
-        "product_label": "Това�€",
+        "added_to_basket": "✅ Товар зарезервирован!\n\n{item} в вашей корзине на {timeout} минут! ⏳",
+        "expires_label": "Истекает через",
+        "your_basket_title": "Ваша корзина",
+        "basket_empty": "🛒 Ваша корзина пуста!",
+        "add_items_prompt": "Добавьте товары, чтобы начать покупки!",
+        "items_expired_note": "Срок действия товаров мог истечь или они были удалены.",
+        "subtotal_label": "Подытог",
+        "total_label": "Итого",
+        "pay_now_button": "Оплатить сейчас",
+        "clear_all_button": "Очистить все",
+        "view_basket_button": "Посмотреть корзину",
+        "clear_basket_button": "Очистить корзину",
+        "remove_button_label": "Удалить",
+        "basket_already_empty": "Корзина уже пуста.",
+        "basket_cleared": "🗑️ Корзина очищена!",
+        "pay": "💳 К оплате: {amount} EUR",
+        "insufficient_balance": "⚠️ Недостаточно средств!\n\nПожалуйста, пополните баланс, чтобы продолжить! 💸",
+        "insufficient_balance_pay_option": "⚠️ Недостаточно средств! ({balance} / {required} EUR)",
+        "pay_crypto_button": "💳 Оплатить Crypto",
+        "apply_discount_pay_button": "🏷️ Применить промокод",
+        "skip_discount_button": "⏩ Пропустить скидку",
+        "prompt_discount_or_pay": "У вас есть промокод для применения перед оплатой криптовалютой?",
+        "basket_pay_enter_discount": "Введите промокод для этой покупки:",
+        "basket_pay_code_applied": "✅ Код '{code}' применен. Новая сумма: {total} EUR. Выберите криптовалюту:",
+        "basket_pay_code_invalid": "❌ Код недействителен: {reason}. Выберите криптовалюту для оплаты {total} EUR:",
+        "choose_crypto_for_purchase": "Выберите криптовалюту для оплаты {amount} EUR за вашу корзину:",
+        "payment_summary": "💳 Сводка платежа",
+        "product_label": "Товар",
         "price_label": "Цена",
-        "location_label": "�œес�‚оположение",
-        "crypto_purchase_success": "�žпла�‚а под�‚ве�€ждена! �”е�‚али ва�ˆей пок�ƒпки о�‚п�€авля�Ž�‚ся.",
-        "crypto_purchase_failed": "�žпла�‚а не �ƒдалас�Œ/ис�‚екла. �’а�ˆи �‚ова�€�‹ бол�Œ�ˆе не за�€езе�€ви�€ован�‹.",
-        "payment_timeout_notification": "⏰ �’�€емя �žпла�‚�‹ �˜с�‚екло: �’а�ˆ пла�‚еж за �‚ова�€�‹ в ко�€зине ис�‚ек �‡е�€ез 2 �‡аса. �—а�€езе�€ви�€ованн�‹е �‚ова�€�‹ освобожден�‹.",
-        "basket_pay_too_low": "С�ƒмма ко�€зин�‹ {basket_total} EUR ниже минимал�Œной для {currency}.",
-        "balance_changed_error": "❌ Т�€анзак�†ия не �ƒдалас�Œ: �’а�ˆ баланс изменился. �Ÿожал�ƒйс�‚а, п�€ове�€�Œ�‚е баланс и поп�€об�ƒй�‚е снова.",
-        "order_failed_all_sold_out_balance": "❌ �—аказ не �ƒдался: �’се �‚ова�€�‹ в ва�ˆей ко�€зине с�‚али недос�‚�ƒпн�‹ во в�€емя об�€або�‚ки. С�€едс�‚ва с ва�ˆего баланса не списан�‹.",
-        "error_processing_purchase_contact_support": "❌ �Ÿ�€оизо�ˆла о�ˆибка п�€и об�€або�‚ке ва�ˆей пок�ƒпки. �žб�€а�‚и�‚ес❌ в сл�ƒжб�ƒ подде�€жки.",
-        "purchase_success": "�ŸŽ‰ �Ÿок�ƒпка заве�€�ˆена!",
-        "sold_out_note": "⚠️ �Ÿ�€име�‡ание: След�ƒ�Ž�‰ие �‚ова�€�‹ с�‚али недос�‚�ƒпн�‹ во в�€емя об�€або�‚ки и не б�‹ли вкл�Ž�‡ен�‹: {items}. С�€едс�‚ва за ни✅ не списан�‹.",
-        "leave_review_now": "�žс�‚ави�‚❌ о�‚з�‹в сей�‡ас",
-        "back_basket_button": "Назад в ко�€зин�ƒ",
-        "error_adding_db": "�ž�ˆибка: �Ÿ�€облема с базой данн�‹✅ п�€и добавлении �‚ова�€а в ко�€зин�ƒ.",
-        "error_adding_unexpected": "�ž�ˆибка: �Ÿ�€оизо�ˆла неп�€едвиденная п�€облема.",
-        "reseller_discount_label": "Скидка �€еселле�€а",
+        "location_label": "Местоположение",
+        "crypto_purchase_success": "Оплата подтверждена! Детали вашей покупки отправляются.",
+        "crypto_purchase_failed": "Оплата не удалась/истекла. Ваши товары больше не зарезервированы.",
+        "payment_timeout_notification": "⏰ Время Оплаты Истекло: Ваш платеж за товары в корзине истек через 2 часа. Зарезервированные товары освобождены.", # <<< NEW
+        "basket_pay_too_low": "Сумма корзины {basket_total} EUR ниже минимальной для {currency}.",
+        "balance_changed_error": "❌ Транзакция не удалась: Ваш баланс изменился. Пожалуйста, проверьте баланс и попробуйте снова.",
+        "order_failed_all_sold_out_balance": "❌ Заказ не удался: Все товары в вашей корзине стали недоступны во время обработки. Средства с вашего баланса не списаны.",
+        "error_processing_purchase_contact_support": "❌ Произошла ошибка при обработке вашей покупки. Обратитесь в службу поддержки.",
+        "purchase_success": "🎉 Покупка завершена!",
+        "sold_out_note": "⚠️ Примечание: Следующие товары стали недоступны во время обработки и не были включены: {items}. Средства за них не списаны.",
+        "leave_review_now": "Оставить отзыв сейчас",
+        "back_basket_button": "Назад в корзину",
+        "error_adding_db": "Ошибка: Проблема с базой данных при добавлении товара в корзину.",
+        "error_adding_unexpected": "Ошибка: Произошла непредвиденная проблема.",
+        "reseller_discount_label": "Скидка реселлера", # <<< NEW
 
         # --- Discounts ---
-        "discount_no_items": "�’а�ˆа ко�€зина п�ƒс�‚а. Сна�‡ала добав�Œ�‚е �‚ова�€�‹.",
-        "enter_discount_code_prompt": "�’веди�‚е ва�ˆ п�€омокод:",
-        "enter_code_answer": "�’веди�‚е код в �‡а�‚.",
-        "apply_discount_button": "�Ÿ�€имени�‚❌ п�€омокод",
-        "no_code_provided": "�šод не п�€едос�‚авлен.",
-        "discount_code_not_found": "�Ÿ�€омокод не найден.",
-        "discount_code_inactive": "Э�‚о�‚ п�€омокод неак�‚ивен.",
-        "discount_code_expired": "С�€ок дейс�‚вия э�‚ого п�€омокода ис�‚ек.",
-        "invalid_code_expiry_data": "Неве�€н�‹е данн�‹е о с�€оке дейс�‚вия кода.",
-        "code_limit_reached": "�”ос�‚игн�ƒ�‚ лими�‚ испол�Œзования кода.",
-        "internal_error_discount_type": "�’н�ƒ�‚�€енняя о�ˆибка п�€и об�€або�‚ке �‚ипа скидки.",
-        "db_error_validating_code": "�ž�ˆибка баз�‹ данн�‹✅ п�€и п�€ове�€ке кода.",
-        "unexpected_error_validating_code": "�Ÿ�€оизо�ˆла неп�€едвиденная о�ˆибка.",
-        "discount_min_order_not_met": "�œинимал�Œная с�ƒмма заказа для э�‚ого п�€омокода не дос�‚игн�ƒ�‚а.",
-        "code_applied_message": "�šод '{code}' ({value}) п�€именен. Скидка: -{amount} EUR",
-        "discount_applied_label": "�Ÿ�€именена скидка",
-        "discount_value_label": "�—на�‡ение",
-        "discount_removed_note": "�Ÿ�€омокод {code} �ƒдален: {reason}",
-        "discount_removed_invalid_basket": "Скидка �ƒдалена (ко�€зина изменилас�Œ).",
-        "remove_discount_button": "Удали�‚❌ скидк�ƒ",
-        "discount_removed_answer": "Скидка �ƒдалена.",
-        "no_discount_answer": "Скидка не п�€именена.",
-        "send_text_please": "�Ÿожал�ƒйс�‚а, о�‚п�€ав�Œ�‚е п�€омокод �‚екс�‚ом.",
-        "error_calculating_total": "�ž�ˆибка п�€и �€ас�‡е�‚е с�ƒмм�‹.",
-        "returning_to_basket": "�’озв�€а�‰аемся в ко�€зин�ƒ.",
-        "basket_empty_no_discount": "�šо�€зина п�ƒс�‚а. Невозможно п�€имени�‚❌ п�€омокод.",
+        "discount_no_items": "Ваша корзина пуста. Сначала добавьте товары.",
+        "enter_discount_code_prompt": "Введите ваш промокод:",
+        "enter_code_answer": "Введите код в чат.",
+        "apply_discount_button": "Применить промокод",
+        "no_code_provided": "Код не предоставлен.",
+        "discount_code_not_found": "Промокод не найден.",
+        "discount_code_inactive": "Этот промокод неактивен.",
+        "discount_code_expired": "Срок действия этого промокода истек.",
+        "invalid_code_expiry_data": "Неверные данные о сроке действия кода.",
+        "code_limit_reached": "Достигнут лимит использования кода.",
+        "internal_error_discount_type": "Внутренняя ошибка при обработке типа скидки.",
+        "db_error_validating_code": "Ошибка базы данных при проверке кода.",
+        "unexpected_error_validating_code": "Произошла непредвиденная ошибка.",
+        "discount_min_order_not_met": "Минимальная сумма заказа для этого промокода не достигнута.",
+        "code_applied_message": "Код '{code}' ({value}) применен. Скидка: -{amount} EUR",
+        "discount_applied_label": "Применена скидка",
+        "discount_value_label": "Значение",
+        "discount_removed_note": "Промокод {code} удален: {reason}",
+        "discount_removed_invalid_basket": "Скидка удалена (корзина изменилась).",
+        "remove_discount_button": "Удалить скидку",
+        "discount_removed_answer": "Скидка удалена.",
+        "no_discount_answer": "Скидка не применена.",
+        "send_text_please": "Пожалуйста, отправьте промокод текстом.",
+        "error_calculating_total": "Ошибка при расчете суммы.",
+        "returning_to_basket": "Возвращаемся в корзину.",
+        "basket_empty_no_discount": "Корзина пуста. Невозможно применить промокод.",
 
         # --- Profile & History ---
-        "profile_title": "�’а�ˆ п�€о�„ил�Œ",
-        "purchase_history_button": "�˜с�‚о�€ия пок�ƒпок",
-        "back_profile_button": "Назад в п�€о�„ил�Œ",
-        "purchase_history_title": "�˜с�‚о�€ия пок�ƒпок",
-        "no_purchases_yet": "�’�‹ е�‰е не сове�€�ˆали пок�ƒпок.",
-        "recent_purchases_title": "�’а�ˆи недавние пок�ƒпки",
-        "error_loading_profile": "❌ �ž�ˆибка: Не �ƒдалос❌ заг�€�ƒзи�‚❌ данн�‹е п�€о�„иля.",
+        "profile_title": "Ваш профиль",
+        "purchase_history_button": "История покупок",
+        "back_profile_button": "Назад в профиль",
+        "purchase_history_title": "История покупок",
+        "no_purchases_yet": "Вы еще не совершали покупок.",
+        "recent_purchases_title": "Ваши недавние покупки",
+        "error_loading_profile": "❌ Ошибка: Не удалось загрузить данные профиля.",
 
         # --- Language ---
-        "language_set_answer": "Яз�‹к �ƒс�‚ановлен на {lang}!",
-        "error_saving_language": "�ž�ˆибка со✅�€анения нас�‚�€оек яз�‹ка.",
-        "invalid_language_answer": "�’�‹б�€ан неве�€н�‹й яз�‹к.",
-        "language": "🌐 Яз�‹к", # Menu title
+        "language_set_answer": "Язык установлен на {lang}!",
+        "error_saving_language": "Ошибка сохранения настроек языка.",
+        "invalid_language_answer": "Выбран неверный язык.",
+        "language": "🌐 Язык", # Menu title
 
         # --- Price List ---
-        "no_cities_for_prices": "Не�‚ дос�‚�ƒпн�‹✅ го�€одов для п�€осмо�‚�€а �†ен.",
-        "price_list_title": "�Ÿ�€айс-лис�‚",
-        "select_city_prices_prompt": "�’�‹бе�€и�‚е го�€од для п�€осмо�‚�€а дос�‚�ƒпн�‹✅ �‚ова�€ов и �†ен:",
-        "price_list_title_city": "�Ÿ�€айс-лис�‚: {city_name}",
-        "no_products_in_city": "�’ э�‚ом го�€оде в нас�‚оя�‰ее в�€емя не�‚ дос�‚�ƒпн�‹✅ �‚ова�€ов.",
-        "back_city_list_button": "Назад к списк�ƒ го�€одов",
-        "message_truncated_note": "Сооб�‰ение �ƒсе�‡ено из-за ог�€ани�‡ения длин�‹. �˜спол�Œз�ƒй�‚е '�œагазин' для полной ин�„о�€ма�†ии.",
-        "error_loading_prices_db": "�ž�ˆибка: Не �ƒдалос❌ заг�€�ƒзи�‚❌ п�€айс-лис�‚ для {city_name}",
-        "error_displaying_prices": "�ž�ˆибка о�‚об�€ажения п�€айс-лис�‚а.",
-        "error_unexpected_prices": "�ž�ˆибка: �Ÿ�€оизо�ˆла неп�€едвиденная п�€облема п�€и создании п�€айс-лис�‚а.",
-        "available_label": "дос�‚�ƒпно", # Used in price list
+        "no_cities_for_prices": "Нет доступных городов для просмотра цен.",
+        "price_list_title": "Прайс-лист",
+        "select_city_prices_prompt": "Выберите город для просмотра доступных товаров и цен:",
+        "price_list_title_city": "Прайс-лист: {city_name}",
+        "no_products_in_city": "В этом городе в настоящее время нет доступных товаров.",
+        "back_city_list_button": "Назад к списку городов",
+        "message_truncated_note": "Сообщение усечено из-за ограничения длины. Используйте 'Магазин' для полной информации.",
+        "error_loading_prices_db": "Ошибка: Не удалось загрузить прайс-лист для {city_name}",
+        "error_displaying_prices": "Ошибка отображения прайс-листа.",
+        "error_unexpected_prices": "Ошибка: Произошла непредвиденная проблема при создании прайс-листа.",
+        "available_label": "доступно", # Used in price list
 
         # --- Reviews ---
-        "reviews": "📦 �œен�Ž о�‚з�‹вов",
-        "view_reviews_button": "�Ÿосмо�‚�€е�‚❌ о�‚з�‹в�‹",
-        "leave_review_button": "�žс�‚ави�‚❌ о�‚з�‹в",
-        "enter_review_prompt": "�Ÿожал�ƒйс�‚а, введи�‚е �‚екс�‚ ва�ˆего о�‚з�‹ва и о�‚п�€ав�Œ�‚е его.",
-        "enter_review_answer": "�’веди�‚е ва�ˆ о�‚з�‹в в �‡а�‚.",
-        "send_text_review_please": "�Ÿожал�ƒйс�‚а, о�‚п�€ав�Œ�‚е о�‚з�‹в �‚ол�Œко �‚екс�‚ом.",
-        "review_not_empty": "�ž�‚з�‹в не може�‚ б�‹�‚❌ п�ƒс�‚�‹м. �Ÿоп�€об�ƒй�‚е снова или о�‚мени�‚е.",
-        "review_too_long": "�ž�‚з�‹в сли�ˆком длинн�‹й (макс. 1000 символов). �Ÿожал�ƒйс�‚а, сок�€а�‚и�‚е его.",
-        "review_thanks": "Спасибо за ва�ˆ о�‚з�‹в! �’а�ˆе мнение помогае�‚ нам с�‚а�‚❌ л�ƒ�‡�ˆе.",
-        "error_saving_review_db": "�ž�ˆибка: Не �ƒдалос❌ со✅�€ани�‚❌ ва�ˆ о�‚з�‹в из-за п�€облем�‹ с базой данн�‹✅.",
-        "error_saving_review_unexpected": "�ž�ˆибка: �Ÿ�€оизо�ˆла неп�€едвиденная п�€облема п�€и со✅�€анении ва�ˆего о�‚з�‹ва.",
-        "user_reviews_title": "�ž�‚з�‹в�‹ пол�Œзова�‚елей",
-        "no_reviews_yet": "�ž�‚з�‹вов пока не�‚.",
-        "no_more_reviews": "�‘ол�Œ�ˆе о�‚з�‹вов не�‚.",
-        "prev_button": "�Ÿ�€ед.",
+        "reviews": "📝 Меню отзывов",
+        "view_reviews_button": "Посмотреть отзывы",
+        "leave_review_button": "Оставить отзыв",
+        "enter_review_prompt": "Пожалуйста, введите текст вашего отзыва и отправьте его.",
+        "enter_review_answer": "Введите ваш отзыв в чат.",
+        "send_text_review_please": "Пожалуйста, отправьте отзыв только текстом.",
+        "review_not_empty": "Отзыв не может быть пустым. Попробуйте снова или отмените.",
+        "review_too_long": "Отзыв слишком длинный (макс. 1000 символов). Пожалуйста, сократите его.",
+        "review_thanks": "Спасибо за ваш отзыв! Ваше мнение помогает нам стать лучше.",
+        "error_saving_review_db": "Ошибка: Не удалось сохранить ваш отзыв из-за проблемы с базой данных.",
+        "error_saving_review_unexpected": "Ошибка: Произошла непредвиденная проблема при сохранении вашего отзыва.",
+        "user_reviews_title": "Отзывы пользователей",
+        "no_reviews_yet": "Отзывов пока нет.",
+        "no_more_reviews": "Больше отзывов нет.",
+        "prev_button": "Пред.",
         "next_button": "След.",
-        "back_review_menu_button": "Назад в �œен�Ž �ž�‚з�‹вов",
-        "unknown_date_label": "Неизвес�‚ная да�‚а",
-        "error_displaying_review": "�ž�ˆибка о�‚об�€ажения о�‚з�‹ва",
-        "error_updating_review_list": "�ž�ˆибка обновления списка о�‚з�‹вов.",
+        "back_review_menu_button": "Назад в Меню Отзывов",
+        "unknown_date_label": "Неизвестная дата",
+        "error_displaying_review": "Ошибка отображения отзыва",
+        "error_updating_review_list": "Ошибка обновления списка отзывов.",
 
         # --- Refill / Crypto Payments ---
-        "payment_amount_too_low_api": "❌ С�ƒмма �Ÿла�‚ежа Сли�ˆком �œала: Эквивален�‚ {target_eur_amount} EUR в {currency} \\({crypto_amount}\\) ниже миним�ƒма, �‚�€еб�ƒемого пла�‚ежной сис�‚емой \\({min_amount} {currency}\\)\\. �Ÿоп�€об�ƒй�‚е бол�Œ�ˆ�ƒ�Ž с�ƒмм�ƒ EUR\\.",
-        "payment_amount_too_low_with_min_eur": "❌ С�ƒмма �Ÿла�‚ежа Сли�ˆком �œала: {target_eur_amount} EUR ниже миним�ƒма для {currency} пла�‚ежей \\(миним�ƒм: {min_eur_amount} EUR\\)\\. �Ÿоп�€об�ƒй�‚е бол�Œ�ˆ�ƒ�Ž с�ƒмм�ƒ или в�‹бе�€и�‚е д�€�ƒг�ƒ�Ž к�€ип�‚овал�Ž�‚�ƒ\\.",
-        "error_min_amount_fetch": "❌ �ž�ˆибка: Не �ƒдалос❌ пол�ƒ�‡и�‚❌ минимал�Œн�ƒ�Ž с�ƒмм�ƒ пла�‚ежа для {currency}\\. �Ÿоп�€об�ƒй�‚е позже или в�‹бе�€и�‚е д�€�ƒг�ƒ�Ž вал�Ž�‚�ƒ\\.",
-        "invoice_title_refill": "*С�‡е�‚ на �Ÿополнение Создан*",
-        "invoice_title_purchase": "*С�‡е�‚ на �žпла�‚�ƒ Создан*",
-        "invoice_important_notice": "⚠️ *�’ажно:* �ž�‚п�€ав�Œ�‚е �‚о�‡н�ƒ�Ž с�ƒмм�ƒ на э�‚о�‚ ад�€ес.",
-        "invoice_confirmation_notice": "✅ Ав�‚о-под�‚ве�€ждение за ~1-2 мин.",
-        "invoice_valid_notice": "⏱️ *�”ейс�‚в�ƒе�‚ 30 мин�ƒ�‚*",
-        "min_amount_label": "*�œинимал�Œная С�ƒмма:*",
-        "payment_address_label": "*Ад�€ес для �žпла�‚�‹:*",
-        "amount_label": "*С�ƒмма:*",
-        "expires_at_label": "*�˜с�‚екае�‚ в:*",
-        "send_warning_template": "⚠️ *�’ажно:* �ž�‚п�€ав�Œ�‚е *�‚о�‡но* э�‚�ƒ с�ƒмм�ƒ {asset} на э�‚о�‚ ад�€ес\\.",
-        "overpayment_note": "ℹ️ _�ž�‚п�€авка бол�Œ�ˆей с�ƒмм�‹ доп�ƒс�‚има\\! �’а�ˆ баланс б�ƒде�‚ пополнен на основе пол�ƒ�‡енной с�ƒмм�‹ после под�‚ве�€ждения се�‚и\\._",
-        "confirmation_note": "✅ �Ÿод�‚ве�€ждение ав�‚ома�‚и�‡еское �‡е�€ез веб✅�ƒк после под�‚ве�€ждения се�‚и\\.",
-        "invoice_amount_label_text": "С�ƒмма",
-        "invoice_send_following_amount": "�Ÿожал�ƒйс�‚а, о�‚п�€ав�Œ�‚е след�ƒ�Ž�‰�ƒ�Ž с�ƒмм�ƒ:",
-        "invoice_payment_deadline": "�Ÿла�‚еж должен б�‹�‚❌ в�‹полнен в �‚е�‡ение 20 мин�ƒ�‚ с момен�‚а создания с�‡е�‚а.",
-        "error_estimate_failed": "❌ �ž�ˆибка: Не �ƒдалос❌ о�†ени�‚❌ с�ƒмм�ƒ в к�€ип�‚овал�Ž�‚е. �Ÿоп�€об�ƒй�‚е снова или в�‹бе�€и�‚е д�€�ƒг�ƒ�Ž вал�Ž�‚�ƒ.",
-        "error_estimate_currency_not_found": "❌ �ž�ˆибка: �’ал�Ž�‚а {currency} не подде�€живае�‚ся для о�†енки. �’�‹бе�€и�‚е д�€�ƒг�ƒ�Ž вал�Ž�‚�ƒ.",
-        "error_discount_invalid_payment": "❌ �’а�ˆ п�€омокод бол�Œ�ˆе не дейс�‚ви�‚елен: {reason}. �’е�€ни�‚ес❌ в ко�€зин�ƒ, �‡�‚об�‹ п�€одолжи�‚❌ без скидки.",
-        "error_discount_mismatch_payment": "❌ �žбна�€�ƒжено несоо�‚ве�‚с�‚вие с�ƒмм�‹ пла�‚ежа. �’е�€ни�‚ес❌ в ко�€зин�ƒ и поп�€об�ƒй�‚е снова.",
-        "crypto_payment_disabled": "�Ÿополнение баланса в данн�‹й момен�‚ о�‚кл�Ž�‡ено.",
-        "top_up_title": "�Ÿополни�‚❌ баланс",
-        "enter_refill_amount_prompt": "�ž�‚ве�‚�Œ�‚е с�ƒммой в EUR, ко�‚о�€�ƒ�Ž в�‹ ✅о�‚и�‚е добави�‚❌ на баланс (нап�€име�€, 10 или 25.50).",
-        "min_top_up_note": "�œинимал�Œное пополнение: {amount} EUR",
-        "enter_amount_answer": "�’веди�‚е с�ƒмм�ƒ пополнения.",
-        "send_amount_as_text": "�ž�‚п�€ав�Œ�‚е с�ƒмм�ƒ �‚екс�‚ом (нап�€име�€, 10 или 25.50).",
-        "amount_too_low_msg": "С�ƒмма сли�ˆком мала. �œинимал�Œное пополнение {amount} EUR. �’веди�‚е бол�Œ�ˆ�ƒ�Ž с�ƒмм�ƒ.",
-        "amount_too_high_msg": "С�ƒмма сли�ˆком велика. �’веди�‚е мен�Œ�ˆ�ƒ�Ž с�ƒмм�ƒ.",
-        "invalid_amount_format_msg": "Неве�€н�‹й �„о�€ма�‚ с�ƒмм�‹. �’веди�‚е �‡исло (нап�€име�€, 10 или 25.50).",
-        "unexpected_error_msg": "�Ÿ�€оизо�ˆла неп�€едвиденная о�ˆибка. �Ÿоп�€об�ƒй�‚е позже.",
-        "choose_crypto_prompt": "�’�‹ ✅о�‚и�‚е пополни�‚❌ на {amount} EUR. �Ÿожал�ƒйс�‚а, в�‹бе�€и�‚е к�€ип�‚овал�Ž�‚�ƒ для опла�‚�‹:",
-        "cancel_top_up_button": "�ž�‚мени�‚❌ пополнение",
-        "preparing_invoice": "⏳ �Ÿодго�‚овка с�‡е�‚а на опла�‚�ƒ...",
-        "failed_invoice_creation": "❌ Не �ƒдалос❌ созда�‚❌ с�‡е�‚ на опла�‚�ƒ. Э�‚о може�‚ б�‹�‚❌ в�€еменная п�€облема с пла�‚ежной сис�‚емой или п�€облема с кл�Ž�‡ом API. �Ÿоп�€об�ƒй�‚е позже или об�€а�‚и�‚ес❌ в подде�€жк�ƒ.",
-        "error_preparing_payment": "❌ �Ÿ�€оизо�ˆла о�ˆибка п�€и подго�‚овке данн�‹✅ для опла�‚�‹. �Ÿоп�€об�ƒй�‚е позже.",
-        "top_up_success_title": "✅ �‘аланс Успе�ˆно �Ÿополнен!",
-        "amount_added_label": "�”обавлено",
-        "new_balance_label": "�’а�ˆ нов�‹й баланс",
-        "error_nowpayments_api": "❌ �ž�ˆибка API �Ÿла�‚ежей: Не �ƒдалос❌ созда�‚❌ пла�‚еж. �Ÿоп�€об�ƒй�‚е позже или об�€а�‚и�‚ес❌ в подде�€жк�ƒ.",
-        "error_invalid_nowpayments_response": "❌ �ž�ˆибка API �Ÿла�‚ежей: �Ÿол�ƒ�‡ен неве�€н�‹й о�‚ве�‚. �žб�€а�‚и�‚ес❌ в подде�€жк�ƒ.",
-        "error_nowpayments_api_key": "❌ �ž�ˆибка API �Ÿла�‚ежей: Неве�€н�‹й кл�Ž�‡ API. �žб�€а�‚и�‚ес❌ в подде�€жк�ƒ.",
-        "payment_pending_db_error": "❌ �ž�ˆибка �‘аз�‹ �”анн�‹✅: Не �ƒдалос❌ записа�‚❌ ожида�Ž�‰ий пла�‚еж. �žб�€а�‚и�‚ес❌ в подде�€жк�ƒ.",
-        "payment_cancelled_or_expired": "С�‚а�‚�ƒс �Ÿла�‚ежа: �’а�ˆ пла�‚еж ({payment_id}) б�‹л о�‚менен или ис�‚ек.",
-        "webhook_processing_error": "�ž�ˆибка Webhook: Не �ƒдалос❌ об�€або�‚а�‚❌ обновление пла�‚ежа {payment_id}.",
-        "webhook_db_update_failed": "⚠€и�‚и�‡еская �ž�ˆибка: �Ÿла�‚еж {payment_id} под�‚ве�€жден, но обновление баланса в �‘�” для пол�Œзова�‚еля {user_id} не �ƒдалос�Œ. Т�€еб�ƒе�‚ся �€�ƒ�‡ное вме�ˆа�‚ел�Œс�‚во.",
-        "webhook_pending_not_found": "�Ÿ�€ед�ƒп�€еждение Webhook: �Ÿол�ƒ�‡ено обновление для ID пла�‚ежа {payment_id}, но в �‘�” не найден ожида�Ž�‰ий депози�‚.",
-        "webhook_price_fetch_error": "�ž�ˆибка Webhook: Не �ƒдалос❌ пол�ƒ�‡и�‚❌ �†ен�ƒ {currency} для под�‚ве�€ждения зна�‡ения EUR для пла�‚ежа {payment_id}.",
-        "payment_cancelled_user": "�Ÿла�‚еж о�‚менен. �—а�€езе�€ви�€ованн�‹е �‚ова�€�‹ (если б�‹ли) освобожден�‹.",
-        "payment_cancel_error": "Не �ƒдалос❌ о�‚мени�‚❌ пла�‚еж (�ƒже об�€або�‚ан или по�‚е�€ян кон�‚екс�‚).",
-        "cancel_payment_button": "�ž�‚мени�‚❌ пла�‚еж",
-        "proceeding_to_payment_answer": "�Ÿе�€е✅од к ва�€иан�‚ам опла�‚�‹...",
-        "credit_overpayment_purchase": "✅ �’а�ˆа пок�ƒпка б�‹ла �ƒспе�ˆной! �”ополни�‚ел�Œно, пе�€епла�‚а в �€азме�€е {amount} EUR за�‡ислена на ва�ˆ баланс. �’а�ˆ нов�‹й баланс: {new_balance} EUR.",
-        "credit_underpayment_purchase": "ℹ️ �’а�ˆа пок�ƒпка не �ƒдалас❌ из-за недопла�‚�‹, но пол�ƒ�‡енная с�ƒмма ({amount} EUR) за�‡ислена на ва�ˆ баланс. �’а�ˆ нов�‹й баланс: {new_balance} EUR.",
-        "crypto_purchase_underpaid_credited": "⚠️ �Ÿок�ƒпка не �ƒдалас�Œ: �žбна�€�ƒжена недопла�‚а. Т�€ебовалас❌ с�ƒмма {needed_eur} EUR. �’а�ˆ баланс пополнен на пол�ƒ�‡енн�ƒ�Ž с�ƒмм�ƒ ({paid_eur} EUR). �’а�ˆи �‚ова�€�‹ не б�‹ли дос�‚авлен�‹.",
-        "credit_refill": "✅ �’а�ˆ баланс пополнен на {amount} EUR. �Ÿ�€и�‡ина: {reason}. Нов�‹й баланс: {new_balance} EUR.",
+        "payment_amount_too_low_api": "❌ Сумма Платежа Слишком Мала: Эквивалент {target_eur_amount} EUR в {currency} \\({crypto_amount}\\) ниже минимума, требуемого платежной системой \\({min_amount} {currency}\\)\\. Попробуйте большую сумму EUR\\.",
+        "payment_amount_too_low_with_min_eur": "❌ Сумма Платежа Слишком Мала: {target_eur_amount} EUR ниже минимума для {currency} платежей \\(минимум: {min_eur_amount} EUR\\)\\. Попробуйте большую сумму или выберите другую криптовалюту\\.",
+        "error_min_amount_fetch": "❌ Ошибка: Не удалось получить минимальную сумму платежа для {currency}\\. Попробуйте позже или выберите другую валюту\\.",
+        "invoice_title_refill": "*Счет на Пополнение Создан*",
+        "invoice_title_purchase": "*Счет на Оплату Создан*",
+        "invoice_important_notice": "⚠️ *Важно:* Отправьте точную сумму на этот адрес.",
+        "invoice_confirmation_notice": "✅ Авто-подтверждение за ~1-2 мин.",
+        "invoice_valid_notice": "⏱️ *Действует 30 минут*",
+        "min_amount_label": "*Минимальная Сумма:*",
+        "payment_address_label": "*Адрес для Оплаты:*",
+        "amount_label": "*Сумма:*",
+        "expires_at_label": "*Истекает в:*",
+        "send_warning_template": "⚠️ *Важно:* Отправьте *точно* эту сумму {asset} на этот адрес\\.",
+        "overpayment_note": "ℹ️ _Отправка большей суммы допустима\\! Ваш баланс будет пополнен на основе полученной суммы после подтверждения сети\\._",
+        "confirmation_note": "✅ Подтверждение автоматическое через вебхук после подтверждения сети\\.",
+        "invoice_amount_label_text": "Сумма",
+        "invoice_send_following_amount": "Пожалуйста, отправьте следующую сумму:",
+        "invoice_payment_deadline": "Платеж должен быть выполнен в течение 20 минут с момента создания счета.",
+        "error_estimate_failed": "❌ Ошибка: Не удалось оценить сумму в криптовалюте. Попробуйте снова или выберите другую валюту.",
+        "error_estimate_currency_not_found": "❌ Ошибка: Валюта {currency} не поддерживается для оценки. Выберите другую валюту.",
+        "error_discount_invalid_payment": "❌ Ваш промокод больше не действителен: {reason}. Вернитесь в корзину, чтобы продолжить без скидки.",
+        "error_discount_mismatch_payment": "❌ Обнаружено несоответствие суммы платежа. Вернитесь в корзину и попробуйте снова.",
+        "crypto_payment_disabled": "Пополнение баланса в данный момент отключено.",
+        "top_up_title": "Пополнить баланс",
+        "enter_refill_amount_prompt": "Ответьте суммой в EUR, которую вы хотите добавить на баланс (например, 10 или 25.50).",
+        "min_top_up_note": "Минимальное пополнение: {amount} EUR",
+        "enter_amount_answer": "Введите сумму пополнения.",
+        "send_amount_as_text": "Отправьте сумму текстом (например, 10 или 25.50).",
+        "amount_too_low_msg": "Сумма слишком мала. Минимальное пополнение {amount} EUR. Введите большую сумму.",
+        "amount_too_high_msg": "Сумма слишком велика. Введите меньшую сумму.",
+        "invalid_amount_format_msg": "Неверный формат суммы. Введите число (например, 10 или 25.50).",
+        "unexpected_error_msg": "Произошла непредвиденная ошибка. Попробуйте позже.",
+        "choose_crypto_prompt": "Вы хотите пополнить на {amount} EUR. Пожалуйста, выберите криптовалюту для оплаты:",
+        "cancel_top_up_button": "Отменить пополнение",
+        "preparing_invoice": "⏳ Подготовка счета на оплату...",
+        "failed_invoice_creation": "❌ Не удалось создать счет на оплату. Это может быть временная проблема с платежной системой или проблема с ключом API. Попробуйте позже или обратитесь в поддержку.",
+        "error_preparing_payment": "❌ Произошла ошибка при подготовке данных для оплаты. Попробуйте позже.",
+        "top_up_success_title": "✅ Баланс Успешно Пополнен!",
+        "amount_added_label": "Добавлено",
+        "new_balance_label": "Ваш новый баланс",
+        "error_nowpayments_api": "❌ Ошибка API Платежей: Не удалось создать платеж. Попробуйте позже или обратитесь в поддержку.",
+        "error_invalid_nowpayments_response": "❌ Ошибка API Платежей: Получен неверный ответ. Обратитесь в поддержку.",
+        "error_nowpayments_api_key": "❌ Ошибка API Платежей: Неверный ключ API. Обратитесь в поддержку.",
+        "payment_pending_db_error": "❌ Ошибка Базы Данных: Не удалось записать ожидающий платеж. Обратитесь в поддержку.",
+        "payment_cancelled_or_expired": "Статус Платежа: Ваш платеж ({payment_id}) был отменен или истек.",
+        "webhook_processing_error": "Ошибка Webhook: Не удалось обработать обновление платежа {payment_id}.",
+        "webhook_db_update_failed": "Критическая Ошибка: Платеж {payment_id} подтвержден, но обновление баланса в БД для пользователя {user_id} не удалось. Требуется ручное вмешательство.",
+        "webhook_pending_not_found": "Предупреждение Webhook: Получено обновление для ID платежа {payment_id}, но в БД не найден ожидающий депозит.",
+        "webhook_price_fetch_error": "Ошибка Webhook: Не удалось получить цену {currency} для подтверждения значения EUR для платежа {payment_id}.",
+        "payment_cancelled_user": "Платеж отменен. Зарезервированные товары (если были) освобождены.", # <<< NEW
+        "payment_cancel_error": "Не удалось отменить платеж (уже обработан или потерян контекст).", # <<< NEW
+        "cancel_payment_button": "Отменить платеж", # <<< NEW
+        "proceeding_to_payment_answer": "Переход к вариантам оплаты...",
+        "credit_overpayment_purchase": "✅ Ваша покупка была успешной! Дополнительно, переплата в размере {amount} EUR зачислена на ваш баланс. Ваш новый баланс: {new_balance} EUR.",
+        "credit_underpayment_purchase": "ℹ️ Ваша покупка не удалась из-за недоплаты, но полученная сумма ({amount} EUR) зачислена на ваш баланс. Ваш новый баланс: {new_balance} EUR.",
+        "crypto_purchase_underpaid_credited": "⚠️ Покупка не удалась: Обнаружена недоплата. Требовалась сумма {needed_eur} EUR. Ваш баланс пополнен на полученную сумму ({paid_eur} EUR). Ваши товары не были доставлены.",
+        "credit_refill": "✅ Ваш баланс пополнен на {amount} EUR. Причина: {reason}. Новый баланс: {new_balance} EUR.",
     }
 }
 # ==============================================================
 # ===== ^ ^ ^ ^ ^      LANGUAGE DICTIONARY     ^ ^ ^ ^ ^ ======
 # ==============================================================
 
-
+# <<< Default Welcome Message (Fallback) >>>
 DEFAULT_WELCOME_MESSAGE = LANGUAGES['en']['welcome']
 
 MIN_DEPOSIT_EUR = Decimal('5.00') # Minimum deposit amount in EUR
@@ -1283,14 +1283,14 @@ def init_db():
             # Add is_banned column if missing (safer check)
             try: c.execute("ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0")
             except sqlite3.OperationalError: pass # Ignore if already exists
-           
+            # <<< ADDED: Add is_reseller column if missing (safer check) >>>
             try:
                 c.execute("ALTER TABLE users ADD COLUMN is_reseller INTEGER DEFAULT 0")
                 logger.info("Added 'is_reseller' column to users table.")
             except sqlite3.OperationalError as alter_e:
                  if "duplicate column name: is_reseller" in str(alter_e): pass # Ignore if already exists
                  else: raise # Reraise other errors
-           
+            # <<< END ADDED >>>
             
             # Add broadcast tracking columns if missing
             try:
@@ -1452,7 +1452,7 @@ def init_db():
             try: c.execute("ALTER TABLE welcome_messages ADD COLUMN description TEXT")
             except sqlite3.OperationalError: pass # Ignore if already exists
 
-           
+            # <<< ADDED: reseller_discounts table >>>
             c.execute('''CREATE TABLE IF NOT EXISTS reseller_discounts (
                 reseller_user_id INTEGER NOT NULL,
                 product_type TEXT NOT NULL,
@@ -1461,27 +1461,28 @@ def init_db():
                 FOREIGN KEY (reseller_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
                 FOREIGN KEY (product_type) REFERENCES product_types(name) ON DELETE CASCADE
             )''')
-           
+            # <<< END ADDED >>>
 
-            # Insert initial welcome messages (only if table was just created or empty - handled by INSERT OR IGNORE)
+            # Insert initial welcome messages AND force-update default to fix any emoji corruption
             initial_templates = [
                 ("default", LANGUAGES['en']['welcome'], "Built-in default message (EN)"),
-                ("clean", "�Ÿ‘‹ Hello, {username}!\n\n👤 Balance: {balance_str} EUR\n⭐ Status: {status}\n🛒 Basket: {basket_count} item(s)\n\nReady to shop or manage your profile? Explore the options below! �Ÿ‘‡\n\n⚠️ Note: No refunds.", "Clean and direct style"),
-                ("enthusiastic", "✅ Welcome back, {username}! ✅\n\nReady for more? You've got **{balance_str} EUR** to spend! 👤\nYour basket ({basket_count} items) is waiting for you! 🛒\n\nYour current status: {status} {progress_bar}\nTotal Purchases: {purchases}\n\n�Ÿ‘‡ Dive back into the shop or check your profile! �Ÿ‘‡\n\n⚠️ Note: No refunds.", "Enthusiastic style with emojis"),
-                ("status_focus", "�Ÿ‘‘ Welcome, {username}! ({status}) �Ÿ‘‘\n\nTrack your journey: {progress_bar}\nTotal Purchases: {purchases}\n\n👤 Balance: {balance_str} EUR\n🛒 Basket: {basket_count} item(s)\n\nManage your profile or explore the shop! �Ÿ‘‡\n\n⚠️ Note: No refunds.", "Focuses on status and progress"),
-                ("minimalist", "Welcome, {username}.\n\nBalance: {balance_str} EUR\nBasket: {basket_count}\nStatus: {status}\n\nUse the menu below to navigate.\n\n⚠️ Note: No refunds.", "Simple, minimal text"),
-                ("basket_focus", "Welcome back, {username}!\n\n🛒 You have **{basket_count} item(s)** in your basket! Don't forget about them!\n👤 Balance: {balance_str} EUR\n⭐ Status: {status} ({purchases} total purchases)\n\nCheck out your basket, keep shopping, or top up! �Ÿ‘‡\n\n⚠️ Note: No refunds.", "Reminds user about items in basket")
+                ("clean", "Hello, {username}!\n\nBalance: {balance_str} EUR\nStatus: {status}\nBasket: {basket_count} item(s)\n\nReady to shop or manage your profile? Explore the options below!\n\nNote: No refunds.", "Clean and direct style"),
+                ("enthusiastic", "Welcome back, {username}!\n\nReady for more? You have {balance_str} EUR to spend!\nYour basket ({basket_count} items) is waiting for you!\n\nYour current status: {status} {progress_bar}\nTotal Purchases: {purchases}\n\nDive back into the shop or check your profile!\n\nNote: No refunds.", "Enthusiastic style"),
+                ("status_focus", "Welcome, {username}! ({status})\n\nTrack your journey: {progress_bar}\nTotal Purchases: {purchases}\n\nBalance: {balance_str} EUR\nBasket: {basket_count} item(s)\n\nManage your profile or explore the shop!\n\nNote: No refunds.", "Focuses on status and progress"),
+                ("minimalist", "Welcome, {username}.\n\nBalance: {balance_str} EUR\nBasket: {basket_count}\nStatus: {status}\n\nUse the menu below to navigate.\n\nNote: No refunds.", "Simple, minimal text"),
+                ("basket_focus", "Welcome back, {username}!\n\nYou have {basket_count} item(s) in your basket! Don't forget about them!\nBalance: {balance_str} EUR\nStatus: {status} ({purchases} total purchases)\n\nCheck out your basket, keep shopping, or top up!\n\nNote: No refunds.", "Reminds user about items in basket")
             ]
             inserted_count = 0
-            changes_before = conn.total_changes # Get changes before loop
+            changes_before = conn.total_changes
             for name, text, desc in initial_templates:
                 try:
-                    c.execute("INSERT OR IGNORE INTO welcome_messages (name, template_text, description) VALUES (?, ?, ?)", (name, text, desc))
+                    # Use INSERT OR REPLACE to force-update existing templates with clean values
+                    c.execute("INSERT OR REPLACE INTO welcome_messages (name, template_text, description) VALUES (?, ?, ?)", (name, text, desc))
                 except sqlite3.Error as insert_e: logger.error(f"Error inserting template '{name}': {insert_e}")
-            changes_after = conn.total_changes # Get changes after loop
-            inserted_count = changes_after - changes_before # Calculate the difference
+            changes_after = conn.total_changes
+            inserted_count = changes_after - changes_before
 
-            if inserted_count > 0: logger.info(f"Checked/Inserted {inserted_count} initial welcome message templates.")
+            if inserted_count > 0: logger.info(f"Refreshed {inserted_count} welcome message templates with clean values.")
             else: logger.info("Initial welcome message templates already exist or failed to insert.")
 
             # Set default as active if setting doesn't exist
@@ -1564,16 +1565,16 @@ def init_db():
             c.execute("CREATE INDEX IF NOT EXISTS idx_users_banned ON users(is_banned)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_pending_deposits_is_purchase ON pending_deposits(is_purchase)")
             c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_welcome_message_name ON welcome_messages(name)")
-           
+            # <<< ADDED Indices for reseller >>>
             c.execute("CREATE INDEX IF NOT EXISTS idx_users_is_reseller ON users(is_reseller)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_reseller_discounts_user_id ON reseller_discounts(reseller_user_id)")
-           
+            # <<< Solana payment indices for high concurrency >>>
             c.execute("CREATE INDEX IF NOT EXISTS idx_solana_wallets_status ON solana_wallets(status)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_solana_wallets_user_id ON solana_wallets(user_id)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_solana_wallets_created_at ON solana_wallets(created_at)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_payment_queue_status ON payment_queue(status)")
             c.execute("CREATE INDEX IF NOT EXISTS idx_payment_queue_user_id ON payment_queue(user_id)")
-           
+            # <<< END ADDED >>>
 
             conn.commit()
             
@@ -1615,7 +1616,7 @@ def queue_payment_action(payment_id: str, user_id: int, action_type: str, payloa
         """, (payment_id, user_id, action_type, json.dumps(payload)))
         conn.commit()
         conn.close()
-        logger.info(f"📦 Queued payment action: {action_type} for user {user_id} (payment: {payment_id})")
+        logger.info(f"📥 Queued payment action: {action_type} for user {user_id} (payment: {payment_id})")
         return True
     except Exception as e:
         logger.error(f"Failed to queue payment action: {e}")
@@ -1939,11 +1940,15 @@ def format_discount_value(dtype, value):
     except (ValueError, TypeError): logger.warning(f"Could not format discount {dtype} {value}"); return "N/A"
 
 def get_progress_bar(purchases):
+    """Returns a simple ASCII progress bar to avoid emoji encoding issues."""
     try:
-        p_int = int(purchases); thresholds = [0, 2, 5, 8, 10]
+        p_int = int(purchases)
+        thresholds = [0, 2, 5, 8, 10]
         filled = min(sum(1 for t in thresholds if p_int >= t), 5)
-        return '[' + '�ŸŸ�' * filled + '��œ️' * (5 - filled) + ']'
-    except (ValueError, TypeError): return '[��œ️��œ️��œ️��œ️��œ️]'
+        # Use simple ASCII characters for maximum compatibility
+        return '[' + '#' * filled + '-' * (5 - filled) + ']'
+    except (ValueError, TypeError): 
+        return '[-----]'
 
 
 # ============================================================================
@@ -2231,12 +2236,14 @@ def get_date_range(period_key):
 
 
 def get_user_status(purchases):
+    """Returns user status based on purchase count. Uses simple text for compatibility."""
     try:
         p_int = int(purchases)
-        if p_int >= 10: return "VIP �Ÿ‘‘"
-        elif p_int >= 5: return "Regular ⭐"
-        else: return "New 🌐"
-    except (ValueError, TypeError): return "New 🌐"
+        if p_int >= 10: return "VIP"
+        elif p_int >= 5: return "Regular"
+        else: return "New"
+    except (ValueError, TypeError): 
+        return "New"
 
 # --- Modified clear_expired_basket (Individual user focus) ---
 def clear_expired_basket(context: ContextTypes.DEFAULT_TYPE, user_id: int):
@@ -2569,9 +2576,9 @@ def fetch_user_ids_for_broadcast(target_type: str, target_value: str | int | Non
             status = str(target_value).lower()
             min_purchases, max_purchases = -1, -1
             # Use the status string including emoji for matching (rely on English definition)
-            if status == LANGUAGES['en'].get("broadcast_status_vip", "VIP �Ÿ‘‘").lower(): min_purchases = 10; max_purchases = float('inf')
+            if status == LANGUAGES['en'].get("broadcast_status_vip", "VIP 👑").lower(): min_purchases = 10; max_purchases = float('inf')
             elif status == LANGUAGES['en'].get("broadcast_status_regular", "Regular ⭐").lower(): min_purchases = 5; max_purchases = 9
-            elif status == LANGUAGES['en'].get("broadcast_status_new", "New 🌐").lower(): min_purchases = 0; max_purchases = 4
+            elif status == LANGUAGES['en'].get("broadcast_status_new", "New 🌱").lower(): min_purchases = 0; max_purchases = 4
 
             if min_purchases != -1:
                  if max_purchases == float('inf'):
@@ -2721,16 +2728,16 @@ def update_user_broadcast_status(user_id: int, success: bool):
 
 
 # --- Admin Action Logging (Synchronous) ---
-
+# <<< Define action names for Reseller Management >>>
 ACTION_RESELLER_ENABLED = "RESELLER_ENABLED"
 ACTION_RESELLER_DISABLED = "RESELLER_DISABLED"
 ACTION_RESELLER_DISCOUNT_ADD = "RESELLER_DISCOUNT_ADD"
 ACTION_RESELLER_DISCOUNT_EDIT = "RESELLER_DISCOUNT_EDIT"
 ACTION_RESELLER_DISCOUNT_DELETE = "RESELLER_DISCOUNT_DELETE"
-
+# <<< ADDED: Action name for Product Type Reassignment >>>
 ACTION_PRODUCT_TYPE_REASSIGN = "PRODUCT_TYPE_REASSIGN"
 ACTION_BULK_PRICE_UPDATE = "BULK_PRICE_UPDATE"
-
+# <<< END Define >>>
 
 def log_admin_action(admin_id: int, action: str, target_user_id: int | None = None, reason: str | None = None, amount_change: float | None = None, old_value=None, new_value=None):
     """Logs an administrative action to the admin_log table."""
@@ -2815,7 +2822,7 @@ def load_active_welcome_message() -> str:
     finally:
         if conn: conn.close()
 
-
+# <<< MODIFIED: Fetch description as well >>>
 def get_welcome_message_templates(limit: int | None = None, offset: int = 0) -> list[dict]:
     """Fetches welcome message templates (name, text, description), optionally paginated."""
     templates = []
@@ -2833,7 +2840,7 @@ def get_welcome_message_templates(limit: int | None = None, offset: int = 0) -> 
         logger.error(f"DB error fetching welcome message templates: {e}", exc_info=True)
     return templates
 
-
+# <<< NEW: Helper to get total count >>>
 def get_welcome_message_template_count() -> int:
     """Gets the total number of welcome message templates."""
     count = 0
@@ -2847,7 +2854,7 @@ def get_welcome_message_template_count() -> int:
         logger.error(f"DB error counting welcome message templates: {e}", exc_info=True)
     return count
 
-
+# <<< MODIFIED: Handle description >>>
 def add_welcome_message_template(name: str, template_text: str, description: str | None = None) -> bool:
     """Adds a new welcome message template."""
     try:
@@ -2865,7 +2872,7 @@ def add_welcome_message_template(name: str, template_text: str, description: str
         logger.error(f"DB error adding welcome message template '{name}': {e}", exc_info=True)
         return False
 
-
+# <<< MODIFIED: Handle description >>>
 def update_welcome_message_template(name: str, new_template_text: str | None = None, new_description: str | None = None) -> bool:
     """Updates the text and/or description of an existing welcome message template."""
     if new_template_text is None and new_description is None:
@@ -3210,7 +3217,7 @@ def get_failed_payments_for_recovery():
 def recover_failed_payment(payment_id, user_id, basket_snapshot, discount_code_used, dummy_context):
     """Attempt to recover a failed payment by reprocessing it"""
     try:
-        logger.info(f"�Ÿ”„ BULLETPROOF RECOVERY: Attempting to recover payment {payment_id} for user {user_id}")
+        logger.info(f"🔄 BULLETPROOF RECOVERY: Attempting to recover payment {payment_id} for user {user_id}")
         
         # Import here to avoid circular imports
         from payment import process_successful_crypto_purchase
@@ -3237,14 +3244,14 @@ def recover_failed_payment(payment_id, user_id, basket_snapshot, discount_code_u
 def run_payment_recovery_job():
     """Run the payment recovery job to process failed payments"""
     try:
-        logger.info("�Ÿ”„ BULLETPROOF: Starting payment recovery job")
+        logger.info("🔄 BULLETPROOF: Starting payment recovery job")
         
         failed_payments = get_failed_payments_for_recovery()
         if not failed_payments:
             logger.info("✅ BULLETPROOF: No failed payments found for recovery")
             return
         
-        logger.info(f"�Ÿ”„ BULLETPROOF: Found {len(failed_payments)} failed payments for recovery")
+        logger.info(f"🔄 BULLETPROOF: Found {len(failed_payments)} failed payments for recovery")
         
         # Import here to avoid circular imports
         from main import telegram_app, get_first_primary_admin_id, send_message_with_retry
@@ -3285,7 +3292,7 @@ def run_payment_recovery_job():
                     send_message_with_retry(
                         telegram_app.bot, 
                         get_first_primary_admin_id(), 
-                        f"�Ÿ”„ BULLETPROOF RECOVERY: Recovered {recovered_count}/{len(failed_payments)} failed payments"
+                        f"🔄 BULLETPROOF RECOVERY: Recovered {recovered_count}/{len(failed_payments)} failed payments"
                     ),
                     asyncio.get_event_loop()
                 )
@@ -3346,7 +3353,7 @@ def check_payment_system_health():
             'is_healthy': stuck_payments < 5 and recent_payments > 0
         }
         
-        logger.info(f"🔧 BULLETPROOF HEALTH CHECK: Stuck payments: {stuck_payments}, Recent payments: {recent_payments}")
+        logger.info(f"🔍 BULLETPROOF HEALTH CHECK: Stuck payments: {stuck_payments}, Recent payments: {recent_payments}")
         return health_status
         
     except Exception as e:

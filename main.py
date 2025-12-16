@@ -1,4 +1,4 @@
-﻿# --- START OF FILE main.py ---
+# --- START OF FILE main.py ---
 
 import logging
 import asyncio
@@ -66,7 +66,7 @@ from user import (
     _show_crypto_choices_for_basket,
     handle_pay_single_item,
     handle_confirm_pay, # Direct import of the function
-   
+    # <<< ADDED Single Item Discount Flow Handlers from user.py >>>
     handle_apply_discount_single_pay,
     handle_skip_discount_single_pay,
     handle_single_item_discount_code_message
@@ -240,10 +240,10 @@ def callback_query_router(func):
                 "refill": user.handle_refill,
                 "view_history": user.handle_view_history,
                 "apply_discount_start": user.apply_discount_start, "remove_discount": user.remove_discount,
-                "confirm_pay": user.handle_confirm_pay,
+                "confirm_pay": user.handle_confirm_pay, # <<< CORRECTED
                 "apply_discount_basket_pay": user.handle_apply_discount_basket_pay,
                 "skip_discount_basket_pay": user.handle_skip_discount_basket_pay,
-               
+                # <<< ADDED Single Item Discount Flow Callbacks (from user.py) >>>
                 "apply_discount_single_pay": user.handle_apply_discount_single_pay,
                 "skip_discount_single_pay": user.handle_skip_discount_single_pay,
 
@@ -436,7 +436,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'awaiting_user_discount_code': user.handle_user_discount_code_message,
         'awaiting_basket_discount_code': user.handle_basket_discount_code_message,
         'awaiting_refill_amount': user.handle_refill_amount_message,
-        'awaiting_single_item_discount_code': user.handle_single_item_discount_code_message,
+        'awaiting_single_item_discount_code': user.handle_single_item_discount_code_message, # <<< ADDED
         'awaiting_refill_crypto_choice': None,
         'awaiting_basket_crypto_choice': None,
 
@@ -803,21 +803,21 @@ def telegram_webhook(bot_token):
 @flask_app.route("/health", methods=['GET'])
 def health_check():
     """Health check endpoint to verify Flask server is running"""
-    logger.info("🔧 HEALTH CHECK: Health check endpoint accessed")
+    logger.info("🔍 HEALTH CHECK: Health check endpoint accessed")
     return Response("OK - Flask server is running", status=200)
 
 @flask_app.route("/webhook-test", methods=['POST'])
 def webhook_test():
     """Test endpoint to verify webhook reception"""
-    logger.info("🔧 WEBHOOK TEST: Test webhook received!")
-    logger.info(f"🔧 WEBHOOK TEST: Headers: {dict(request.headers)}")
-    logger.info(f"🔧 WEBHOOK TEST: Raw body: {request.get_data()}")
+    logger.info("🔍 WEBHOOK TEST: Test webhook received!")
+    logger.info(f"🔍 WEBHOOK TEST: Headers: {dict(request.headers)}")
+    logger.info(f"🔍 WEBHOOK TEST: Raw body: {request.get_data()}")
     return Response("Test webhook received successfully", status=200)
 
 @flask_app.route("/", methods=['GET'])
 def root():
     """Root endpoint to verify server is running"""
-    logger.info("🔧 ROOT: Root endpoint accessed")
+    logger.info("🔍 ROOT: Root endpoint accessed")
     return Response("Payment Bot Server is Running! Webhook: /webhook", status=200)
 
 def main() -> None:
@@ -915,7 +915,7 @@ def main() -> None:
             await application.start()
             logger.info(f"✅ @{bot_username} started (webhook mode)")
         
-        logger.info(f"�Ÿš€ All {len(applications)} bot(s) initialized and running!")
+        logger.info(f"🚀 All {len(applications)} bot(s) initialized and running!")
         
         port = int(os.environ.get("PORT", 10000))
         flask_thread = threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=port, debug=False), daemon=True)

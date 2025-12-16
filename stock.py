@@ -1,4 +1,4 @@
-﻿# --- START OF FILE stock.py ---
+# --- START OF FILE stock.py ---
 
 import sqlite3
 import logging

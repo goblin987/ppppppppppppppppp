@@ -1,4 +1,4 @@
-﻿# --- START OF FILE viewer_admin.py ---
+# --- START OF FILE viewer_admin.py ---
 
 import sqlite3
 import os
