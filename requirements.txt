@@ -1,0 +1,9 @@
+python-telegram-bot[ext]>=22.0
+requests>=2.25.0
+Flask[async]>=2.0.0
+nest-asyncio>=1.5.0
+pytz
+httpx>=0.24.0
+solana>=0.30.0
+solders>=0.18.0
+base58>=2.1.0
