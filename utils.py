@@ -151,7 +151,7 @@ LANGUAGES = {
     "en": {
         "native_name": "English",
         # --- General & Menu ---
-        "welcome": "Welcome, {username}!\n\nStatus: {status} {progress_bar}\nBalance: {balance_str} EUR\nTotal Purchases: {purchases}\nBasket Items: {basket_count}\n\nStart shopping or explore your options below.\n\nNote: No refunds.",
+        "welcome": "\U0001F44B Welcome, {username}!\n\n\U0001F464 Status: {status} {progress_bar}\n\U0001F4B0 Balance: {balance_str} EUR\n\U0001F4E6 Total Purchases: {purchases}\n\U0001F6D2 Basket Items: {basket_count}\n\nStart shopping or explore your options below.\n\n\u26A0\uFE0F Note: No refunds.",
         "status_label": "Status",
         "balance_label": "Balance",
         "purchases_label": "Total Purchases",
@@ -1464,13 +1464,14 @@ def init_db():
             # <<< END ADDED >>>
 
             # Insert initial welcome messages AND force-update default to fix any emoji corruption
+            # Using unicode escape sequences to ensure proper encoding
             initial_templates = [
                 ("default", LANGUAGES['en']['welcome'], "Built-in default message (EN)"),
-                ("clean", "Hello, {username}!\n\nBalance: {balance_str} EUR\nStatus: {status}\nBasket: {basket_count} item(s)\n\nReady to shop or manage your profile? Explore the options below!\n\nNote: No refunds.", "Clean and direct style"),
-                ("enthusiastic", "Welcome back, {username}!\n\nReady for more? You have {balance_str} EUR to spend!\nYour basket ({basket_count} items) is waiting for you!\n\nYour current status: {status} {progress_bar}\nTotal Purchases: {purchases}\n\nDive back into the shop or check your profile!\n\nNote: No refunds.", "Enthusiastic style"),
-                ("status_focus", "Welcome, {username}! ({status})\n\nTrack your journey: {progress_bar}\nTotal Purchases: {purchases}\n\nBalance: {balance_str} EUR\nBasket: {basket_count} item(s)\n\nManage your profile or explore the shop!\n\nNote: No refunds.", "Focuses on status and progress"),
-                ("minimalist", "Welcome, {username}.\n\nBalance: {balance_str} EUR\nBasket: {basket_count}\nStatus: {status}\n\nUse the menu below to navigate.\n\nNote: No refunds.", "Simple, minimal text"),
-                ("basket_focus", "Welcome back, {username}!\n\nYou have {basket_count} item(s) in your basket! Don't forget about them!\nBalance: {balance_str} EUR\nStatus: {status} ({purchases} total purchases)\n\nCheck out your basket, keep shopping, or top up!\n\nNote: No refunds.", "Reminds user about items in basket")
+                ("clean", "\U0001F44B Hello, {username}!\n\n\U0001F4B0 Balance: {balance_str} EUR\n\u2B50 Status: {status}\n\U0001F6D2 Basket: {basket_count} item(s)\n\nReady to shop or manage your profile? Explore the options below! \U0001F447\n\n\u26A0\uFE0F Note: No refunds.", "Clean and direct style"),
+                ("enthusiastic", "\u2728 Welcome back, {username}! \u2728\n\nReady for more? You've got {balance_str} EUR to spend! \U0001F4B8\nYour basket ({basket_count} items) is waiting for you! \U0001F6D2\n\nYour current status: {status} {progress_bar}\nTotal Purchases: {purchases}\n\n\U0001F447 Dive back into the shop or check your profile! \U0001F447\n\n\u26A0\uFE0F Note: No refunds.", "Enthusiastic style with emojis"),
+                ("status_focus", "\U0001F451 Welcome, {username}! ({status}) \U0001F451\n\nTrack your journey: {progress_bar}\nTotal Purchases: {purchases}\n\n\U0001F4B0 Balance: {balance_str} EUR\n\U0001F6D2 Basket: {basket_count} item(s)\n\nManage your profile or explore the shop! \U0001F447\n\n\u26A0\uFE0F Note: No refunds.", "Focuses on status and progress"),
+                ("minimalist", "Welcome, {username}.\n\nBalance: {balance_str} EUR\nBasket: {basket_count}\nStatus: {status}\n\nUse the menu below to navigate.\n\n\u26A0\uFE0F Note: No refunds.", "Simple, minimal text"),
+                ("basket_focus", "Welcome back, {username}!\n\n\U0001F6D2 You have {basket_count} item(s) in your basket! Don't forget about them!\n\U0001F4B0 Balance: {balance_str} EUR\n\u2B50 Status: {status} ({purchases} total purchases)\n\nCheck out your basket, keep shopping, or top up! \U0001F447\n\n\u26A0\uFE0F Note: No refunds.", "Reminds user about items in basket")
             ]
             inserted_count = 0
             changes_before = conn.total_changes
@@ -1940,15 +1941,14 @@ def format_discount_value(dtype, value):
     except (ValueError, TypeError): logger.warning(f"Could not format discount {dtype} {value}"); return "N/A"
 
 def get_progress_bar(purchases):
-    """Returns a simple ASCII progress bar to avoid emoji encoding issues."""
+    """Returns emoji progress bar based on purchase count."""
     try:
         p_int = int(purchases)
         thresholds = [0, 2, 5, 8, 10]
         filled = min(sum(1 for t in thresholds if p_int >= t), 5)
-        # Use simple ASCII characters for maximum compatibility
-        return '[' + '#' * filled + '-' * (5 - filled) + ']'
+        return '[' + '\U0001F7E9' * filled + '\u2B1C' * (5 - filled) + ']'
     except (ValueError, TypeError): 
-        return '[-----]'
+        return '[\u2B1C\u2B1C\u2B1C\u2B1C\u2B1C]'
 
 
 # ============================================================================
@@ -2236,14 +2236,14 @@ def get_date_range(period_key):
 
 
 def get_user_status(purchases):
-    """Returns user status based on purchase count. Uses simple text for compatibility."""
+    """Returns user status with emoji based on purchase count."""
     try:
         p_int = int(purchases)
-        if p_int >= 10: return "VIP"
-        elif p_int >= 5: return "Regular"
-        else: return "New"
+        if p_int >= 10: return "VIP \U0001F451"  # Crown emoji
+        elif p_int >= 5: return "Regular \u2B50"  # Star emoji
+        else: return "New \U0001F331"  # Seedling emoji
     except (ValueError, TypeError): 
-        return "New"
+        return "New \U0001F331"
 
 # --- Modified clear_expired_basket (Individual user focus) ---
 def clear_expired_basket(context: ContextTypes.DEFAULT_TYPE, user_id: int):
