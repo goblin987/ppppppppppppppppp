@@ -1,4 +1,3 @@
-# --- START OF FILE main.py ---
 
 import logging
 import asyncio
@@ -968,5 +967,4 @@ def main() -> None:
 if __name__ == '__main__':
     main()
 
-# --- END OF FILE main.py ---
 

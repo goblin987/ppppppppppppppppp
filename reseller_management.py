@@ -1,4 +1,3 @@
-# --- START OF FILE reseller_management.py ---
 # =============================================================================
 # IMPROVED RESELLER MANAGEMENT SYSTEM
 # Features:
@@ -1192,4 +1191,3 @@ async def handle_reseller_delete_discount_confirm(update: Update, context: Conte
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
-# --- END OF FILE reseller_management.py ---

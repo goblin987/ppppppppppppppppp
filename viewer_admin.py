@@ -1,4 +1,3 @@
-# --- START OF FILE viewer_admin.py ---
 
 import sqlite3
 import os
@@ -827,4 +826,3 @@ async def handle_toggle_ban_user(update: Update, context: ContextTypes.DEFAULT_T
     finally:
         if conn: conn.close()
 
-# --- END OF FILE viewer_admin.py ---

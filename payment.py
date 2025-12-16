@@ -1,4 +1,3 @@
-# --- START OF FILE payment.py ---
 
 import logging
 import sqlite3
@@ -1111,7 +1110,6 @@ async def credit_user_balance(user_id: int, amount_eur: Decimal, reason: str, co
             lang_data = LANGUAGES.get(lang, LANGUAGES['en'])
 
 
-            # <<< TODO: Add these messages to LANGUAGES dictionary >>>
             if "Overpayment" in reason:
                 # Example message key: "credit_overpayment_purchase"
                 notify_msg_template = lang_data.get("credit_overpayment_purchase", "✅ Your purchase was successful! Additionally, an overpayment of {amount} EUR has been credited to your balance. Your new balance is {new_balance} EUR.")
@@ -1212,4 +1210,3 @@ async def handle_cancel_crypto_payment(update: Update, context: ContextTypes.DEF
 
 
 
-# --- END OF FILE payment.py ---

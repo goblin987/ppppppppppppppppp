@@ -1,4 +1,3 @@
-# --- START OF FILE stock.py ---
 
 import sqlite3
 import logging
@@ -112,4 +111,3 @@ async def handle_view_stock(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     finally:
         if conn: conn.close() # Close connection if opened
 
-# --- END OF FILE stock.py ---
