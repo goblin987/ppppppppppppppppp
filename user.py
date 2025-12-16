@@ -3,6 +3,7 @@ import time
 import logging
 import asyncio
 import os # Import os for path joining
+import uuid # For generating unique order IDs
 from datetime import datetime, timezone
 from collections import defaultdict, Counter
 from decimal import Decimal, ROUND_DOWN # <<< Added ROUND_DOWN
@@ -29,7 +30,8 @@ from utils import (
     _unreserve_basket_items, # <<< IMPORT UNRESERVE HELPER >>>
     is_primary_admin, is_secondary_admin, is_any_admin, # Admin helper functions
     SECONDARY_ADMIN_IDS, is_user_banned, # Import ban check helper
-    update_user_broadcast_status # Import broadcast tracking helper
+    update_user_broadcast_status, # Import broadcast tracking helper
+    add_pending_deposit # Import for refill payment tracking
 )
 import json # <<< Make sure json is imported
 import payment # <<< Make sure payment module is imported
@@ -2361,11 +2363,48 @@ async def handle_refill_amount_message(update: Update, context: ContextTypes.DEF
             return
 
         context.user_data['refill_eur_amount'] = float(refill_amount_decimal)
+        context.user_data.pop('state', None)  # Clear state before creating payment
         logger.info(f"User {user_id} entered refill EUR: {refill_amount_decimal:.2f}. Creating SOL payment directly.")
 
-        # Since only SOL is supported, skip crypto selection and directly create payment
-        # Create a fake callback query update to trigger the payment handler
-        await payment.handle_select_refill_crypto(update, context, params=['sol'])
+        # Since only SOL is supported, create Solana payment directly (not via callback handler)
+        preparing_msg = lang_data.get("preparing_invoice", "Preparing your Solana payment...")
+        await send_message_with_retry(context.bot, chat_id, preparing_msg, parse_mode=None)
+        
+        # Import here to avoid circular imports
+        from payment_solana import create_solana_payment
+        from payment import display_solana_invoice
+        
+        order_id = f"USER{user_id}_REFILL_{int(time.time())}_{uuid.uuid4().hex[:6]}"
+        payment_result = await create_solana_payment(
+            user_id=user_id,
+            order_id=order_id,
+            eur_amount=float(refill_amount_decimal)
+        )
+        
+        if payment_result:
+            # Add to pending deposits for tracking
+            add_pending_deposit(
+                payment_id=order_id,
+                user_id=user_id,
+                target_eur_amount=float(refill_amount_decimal),
+                currency='SOL',
+                expected_crypto_amount=payment_result.get('pay_amount'),
+                is_purchase=False  # This is a refill
+            )
+            
+            # Display invoice - send new message since we don't have a callback query
+            await display_solana_invoice(
+                update=update,
+                context=context,
+                payment_data=payment_result,
+                is_purchase=False,
+                query=None  # No callback query - will send new message
+            )
+            logger.info(f"Solana refill payment created for user {user_id}. Order ID: {order_id}")
+        else:
+            failed_msg = lang_data.get("failed_invoice_creation", "Failed to create payment. Please try again later.")
+            await send_message_with_retry(context.bot, chat_id, f"\u274C {failed_msg}", parse_mode=None)
+            context.user_data.pop('refill_eur_amount', None)
 
     except ValueError:
         await send_message_with_retry(context.bot, chat_id, f"❌ {invalid_amount_format_msg}", parse_mode=None)

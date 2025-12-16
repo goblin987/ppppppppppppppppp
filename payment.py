@@ -263,11 +263,19 @@ async def handle_select_basket_crypto(update: Update, context: ContextTypes.DEFA
 
 
 # --- Display Solana Invoice ---
-async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_TYPE, payment_data: dict, is_purchase: bool = False):
-    """Displays the Solana payment invoice details."""
-    query = update.callback_query
-    chat_id = query.message.chat_id
-    lang = context.user_data.get("lang", "en")
+async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_TYPE, payment_data: dict, is_purchase: bool = False, query=None):
+    """Displays the Solana payment invoice details. Can handle both callback queries and text messages."""
+    # Use provided query or get from update
+    if query is None:
+        query = update.callback_query
+    
+    # Get chat_id from query or update
+    if query and query.message:
+        chat_id = query.message.chat_id
+    else:
+        chat_id = update.effective_chat.id
+    
+    lang = context.user_data.get("lang", "en") if context.user_data else "en"
     lang_data = LANGUAGES.get(lang, LANGUAGES['en'])
 
     try:
@@ -326,23 +334,31 @@ async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_T
         keyboard = [[InlineKeyboardButton(f"⬅️ {back_button_text}", callback_data=back_callback)]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        # Send message
-        try:
-            await query.edit_message_text(final_msg, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        except telegram_error.BadRequest as e:
-            if "message is not modified" not in str(e).lower():
-                logger.warning(f"Could not edit message for Solana invoice: {e}")
-                await send_message_with_retry(context.bot, chat_id, final_msg, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-            await query.answer()
+        # Send message - handle both callback queries and direct messages
+        if query:
+            try:
+                await query.edit_message_text(final_msg, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+            except telegram_error.BadRequest as e:
+                if "message is not modified" not in str(e).lower():
+                    logger.warning(f"Could not edit message for Solana invoice: {e}")
+                    await send_message_with_retry(context.bot, chat_id, final_msg, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+                await query.answer()
+        else:
+            # No callback query - send as new message
+            await send_message_with_retry(context.bot, chat_id, final_msg, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
         
-        logger.info(f"Displayed Solana invoice for user {query.from_user.id}, Payment ID: {payment_id}")
+        user_id_for_log = query.from_user.id if query else update.effective_user.id
+        logger.info(f"Displayed Solana invoice for user {user_id_for_log}, Payment ID: {payment_id}")
         
     except Exception as e:
         logger.error(f"Error displaying Solana invoice: {e}", exc_info=True)
-        error_msg = lang_data.get("error_displaying_invoice", "❌ Error displaying payment invoice. Please contact support.")
-        try:
-            await query.edit_message_text(error_msg, parse_mode=None)
-        except Exception:
+        error_msg = lang_data.get("error_displaying_invoice", "\u274C Error displaying payment invoice. Please contact support.")
+        if query:
+            try:
+                await query.edit_message_text(error_msg, parse_mode=None)
+            except Exception:
+                await send_message_with_retry(context.bot, chat_id, error_msg, parse_mode=None)
+        else:
             await send_message_with_retry(context.bot, chat_id, error_msg, parse_mode=None)
 
 
