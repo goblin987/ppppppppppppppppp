@@ -106,9 +106,9 @@ async def handle_viewer_admin_menu(update: Update, context: ContextTypes.DEFAULT
     # --- Keyboard Definition ---
     keyboard = [
         [InlineKeyboardButton("📦 View Bot Stock", callback_data="view_stock")],
-        [InlineKeyboardButton("�Ÿ“œ View Added Products Log", callback_data="viewer_added_products|0")],
+        [InlineKeyboardButton("📜 View Added Products Log", callback_data="viewer_added_products|0")],
         [InlineKeyboardButton("🚨 View Reviews", callback_data="adm_manage_reviews|0")], # Reuse admin handler
-        [InlineKeyboardButton("�Ÿ“‹ Analyze Render Logs", callback_data="adm_analyze_logs_start")], # Log analysis for secondary admins
+        [InlineKeyboardButton("📋 Analyze Render Logs", callback_data="adm_analyze_logs_start")], # Log analysis for secondary admins
        
         # [InlineKeyboardButton("�Ÿ‘� Manage Users", callback_data="adm_manage_users|0")], # Reuses admin handler
         [InlineKeyboardButton("💥 User Home Menu", callback_data="back_start")]
@@ -173,7 +173,7 @@ async def handle_viewer_added_products(update: Update, context: ContextTypes.DEF
     finally:
         if conn: conn.close()
 
-    msg_parts = ["�Ÿ“œ Added Products Log\n"]
+    msg_parts = ["📜 Added Products Log\n"]
     keyboard = []
     item_buttons = []
 
@@ -205,7 +205,7 @@ async def handle_viewer_added_products(update: Update, context: ContextTypes.DEF
                 )
                 msg_parts.append(item_msg)
                 # Buttons
-                button_text = f"�Ÿ–�️ View Media & Text #{prod_id}" if product['media_count'] > 0 else f"�Ÿ“„ View Full Text #{prod_id}"
+                button_text = f"�Ÿ–�️ View Media & Text #{prod_id}" if product['media_count'] > 0 else f"🔄 View Full Text #{prod_id}"
                 item_buttons.append([InlineKeyboardButton(button_text, callback_data=f"viewer_view_product_media|{prod_id}|{offset}")])
             except Exception as e:
                  logger.error(f"Error formatting viewer product log item ID {product['id'] if product else 'N/A'}: {e}")
@@ -473,7 +473,7 @@ async def _display_user_list(update: Update, context: ContextTypes.DEFAULT_TYPE,
             username = user['username'] or f"ID_{user_id_target}"
             balance_str = format_currency(user['balance'])
             status = get_user_status(user['total_purchases'])
-            banned_status = "⚠" if user['is_banned'] else "�œ…"
+            banned_status = "⚠" if user['is_banned'] else "✅"
             item_msg = f"\n�Ÿ‘� @{username} (ID: {user_id_target})\n  👤 {balance_str}�‚� | {status} | {banned_status}"
             msg_parts.append(item_msg)
             item_buttons.append([InlineKeyboardButton(f"View @{username}", callback_data=f"adm_view_user|{user_id_target}|{offset}")])
@@ -546,7 +546,7 @@ async def handle_view_user_profile(update: Update, context: ContextTypes.DEFAULT
         status = get_user_status(purchases_count)
         progress_bar = get_progress_bar(purchases_count)
         balance_str = format_currency(balance)
-        banned_str = lang_data.get("user_profile_is_banned", "Yes ⚠") if is_banned else lang_data.get("user_profile_not_banned", "No �œ…")
+        banned_str = lang_data.get("user_profile_is_banned", "Yes ⚠") if is_banned else lang_data.get("user_profile_not_banned", "No ✅")
 
         title_template = lang_data.get("view_user_profile_title", "�Ÿ‘� User Profile: @{username} (ID: {user_id})")
         status_label = lang_data.get("user_profile_status", "Status")
@@ -561,7 +561,7 @@ async def handle_view_user_profile(update: Update, context: ContextTypes.DEFAULT
                f"🚨 {banned_label}: {banned_str}")
 
         # Format and append purchase history
-        history_str = f"\n\n�Ÿ“œ Recent Purchases (Last {history_limit}):\n"
+        history_str = f"\n\n📜 Recent Purchases (Last {history_limit}):\n"
         if not recent_purchases:
             history_str += "  - No purchases found.\n"
         else:
@@ -581,7 +581,7 @@ async def handle_view_user_profile(update: Update, context: ContextTypes.DEFAULT
         msg += history_str
 
         adjust_balance_btn = lang_data.get("user_profile_button_adjust_balance", "👤 Adjust Balance")
-        ban_btn_text = lang_data.get("user_profile_button_unban", "�œ… Unban User") if is_banned else lang_data.get("user_profile_button_ban", "🚨 Ban User")
+        ban_btn_text = lang_data.get("user_profile_button_unban", "✅ Unban User") if is_banned else lang_data.get("user_profile_button_ban", "🚨 Ban User")
         back_list_btn_text = lang_data.get("user_profile_button_back_list", "✅️ Back to User List")
 
         keyboard = [
@@ -701,7 +701,7 @@ async def handle_adjust_balance_reason_message(update: Update, context: ContextT
     back_callback = f"adm_view_user|{target_user_id}|{offset}"
 
     reason_empty_msg = lang_data.get("adjust_balance_reason_empty", "❌ Reason cannot be empty. Please provide a reason.")
-    success_template = lang_data.get("adjust_balance_success", "�œ… Balance adjusted successfully for @{username}. New balance: {new_balance} EUR.")
+    success_template = lang_data.get("adjust_balance_success", "✅ Balance adjusted successfully for @{username}. New balance: {new_balance} EUR.")
     db_error_msg = lang_data.get("adjust_balance_db_error", "❌ Database error adjusting balance.")
 
     if not reason:
@@ -810,7 +810,7 @@ async def handle_toggle_ban_user(update: Update, context: ContextTypes.DEFAULT_T
             new_value=new_ban_status
         )
 
-        success_msg_template = lang_data.get("unban_success", "�œ… User @{username} (ID: {user_id}) has been unbanned.") if new_ban_status == 0 else lang_data.get("ban_success", "🚨 User @{username} (ID: {user_id}) has been banned.")
+        success_msg_template = lang_data.get("unban_success", "✅ User @{username} (ID: {user_id}) has been unbanned.") if new_ban_status == 0 else lang_data.get("ban_success", "🚨 User @{username} (ID: {user_id}) has been banned.")
         success_msg = success_msg_template.format(username=username, user_id=target_user_id)
         await query.answer(success_msg)
         # Refresh the user profile view

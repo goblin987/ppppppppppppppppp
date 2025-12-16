@@ -43,7 +43,7 @@ def get_sol_price_from_db():
             price = Decimal(str(result['setting_value']))
             cache_age = time.time() - result['updated_at'].timestamp()
             if cache_age < 600:  # 10 minutes
-                logger.info(f"�Ÿ“Š DB cached SOL price: {price} EUR (age: {int(cache_age)}s)")
+                logger.info(f"📊 DB cached SOL price: {price} EUR (age: {int(cache_age)}s)")
                 return price
     except Exception as e:
         logger.debug(f"Could not fetch DB price cache: {e}")
@@ -72,7 +72,7 @@ def fetch_price_from_api(api_name, url, parser_func):
         if response.status_code == 200:
             price = parser_func(response.json())
             if price:
-                logger.info(f"�œ… {api_name} SOL price: {price} EUR")
+                logger.info(f"✅ {api_name} SOL price: {price} EUR")
                 return price
         elif response.status_code == 429:
             logger.warning(f"⚠️ {api_name} rate limited (429)")
@@ -164,7 +164,7 @@ async def refresh_price_cache(context=None):
     price = get_sol_price_eur()
     
     if price:
-        logger.info(f"�œ… Background refresh successful: {price} EUR")
+        logger.info(f"✅ Background refresh successful: {price} EUR")
     else:
         logger.warning(f"⚠️ Background refresh failed, restoring old cache")
         _price_cache['timestamp'] = old_timestamp
@@ -334,7 +334,7 @@ async def _process_payment_result(result, context):
                     logger.info(f"Order {order_id} already processed, skipping")
                     return
                 
-                logger.info(f"�œ… Payment detected for Order {order_id}: {sol_balance} SOL")
+                logger.info(f"✅ Payment detected for Order {order_id}: {sol_balance} SOL")
                 
                 # ATOMIC: Mark as Paid in DB
                 c.execute("BEGIN IMMEDIATE")
@@ -567,7 +567,7 @@ async def sweep_wallet(wallet_data, current_lamports=0):
         # Send
         txn_sig = client.send_transaction(transaction)
         
-        logger.info(f"�œ… Swept funds. Sig: {txn_sig.value}")
+        logger.info(f"✅ Swept funds. Sig: {txn_sig.value}")
         
         # Update DB
         conn = get_db_connection()

@@ -72,9 +72,9 @@ async def handle_view_stock(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             for city, districts in sorted(stock_data.items()):
                 msg += f"🏳️ {city}\n"
                 for district, types in sorted(districts.items()):
-                    msg += f"  �Ÿ�˜️ {district}\n"
+                    msg += f"  🏘️ {district}\n"
                     for p_type, items in sorted(types.items()):
-                        msg += f"    �Ÿ’Ž {p_type}\n"
+                        msg += f"    💎 {p_type}\n"
                         items.sort(key=lambda x: x[1]) # Sort by price (index 1)
                         for size, price, avail, res in items:
                             price_str = format_currency(price)

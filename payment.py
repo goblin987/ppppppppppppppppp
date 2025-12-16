@@ -300,7 +300,7 @@ async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_T
         
         # Translated important notice
         important_notice = lang_data.get("invoice_important_notice", "⚠️ *Important:* Send the exact amount to this address.")
-        confirmation_notice = lang_data.get("invoice_confirmation_notice", "�œ… Auto-confirmed in ~1-2 min.")
+        confirmation_notice = lang_data.get("invoice_confirmation_notice", "✅ Auto-confirmed in ~1-2 min.")
         valid_notice = lang_data.get("invoice_valid_notice", "⏱️ *Valid for 30 minutes*")
         
         # Build message (removed Payment ID line)
@@ -489,7 +489,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
                 item_reseller_discount_percent = await get_reseller_discount_with_connection(c, user_id, item_product_type)
                 item_reseller_discount_amount = (item_original_price_decimal * item_reseller_discount_percent / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
                 item_price_paid_decimal = item_original_price_decimal - item_reseller_discount_amount
-                logger.info(f"�œ… BULLETPROOF: Reseller discount calculated: {item_reseller_discount_percent}% = {item_reseller_discount_amount} EUR")
+                logger.info(f"✅ BULLETPROOF: Reseller discount calculated: {item_reseller_discount_percent}% = {item_reseller_discount_amount} EUR")
             except Exception as reseller_error:
                 logger.warning(f"⚠️ BULLETPROOF: Error calculating reseller discount for user {user_id}, product {item_product_type}: {reseller_error}. Using full price.")
                 # Fallback to original price - payment will still succeed
@@ -662,7 +662,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
                                     # Use rate-limited function for 100% delivery guarantee
                                     result = await send_media_group_with_retry(bot, chat_id, media=media_group_input)
                                     if result:
-                                        logger.info(f"�œ… Successfully sent photo/video group ({len(media_group_input)}) for P{prod_id} user {user_id}")
+                                        logger.info(f"✅ Successfully sent photo/video group ({len(media_group_input)}) for P{prod_id} user {user_id}")
                                     else:
                                         logger.error(f"❌ Failed to send media group for P{prod_id} user {user_id} after all retries")
                                         raise Exception(f"Media group delivery failed after all retries for P{prod_id}")
@@ -694,7 +694,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
                                                 # Use rate-limited function for fallback too
                                                 fallback_result = await send_media_group_with_retry(bot, chat_id, media=fallback_media_group)
                                                 if fallback_result:
-                                                    logger.info(f"�œ… Successfully sent fallback media group for P{prod_id} user {user_id}")
+                                                    logger.info(f"✅ Successfully sent fallback media group for P{prod_id} user {user_id}")
                                                 else:
                                                     raise Exception(f"Fallback media group also failed for P{prod_id}")
                                             except Exception as fallback_send_error:
@@ -739,7 +739,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
                                     # Use rate-limited function for animations
                                     anim_result = await send_media_with_retry(bot, chat_id, media=media_to_send_ref, media_type='animation')
                                     if anim_result:
-                                        logger.info(f"�œ… Successfully sent animation with file path for P{prod_id} user {user_id}")
+                                        logger.info(f"✅ Successfully sent animation with file path for P{prod_id} user {user_id}")
                                     else:
                                         logger.error(f"❌ Failed to send animation for P{prod_id} user {user_id} after all retries")
                                         raise Exception(f"Animation delivery failed for P{prod_id}")
@@ -757,7 +757,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
                     if combined_caption:
                         logger.debug(f"Sending text details for P{prod_id} user {user_id}: {len(combined_caption)} characters")
                         await send_message_with_retry(bot, chat_id, combined_caption, parse_mode=None)
-                        logger.info(f"�œ… Successfully sent text details for P{prod_id} user {user_id}")
+                        logger.info(f"✅ Successfully sent text details for P{prod_id} user {user_id}")
                     else:
                         # Create a fallback message if both original text and header are missing somehow
                         fallback_text = f"(No details provided for Product ID {prod_id})"
@@ -794,7 +794,7 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
                 # Send detailed message to user with their purchase info
                 user_msg = f"⚠️ PAYMENT SUCCESSFUL - DELIVERY ISSUE\n\n"
                 user_msg += f"Your payment was processed successfully, but we encountered a technical issue delivering your products.\n\n"
-                user_msg += f"�œ… Payment confirmed\n"
+                user_msg += f"✅ Payment confirmed\n"
                 user_msg += f"📦 Products purchased: {len(processed_product_ids)}\n"
                 user_msg += f"⚠️ Delivery status: PENDING\n\n"
                 user_msg += f"Our support team has been automatically notified and will deliver your products shortly.\n"
@@ -1098,13 +1098,13 @@ async def credit_user_balance(user_id: int, amount_eur: Decimal, reason: str, co
            
             if "Overpayment" in reason:
                 # Example message key: "credit_overpayment_purchase"
-                notify_msg_template = lang_data.get("credit_overpayment_purchase", "�œ… Your purchase was successful! Additionally, an overpayment of {amount} EUR has been credited to your balance. Your new balance is {new_balance} EUR.")
+                notify_msg_template = lang_data.get("credit_overpayment_purchase", "✅ Your purchase was successful! Additionally, an overpayment of {amount} EUR has been credited to your balance. Your new balance is {new_balance} EUR.")
             elif "Underpayment" in reason:
                 # Example message key: "credit_underpayment_purchase"
-                 notify_msg_template = lang_data.get("credit_underpayment_purchase", "�„�️ Your purchase failed due to underpayment, but the received amount ({amount} EUR) has been credited to your balance. Your new balance is {new_balance} EUR.")
+                 notify_msg_template = lang_data.get("credit_underpayment_purchase", "ℹ️ Your purchase failed due to underpayment, but the received amount ({amount} EUR) has been credited to your balance. Your new balance is {new_balance} EUR.")
             else: # Generic credit (like Refill)
                 # Example message key: "credit_refill"
-                notify_msg_template = lang_data.get("credit_refill", "�œ… Your balance has been credited by {amount} EUR. Reason: {reason}. New balance: {new_balance} EUR.")
+                notify_msg_template = lang_data.get("credit_refill", "✅ Your balance has been credited by {amount} EUR. Reason: {reason}. New balance: {new_balance} EUR.")
 
             notify_msg = notify_msg_template.format(
                 amount=format_currency(amount_eur),
@@ -1169,7 +1169,7 @@ async def handle_cancel_crypto_payment(update: Update, context: ContextTypes.DEF
     context.user_data.pop('pending_payment_id', None)
     
     if removal_success:
-        cancellation_success_msg = lang_data.get("payment_cancelled_success", "�œ… Payment cancelled successfully. Reserved items have been released.")
+        cancellation_success_msg = lang_data.get("payment_cancelled_success", "✅ Payment cancelled successfully. Reserved items have been released.")
         logger.info(f"Successfully cancelled payment {pending_payment_id} for user {user_id}")
     else:
         cancellation_success_msg = lang_data.get("payment_cancel_error", "⚠️ Payment cancellation processed, but there may have been an issue. Please contact support if you experience problems.")

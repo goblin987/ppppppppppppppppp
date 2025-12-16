@@ -51,8 +51,8 @@ logger = logging.getLogger(__name__)
 
 # Emojis (Defaults/Placeholders)
 EMOJI_CITY = "�Ÿ�™️"
-EMOJI_DISTRICT = "�Ÿ�˜️"
-# EMOJI_PRODUCT = "�Ÿ’Ž" # No longer primary source
+EMOJI_DISTRICT = "🏘️"
+# EMOJI_PRODUCT = "💎" # No longer primary source
 EMOJI_HERB = "🌐" # Keep for potential specific logic if needed
 EMOJI_PRICE = "👤"
 EMOJI_QUANTITY = "🔧"
@@ -60,7 +60,7 @@ EMOJI_BASKET = "🛒"
 EMOJI_PROFILE = "�Ÿ‘�"
 EMOJI_REFILL = "👤"
 EMOJI_REVIEW = "📦"
-EMOJI_PRICELIST = "�Ÿ“‹"
+EMOJI_PRICELIST = "📋"
 EMOJI_LANG = "🌐"
 EMOJI_BACK = "✅️"
 EMOJI_HOME = "💥"
@@ -343,7 +343,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"start: Sending welcome menu to user {user_id}...")
         result = await send_message_with_retry(context.bot, chat_id, full_welcome, reply_markup=reply_markup, parse_mode=None)
         if result:
-            logger.info(f"start: �œ… Menu sent successfully to user {user_id} (msg_id: {result.message_id})")
+            logger.info(f"start: ✅ Menu sent successfully to user {user_id} (msg_id: {result.message_id})")
         else:
             logger.error(f"start: ❌ FAILED to send menu to user {user_id}! send_message_with_retry returned None")
 
@@ -761,7 +761,7 @@ async def handle_add_to_basket(update: Update, context: ContextTypes.DEFAULT_TYP
     view_basket_button_text = lang_data.get("view_basket_button", "View Basket"); clear_basket_button_text = lang_data.get("clear_basket_button", "Clear Basket")
     shop_more_button_text = lang_data.get("shop_more_button", "Shop More"); expires_label = lang_data.get("expires_label", "Expires in")
     error_adding_db = lang_data.get("error_adding_db", "Error: Database issue adding item."); error_adding_unexpected = lang_data.get("error_adding_unexpected", "Error: An unexpected issue occurred.")
-    added_msg_template = lang_data.get("added_to_basket", "�œ… Item Reserved!\n\n{item} is in your basket for {timeout} minutes! ⏳")
+    added_msg_template = lang_data.get("added_to_basket", "✅ Item Reserved!\n\n{item} is in your basket for {timeout} minutes! ⏳")
     pay_msg_template = lang_data.get("pay", "👤 Total to Pay: {amount} EUR")
     apply_discount_button_text = lang_data.get("apply_discount_button", "Apply Discount Code")
     reseller_discount_label = lang_data.get("reseller_discount_label", "Reseller Discount")
@@ -879,7 +879,7 @@ async def handle_add_to_basket(update: Update, context: ContextTypes.DEFAULT_TYP
             [InlineKeyboardButton(f"👤 {pay_now_button_text}", callback_data="confirm_pay"), InlineKeyboardButton(f"{EMOJI_REFILL} {top_up_button_text}", callback_data="refill")],
             [InlineKeyboardButton(f"{basket_emoji} {view_basket_button_text} ({len(current_basket_list)})", callback_data="view_basket"), InlineKeyboardButton(f"{basket_emoji} {clear_basket_button_text}", callback_data="clear_basket")],
             [InlineKeyboardButton(f"{EMOJI_DISCOUNT} {apply_discount_button_text}", callback_data="apply_discount_start")],
-            [InlineKeyboardButton(f"�ž• {shop_more_button_text} ({district_btn_text})", callback_data=f"dist|{city_id}|{dist_id}")],
+            [InlineKeyboardButton(f"➕ {shop_more_button_text} ({district_btn_text})", callback_data=f"dist|{city_id}|{dist_id}")],
             [InlineKeyboardButton(f"{EMOJI_BACK} {back_options_button}", callback_data=f"type|{city_id}|{dist_id}|{p_type}"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]
         ]
         await query.edit_message_text(reserved_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -930,7 +930,7 @@ async def handle_profile(update: Update, context: ContextTypes.DEFAULT_TYPE, par
         purchase_history_button_text = lang_data.get("purchase_history_button", "Purchase History"); home_button_text = lang_data.get("home_button", "Home")
         keyboard = [
             [InlineKeyboardButton(f"{EMOJI_REFILL} {top_up_button_text}", callback_data="refill"), InlineKeyboardButton(f"{basket_emoji} {view_basket_button_text} ({basket_count})", callback_data="view_basket")],
-            [InlineKeyboardButton(f"�Ÿ“œ {purchase_history_button_text}", callback_data="view_history")],
+            [InlineKeyboardButton(f"📜 {purchase_history_button_text}", callback_data="view_history")],
             [InlineKeyboardButton(f"{EMOJI_HOME} {home_button_text}", callback_data="back_start")]
         ]
         await query.edit_message_text(profile_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -1433,7 +1433,7 @@ async def handle_user_discount_code_message(update: Update, context: ContextType
         context.user_data['applied_discount'] = {'code': entered_code, 'amount': discount_details['discount_amount'], 'final_total': discount_details['final_total']}
         logger.info(f"User {user_id} applied general discount code '{entered_code}'.")
         success_label = lang_data.get("success_label", "Success!")
-        feedback_msg = f"�œ… {success_label} {validation_message}"
+        feedback_msg = f"✅ {success_label} {validation_message}"
     else:
         context.user_data.pop('applied_discount', None)
         logger.warning(f"User {user_id} failed to apply general code '{entered_code}': {validation_message}")
@@ -1752,7 +1752,7 @@ async def handle_basket_discount_code_message(update: Update, context: ContextTy
         context.user_data['basket_pay_total_eur'] = new_final_total_float
         context.user_data['basket_pay_discount_code'] = entered_code
         logger.info(f"User {user_id} applied valid basket discount '{entered_code}'. New FINAL total for crypto: {new_final_total_float:.2f} EUR")
-        feedback_msg_template = lang_data.get("basket_pay_code_applied", "�œ… Code '{code}' applied. New total: {total} EUR. Choose crypto:")
+        feedback_msg_template = lang_data.get("basket_pay_code_applied", "✅ Code '{code}' applied. New total: {total} EUR. Choose crypto:")
         feedback_msg = feedback_msg_template.format(code=entered_code, total=format_currency(new_final_total_float))
     else:
         context.user_data['basket_pay_discount_code'] = None
@@ -1966,9 +1966,9 @@ async def handle_view_history(update: Update, context: ContextTypes.DEFAULT_TYPE
     recent_purchases_title = lang_data.get("recent_purchases_title", "Recent Purchases"); back_profile_button = lang_data.get("back_profile_button", "Back to Profile")
     home_button = lang_data.get("home_button", "Home"); unknown_date_label = lang_data.get("unknown_date_label", "Unknown Date")
 
-    if not history: msg = f"�Ÿ“œ {history_title}\n\n{no_history_msg}"; keyboard = [[InlineKeyboardButton(f"{EMOJI_BACK} {back_profile_button}", callback_data="profile"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]]
+    if not history: msg = f"📜 {history_title}\n\n{no_history_msg}"; keyboard = [[InlineKeyboardButton(f"{EMOJI_BACK} {back_profile_button}", callback_data="profile"), InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]]
     else:
-        msg = f"�Ÿ“œ {recent_purchases_title}\n\n"
+        msg = f"📜 {recent_purchases_title}\n\n"
         for i, purchase in enumerate(history):
             try:
                 # Ensure purchase_date is treated as UTC if no timezone info
@@ -2060,7 +2060,7 @@ async def _display_language_menu(update: Update, context: ContextTypes.DEFAULT_T
      keyboard = []
      for lang_code, lang_dict_for_name in UTILS_LANGUAGES_DISPLAY.items():
          lang_name = lang_dict_for_name.get("native_name", lang_code.upper())
-         keyboard.append([InlineKeyboardButton(f"{lang_name} {'�œ…' if lang_code == current_lang else ''}", callback_data=f"language|{lang_code}")])
+         keyboard.append([InlineKeyboardButton(f"{lang_name} {'✅' if lang_code == current_lang else ''}", callback_data=f"language|{lang_code}")])
      back_button_text = current_lang_data.get("back_button", "Back")
      keyboard.append([InlineKeyboardButton(f"{EMOJI_BACK} {back_button_text}", callback_data="back_start")])
      lang_select_prompt = current_lang_data.get("language", "🌐 Select Language:")
@@ -2234,7 +2234,7 @@ async def handle_leave_review_message(update: Update, context: ContextTypes.DEFA
         logger.info(f"User {user_id} left a review.")
         context.user_data.pop("state", None)
 
-        success_msg = f"�œ… {review_thanks}"
+        success_msg = f"✅ {review_thanks}"
         keyboard = [[InlineKeyboardButton(f"�Ÿ‘€ {view_reviews_button}", callback_data="view_reviews|0"),
                      InlineKeyboardButton(f"{EMOJI_HOME} {home_button}", callback_data="back_start")]]
         await send_message_with_retry(context.bot, chat_id, success_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -2420,7 +2420,7 @@ async def handle_single_item_discount_code_message(update: Update, context: Cont
         context.user_data['single_item_pay_final_eur'] = new_final_total_for_single_item_float
         context.user_data['single_item_pay_discount_code'] = entered_code
         logger.info(f"User {user_id} applied valid single item discount '{entered_code}'. New FINAL price: {new_final_total_for_single_item_float:.2f} EUR")
-        feedback_msg_template = lang_data.get("basket_pay_code_applied", "�œ… Code '{code}' applied. New total: {total} EUR. Choose payment method:")
+        feedback_msg_template = lang_data.get("basket_pay_code_applied", "✅ Code '{code}' applied. New total: {total} EUR. Choose payment method:")
         feedback_msg = feedback_msg_template.format(code=entered_code, total=format_currency(new_final_total_for_single_item_float))
     else:
         context.user_data['single_item_pay_discount_code'] = None

@@ -686,7 +686,7 @@ async def retry_purchase_finalization(user_id: int, basket_snapshot: list, disco
             )
             
             if purchase_finalized:
-                logger.info(f"�œ… SUCCESS: Purchase finalization retry succeeded for payment {payment_id} on attempt {attempt + 1}")
+                logger.info(f"✅ SUCCESS: Purchase finalization retry succeeded for payment {payment_id} on attempt {attempt + 1}")
                 # Remove the pending deposit on success
                 await asyncio.to_thread(remove_pending_deposit, payment_id, trigger="retry_success")
                 return True
@@ -866,7 +866,7 @@ def main() -> None:
         telegram_apps[bot_id] = application
         applications.append(application)
         
-        logger.info(f"�œ… Bot {bot_index + 1} (ID: {bot_id}) application created")
+        logger.info(f"✅ Bot {bot_index + 1} (ID: {bot_id}) application created")
     
     # Keep backward compatibility - telegram_app points to first bot
     if applications:
@@ -907,13 +907,13 @@ def main() -> None:
             logger.info(f"Setting webhook for @{bot_username}: {WEBHOOK_URL}/telegram/***")
             
             if await application.bot.set_webhook(url=webhook_url, allowed_updates=Update.ALL_TYPES):
-                logger.info(f"�œ… Webhook set successfully for @{bot_username}")
+                logger.info(f"✅ Webhook set successfully for @{bot_username}")
             else:
                 logger.error(f"❌ Failed to set webhook for @{bot_username}")
                 return
             
             await application.start()
-            logger.info(f"�œ… @{bot_username} started (webhook mode)")
+            logger.info(f"✅ @{bot_username} started (webhook mode)")
         
         logger.info(f"�Ÿš€ All {len(applications)} bot(s) initialized and running!")
         
@@ -942,7 +942,7 @@ def main() -> None:
                 logger.info(f"Stopping Bot {idx + 1}...")
                 await application.stop()
                 await application.shutdown()
-                logger.info(f"�œ… Bot {idx + 1} stopped")
+                logger.info(f"✅ Bot {idx + 1} stopped")
             except Exception as e:
                 logger.error(f"Error stopping Bot {idx + 1}: {e}")
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]

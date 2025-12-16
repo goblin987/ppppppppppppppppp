@@ -124,7 +124,7 @@ def get_reseller_discount(user_id: int, product_type: str) -> Decimal:
                 discount_res = c.fetchone()
                 if discount_res:
                     discount = Decimal(str(discount_res['discount_percentage']))
-                    logger.info(f"�œ… Found reseller discount for user {user_id}, type '{product_type}': {discount}%")
+                    logger.info(f"✅ Found reseller discount for user {user_id}, type '{product_type}': {discount}%")
                 else:
                     logger.info(f"❌ No reseller discount found for user {user_id}, type '{product_type}' (user is reseller but no specific discount set)")
             else:
@@ -192,14 +192,14 @@ async def handle_manage_resellers_menu(update: Update, context: ContextTypes.DEF
         if conn: conn.close()
 
     msg = "�Ÿ‘� **RESELLER MANAGEMENT**\n\n"
-    msg += f"�Ÿ“Š Active Resellers: **{total_resellers}**\n\n"
+    msg += f"📊 Active Resellers: **{total_resellers}**\n\n"
     
     if recent_resellers:
         msg += "Recent Resellers:\n"
         for r in recent_resellers:
             username = r['username'] or f"ID_{r['user_id']}"
             discount_count = r['discount_count']
-            status_icon = "�œ…" if discount_count > 0 else "⚠️"
+            status_icon = "✅" if discount_count > 0 else "⚠️"
             msg += f"  {status_icon} @{username} ({discount_count} discounts)\n"
         msg += "\n"
     
@@ -208,7 +208,7 @@ async def handle_manage_resellers_menu(update: Update, context: ContextTypes.DEF
 
     keyboard = [
         [InlineKeyboardButton("🔧 Find User (ID or @username)", callback_data="reseller_search_user")],
-        [InlineKeyboardButton("�Ÿ“‹ View All Resellers", callback_data="manage_reseller_discounts_select_reseller|0")],
+        [InlineKeyboardButton("📋 View All Resellers", callback_data="manage_reseller_discounts_select_reseller|0")],
         [InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]
     ]
 
@@ -293,7 +293,7 @@ async def handle_reseller_manage_id_message(update: Update, context: ContextType
                 keyboard = []
                 for user in multiple_results:
                     uname = user['username'] or f"ID_{user['user_id']}"
-                    is_res = "�œ…" if user['is_reseller'] == 1 else "�Œ"
+                    is_res = "✅" if user['is_reseller'] == 1 else "�Œ"
                     purchases = user['total_purchases'] or 0
                     keyboard.append([InlineKeyboardButton(
                         f"{is_res} @{uname} ({purchases} purchases)", 
@@ -360,7 +360,7 @@ async def _display_reseller_user_profile(bot, chat_id, user_info, edit_message_i
         if conn: conn.close()
     
     # Build message
-    status_icon = "�œ…" if is_reseller else "�Œ"
+    status_icon = "✅" if is_reseller else "�Œ"
     msg = f"�Ÿ‘� **USER PROFILE**\n\n"
     msg += f"**Username:** @{username}\n"
     msg += f"**User ID:** `{target_user_id}`\n"
@@ -388,7 +388,7 @@ async def _display_reseller_user_profile(bot, chat_id, user_info, edit_message_i
         keyboard.append([InlineKeyboardButton("💥️ Per-Type Discounts", callback_data=f"reseller_manage_specific|{target_user_id}")])
         keyboard.append([InlineKeyboardButton("⚠ Set ALL Types Same %", callback_data=f"reseller_quick_discount|{target_user_id}")])
     else:
-        keyboard.append([InlineKeyboardButton("�œ… Enable as Reseller", callback_data=f"reseller_toggle_status|{target_user_id}|0")])
+        keyboard.append([InlineKeyboardButton("✅ Enable as Reseller", callback_data=f"reseller_toggle_status|{target_user_id}|0")])
         keyboard.append([InlineKeyboardButton("⚠ Enable + Set Discount", callback_data=f"reseller_quick_enable|{target_user_id}")])
     
     keyboard.append([InlineKeyboardButton("🔧 Search Another", callback_data="reseller_search_user")])
@@ -468,7 +468,7 @@ async def handle_reseller_quick_enable(update: Update, context: ContextTypes.DEF
         if conn: conn.close()
     
     # Show quick discount options
-    msg = f"�œ… **@{username}** is now a Reseller!\n\n"
+    msg = f"✅ **@{username}** is now a Reseller!\n\n"
     msg += "⚠ **Quick Setup:** Select a discount to apply to ALL product types:\n"
     
     keyboard = []
@@ -583,7 +583,7 @@ async def handle_reseller_apply_global(update: Update, context: ContextTypes.DEF
     finally:
         if conn: conn.close()
     
-    msg = f"�œ… **Global Discount Applied!**\n\n"
+    msg = f"✅ **Global Discount Applied!**\n\n"
     msg += f"**Reseller:** @{username}\n"
     msg += f"**Discount:** {discount_percent}% off\n"
     msg += f"**Applied to:** {applied_count} product types\n\n"
@@ -684,7 +684,7 @@ async def handle_reseller_global_percent_message(update: Update, context: Contex
         finally:
             if conn: conn.close()
         
-        msg = f"�œ… **Global Discount Applied!**\n\n"
+        msg = f"✅ **Global Discount Applied!**\n\n"
         msg += f"**Reseller:** @{username}\n"
         msg += f"**Discount:** {percentage}% off\n"
         msg += f"**Applied to:** {applied_count} product types"
@@ -865,7 +865,7 @@ async def handle_manage_specific_reseller_discounts(update: Update, context: Con
     for p_type, emoji in sorted(PRODUCT_TYPES.items()):
         if p_type in discount_dict:
             percentage = discount_dict[p_type]
-            msg += f"  �œ… {emoji} {p_type}: **{percentage:.1f}%** off\n"
+            msg += f"  ✅ {emoji} {p_type}: **{percentage:.1f}%** off\n"
             keyboard.append([
                 InlineKeyboardButton(f"✅️ {emoji} {p_type} ({percentage:.1f}%)", callback_data=f"reseller_edit_discount|{target_reseller_id}|{p_type}"),
                 InlineKeyboardButton("�Ÿ—‘️", callback_data=f"reseller_delete_discount_confirm|{target_reseller_id}|{p_type}")
@@ -873,7 +873,7 @@ async def handle_manage_specific_reseller_discounts(update: Update, context: Con
         else:
             msg += f"  ❌ {emoji} {p_type}: No discount\n"
             keyboard.append([
-                InlineKeyboardButton(f"�ž• Add {emoji} {p_type}", callback_data=f"reseller_add_discount_enter_percent_direct|{target_reseller_id}|{p_type}")
+                InlineKeyboardButton(f"➕ Add {emoji} {p_type}", callback_data=f"reseller_add_discount_enter_percent_direct|{target_reseller_id}|{p_type}")
             ])
     
     msg += f"\n🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧\n"
@@ -1039,7 +1039,7 @@ async def handle_reseller_set_type_preset(update: Update, context: ContextTypes.
     finally:
         if conn: conn.close()
     
-    await query.answer(f"�œ… Set {discount_percent}% for {product_type}!")
+    await query.answer(f"✅ Set {discount_percent}% for {product_type}!")
     
     # Return to per-type view
     # Re-call the handler to refresh the view
@@ -1145,7 +1145,7 @@ async def handle_reseller_percent_message(update: Update, context: ContextTypes.
             )
 
             action_verb = "set" if old_value is None else "updated"
-            await send_message_with_retry(context.bot, chat_id, f"�œ… Discount rule {action_verb} for {product_type}: {percentage:.1f}%",
+            await send_message_with_retry(context.bot, chat_id, f"✅ Discount rule {action_verb} for {product_type}: {percentage:.1f}%",
                                         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data=back_callback)]]), parse_mode=None)
 
             # Clean up context after successful operation
@@ -1187,7 +1187,7 @@ async def handle_reseller_delete_discount_confirm(update: Update, context: Conte
     msg = (f"⚠️ Confirm Deletion\n\n"
            f"Delete the discount rule for {emoji} {product_type} for user ID {target_reseller_id}?\n\n"
            f"🚨 This action is irreversible!")
-    keyboard = [[InlineKeyboardButton("�œ… Yes, Delete Rule", callback_data="confirm_yes"),
+    keyboard = [[InlineKeyboardButton("✅ Yes, Delete Rule", callback_data="confirm_yes"),
                  InlineKeyboardButton("❌ No, Cancel", callback_data=f"reseller_manage_specific|{target_reseller_id}")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
