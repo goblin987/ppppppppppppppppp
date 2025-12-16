@@ -56,11 +56,11 @@ async def handle_view_stock(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         products = c.fetchall()
 
         if not products:
-            msg = "ðŸ“¦ Bot Stock\n\nNo products currently in stock (neither available nor reserved)." # Clarified message
+            msg = "📦 Bot Stock\n\nNo products currently in stock (neither available nor reserved)." # Clarified message
             back_callback = "admin_menu" if primary_admin else "viewer_admin_menu"
-            keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data=back_callback)]]
+            keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data=back_callback)]]
         else:
-            msg = "ðŸ“¦ Current Bot Stock\n\n"
+            msg = "📦 Current Bot Stock\n\n"
             # Group products by location and type
             for p in products:
                 # Access by column name
@@ -70,27 +70,27 @@ async def handle_view_stock(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
             # Format the message (Plain Text)
             for city, districts in sorted(stock_data.items()):
-                msg += f"ðŸ™ï¸ {city}\n"
+                msg += f"🏳️ {city}\n"
                 for district, types in sorted(districts.items()):
-                    msg += f"  ðŸ˜ï¸ {district}\n"
+                    msg += f"  �Ÿ�˜️ {district}\n"
                     for p_type, items in sorted(types.items()):
-                        msg += f"    ðŸ’Ž {p_type}\n"
+                        msg += f"    �Ÿ’Ž {p_type}\n"
                         items.sort(key=lambda x: x[1]) # Sort by price (index 1)
                         for size, price, avail, res in items:
                             price_str = format_currency(price)
                             # Ensure display reflects reality (Avail cannot be less than Reserved after reservation)
                             # Although the reservation logic should prevent Avail < Reserved, this adds safety.
                             # It's generally better to rely on the actual DB values.
-                            msg += f"      - {size} ({price_str} â‚¬) | Av: {avail} / Res: {res}\n"
+                            msg += f"      - {size} ({price_str} �‚�) | Av: {avail} / Res: {res}\n"
                     msg += "\n" # Add a newline between product types
                 msg += "\n" # Add a newline between districts
 
             if len(msg) > 4000:
-                msg = msg[:4000] + "\n\nâœ‚ï¸ ... Message truncated due to length limit."
+                msg = msg[:4000] + "\n\n�œ‚️ ... Message truncated due to length limit."
                 logger.warning("Stock list message truncated due to length.")
 
             back_callback = "admin_menu" if primary_admin else "viewer_admin_menu"
-            keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data=back_callback)]]
+            keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data=back_callback)]]
 
         # Try sending/editing the message
         try:
@@ -99,16 +99,16 @@ async def handle_view_stock(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             if "message is not modified" in str(e).lower(): await query.answer()
             else:
                 logger.error(f"Error editing stock list message: {e}.")
-                fallback_msg = "âŒ Error displaying stock list."
+                fallback_msg = "❌ Error displaying stock list."
                 try: await query.edit_message_text(fallback_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
                 except Exception: await query.answer("Error displaying stock list.", show_alert=True)
 
     except sqlite3.Error as e:
         logger.error(f"DB error fetching stock list: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error fetching stock data from database.", parse_mode=None)
+        await query.edit_message_text("❌ Error fetching stock data from database.", parse_mode=None)
     except Exception as e:
          logger.error(f"Unexpected error in handle_view_stock: {e}", exc_info=True)
-         await query.edit_message_text("âŒ An unexpected error occurred while generating the stock list.", parse_mode=None)
+         await query.edit_message_text("❌ An unexpected error occurred while generating the stock list.", parse_mode=None)
     finally:
         if conn: conn.close() # Close connection if opened
 

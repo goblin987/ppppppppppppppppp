@@ -43,7 +43,7 @@ def get_sol_price_from_db():
             price = Decimal(str(result['setting_value']))
             cache_age = time.time() - result['updated_at'].timestamp()
             if cache_age < 600:  # 10 minutes
-                logger.info(f"ðŸ“Š DB cached SOL price: {price} EUR (age: {int(cache_age)}s)")
+                logger.info(f"�Ÿ“Š DB cached SOL price: {price} EUR (age: {int(cache_age)}s)")
                 return price
     except Exception as e:
         logger.debug(f"Could not fetch DB price cache: {e}")
@@ -61,7 +61,7 @@ def save_sol_price_to_db(price):
         """, (str(price),))
         conn.commit()
         conn.close()
-        logger.debug(f"ðŸ’¾ Saved SOL price to DB: {price} EUR")
+        logger.debug(f"👤 Saved SOL price to DB: {price} EUR")
     except Exception as e:
         logger.debug(f"Could not save price to DB: {e}")
 
@@ -72,14 +72,14 @@ def fetch_price_from_api(api_name, url, parser_func):
         if response.status_code == 200:
             price = parser_func(response.json())
             if price:
-                logger.info(f"âœ… {api_name} SOL price: {price} EUR")
+                logger.info(f"�œ… {api_name} SOL price: {price} EUR")
                 return price
         elif response.status_code == 429:
-            logger.warning(f"âš ï¸ {api_name} rate limited (429)")
+            logger.warning(f"⚠️ {api_name} rate limited (429)")
         else:
-            logger.warning(f"âš ï¸ {api_name} returned status {response.status_code}")
+            logger.warning(f"⚠️ {api_name} returned status {response.status_code}")
     except requests.Timeout:
-        logger.warning(f"â±ï¸ {api_name} timeout")
+        logger.warning(f"⏱️ {api_name} timeout")
     except Exception as e:
         logger.debug(f"{api_name} error: {e}")
     return None
@@ -99,7 +99,7 @@ def get_sol_price_eur():
     # Layer 1: Memory cache
     if _price_cache['price'] and (now - _price_cache['timestamp']) < PRICE_CACHE_TTL:
         cache_age = int(now - _price_cache['timestamp'])
-        logger.info(f"ðŸ’° Memory cached SOL price: {_price_cache['price']} EUR (age: {cache_age}s)")
+        logger.info(f"👤 Memory cached SOL price: {_price_cache['price']} EUR (age: {cache_age}s)")
         return _price_cache['price']
     
     # Layer 2: Database cache
@@ -144,19 +144,19 @@ def get_sol_price_eur():
     if _price_cache['price']:
         age = int(now - _price_cache['timestamp'])
         if age < STALE_CACHE_MAX_AGE:
-            logger.warning(f"âš ï¸ All APIs failed, using stale cache ({age}s old): {_price_cache['price']} EUR")
+            logger.warning(f"⚠️ All APIs failed, using stale cache ({age}s old): {_price_cache['price']} EUR")
             return _price_cache['price']
         else:
-            logger.error(f"âŒ Stale cache too old ({age}s), cannot use")
+            logger.error(f"❌ Stale cache too old ({age}s), cannot use")
     
-    logger.error(f"âŒ CRITICAL: All price sources failed!")
+    logger.error(f"❌ CRITICAL: All price sources failed!")
     return None
 
 async def refresh_price_cache(context=None):
     """
     Background job: Proactively refresh price cache every 4 minutes
     """
-    logger.info("ðŸ”„ Background price refresh triggered")
+    logger.info("�Ÿ”„ Background price refresh triggered")
     
     old_timestamp = _price_cache['timestamp']
     _price_cache['timestamp'] = 0
@@ -164,9 +164,9 @@ async def refresh_price_cache(context=None):
     price = get_sol_price_eur()
     
     if price:
-        logger.info(f"âœ… Background refresh successful: {price} EUR")
+        logger.info(f"�œ… Background refresh successful: {price} EUR")
     else:
-        logger.warning(f"âš ï¸ Background refresh failed, restoring old cache")
+        logger.warning(f"⚠️ Background refresh failed, restoring old cache")
         _price_cache['timestamp'] = old_timestamp
 
 async def create_solana_payment(user_id, order_id, eur_amount):
@@ -334,7 +334,7 @@ async def _process_payment_result(result, context):
                     logger.info(f"Order {order_id} already processed, skipping")
                     return
                 
-                logger.info(f"âœ… Payment detected for Order {order_id}: {sol_balance} SOL")
+                logger.info(f"�œ… Payment detected for Order {order_id}: {sol_balance} SOL")
                 
                 # ATOMIC: Mark as Paid in DB
                 c.execute("BEGIN IMMEDIATE")
@@ -354,7 +354,7 @@ async def _process_payment_result(result, context):
                         if price:
                             surplus_eur = (surplus * price).quantize(Decimal("0.01"))
                             if surplus_eur > 0:
-                                logger.info(f"ðŸ’° Overpayment of {surplus} SOL ({surplus_eur} EUR) detected for {order_id}")
+                                logger.info(f"👤 Overpayment of {surplus} SOL ({surplus_eur} EUR) detected for {order_id}")
                                 from payment import credit_user_balance
                                 await credit_user_balance(user_id, surplus_eur, f"Overpayment bonus for order {order_id}", context)
                     except Exception as over_e:
@@ -411,7 +411,7 @@ async def _process_payment_result(result, context):
                 if not check:
                     return
                 
-                logger.info(f"ðŸ“‰ Underpayment detected for {order_id} ({sol_balance} SOL). Refunding immediately.")
+                logger.info(f"�Ÿ“‰ Underpayment detected for {order_id} ({sol_balance} SOL). Refunding immediately.")
                 
                 try:
                     price = get_sol_price_eur()
@@ -419,7 +419,7 @@ async def _process_payment_result(result, context):
                         refund_eur = (sol_balance * price).quantize(Decimal("0.01"))
                         if refund_eur > 0:
                             from payment import credit_user_balance
-                            msg = f"âš ï¸ Underpayment detected ({sol_balance} SOL). Refunded {refund_eur} EUR to balance. Please use Top Up."
+                            msg = f"⚠️ Underpayment detected ({sol_balance} SOL). Refunded {refund_eur} EUR to balance. Please use Top Up."
                             await send_message_with_retry(context.bot, user_id, msg, parse_mode=None)
                             await credit_user_balance(user_id, refund_eur, f"Underpayment refund {order_id}", context)
                             
@@ -442,7 +442,7 @@ async def _process_payment_result(result, context):
                 c.execute("BEGIN IMMEDIATE")
                 c.execute("UPDATE solana_wallets SET status = 'expired', updated_at = datetime('now') WHERE id = ? AND status = 'pending'", (wallet_id,))
                 conn.commit()
-                logger.info(f"â±ï¸ Order {order_id} expired (no payment received)")
+                logger.info(f"⏱️ Order {order_id} expired (no payment received)")
                 
         except Exception as e:
             logger.error(f"Error processing payment result: {e}", exc_info=True)
@@ -477,7 +477,7 @@ async def check_solana_deposits(context):
         
         # Convert to list of dicts for parallel processing
         pending_list = [dict(row) for row in pending]
-        logger.info(f"ðŸ” Checking {len(pending_list)} pending wallets...")
+        logger.info(f"🔧 Checking {len(pending_list)} pending wallets...")
         
         # PARALLEL: Check all wallets concurrently (with rate limiting via semaphore)
         tasks = [_check_single_wallet(wallet, context) for wallet in pending_list]
@@ -542,7 +542,7 @@ async def sweep_wallet(wallet_data, current_lamports=0):
         if amount_to_send <= 0:
             return
 
-        logger.info(f"ðŸ§¹ Sweeping {amount_to_send} lamports from {wallet_data['public_key']} to {ADMIN_WALLET}...")
+        logger.info(f"💥 Sweeping {amount_to_send} lamports from {wallet_data['public_key']} to {ADMIN_WALLET}...")
 
         # Create Transaction
         ix = transfer(
@@ -567,7 +567,7 @@ async def sweep_wallet(wallet_data, current_lamports=0):
         # Send
         txn_sig = client.send_transaction(transaction)
         
-        logger.info(f"âœ… Swept funds. Sig: {txn_sig.value}")
+        logger.info(f"�œ… Swept funds. Sig: {txn_sig.value}")
         
         # Update DB
         conn = get_db_connection()
@@ -576,5 +576,5 @@ async def sweep_wallet(wallet_data, current_lamports=0):
         conn.close()
         
     except Exception as e:
-        logger.error(f"âŒ Failed to sweep wallet {wallet_data['public_key']}: {e}", exc_info=True)
+        logger.error(f"❌ Failed to sweep wallet {wallet_data['public_key']}: {e}", exc_info=True)
 

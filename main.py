@@ -212,7 +212,7 @@ def callback_query_router(func):
                 logger.info(f"Ignoring callback query from banned user {user_id}.")
                 if update.callback_query:
                     try:
-                        await update.callback_query.answer("âŒ Your access has been restricted.", show_alert=True)
+                        await update.callback_query.answer("❌ Your access has been restricted.", show_alert=True)
                     except Exception as e:
                         logger.error(f"Error answering callback from banned user {user_id}: {e}")
                 return
@@ -400,7 +400,7 @@ async def start_command_wrapper(update: Update, context: ContextTypes.DEFAULT_TY
     # Check if user is banned before processing /start command
     if await is_user_banned(user_id):
         logger.info(f"Banned user {user_id} attempted to use /start command.")
-        ban_message = "âŒ Your access to this bot has been restricted. If you believe this is an error, please contact support."
+        ban_message = "❌ Your access to this bot has been restricted. If you believe this is an error, please contact support."
         await send_message_with_retry(context.bot, update.effective_chat.id, ban_message, parse_mode=None)
         return
     
@@ -415,7 +415,7 @@ async def admin_command_wrapper(update: Update, context: ContextTypes.DEFAULT_TY
     # Check if user is banned before processing /admin command
     if await is_user_banned(user_id):
         logger.info(f"Banned user {user_id} attempted to use /admin command.")
-        ban_message = "âŒ Your access to this bot has been restricted. If you believe this is an error, please contact support."
+        ban_message = "❌ Your access to this bot has been restricted. If you believe this is an error, please contact support."
         await send_message_with_retry(context.bot, update.effective_chat.id, ban_message, parse_mode=None)
         return
     
@@ -507,7 +507,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"Ignoring message from banned user {user_id} (state: {state}).")
         # Send ban notification message
         try:
-            ban_message = "âŒ Your access to this bot has been restricted. If you believe this is an error, please contact support."
+            ban_message = "❌ Your access to this bot has been restricted. If you believe this is an error, please contact support."
             await send_message_with_retry(context.bot, update.effective_chat.id, ban_message, parse_mode=None)
         except Exception as e:
             logger.error(f"Error sending ban message to user {user_id}: {e}")
@@ -636,7 +636,7 @@ async def payment_recovery_job_wrapper(context: ContextTypes.DEFAULT_TYPE):
         from utils import run_payment_recovery_job
         await asyncio.to_thread(run_payment_recovery_job)
     except Exception as e:
-        logger.error(f"âŒ BULLETPROOF: Error in payment recovery job: {e}", exc_info=True)
+        logger.error(f"❌ BULLETPROOF: Error in payment recovery job: {e}", exc_info=True)
 
 
 async def check_solana_deposits_job_wrapper(context: ContextTypes.DEFAULT_TYPE):
@@ -645,7 +645,7 @@ async def check_solana_deposits_job_wrapper(context: ContextTypes.DEFAULT_TYPE):
     try:
         await check_solana_deposits(context)
     except Exception as e:
-        logger.error(f"âŒ Error in check_solana_deposits job: {e}", exc_info=True)
+        logger.error(f"❌ Error in check_solana_deposits job: {e}", exc_info=True)
 
 
 async def send_timeout_notifications(context: ContextTypes.DEFAULT_TYPE, user_notifications: list):
@@ -657,7 +657,7 @@ async def send_timeout_notifications(context: ContextTypes.DEFAULT_TYPE, user_no
         try:
             lang_data = LANGUAGES.get(user_lang, LANGUAGES['en'])
             notification_msg = lang_data.get("payment_timeout_notification", 
-                "â° Payment Timeout: Your payment for basket items has expired after 2 hours. Reserved items have been released.")
+                "⏰ Payment Timeout: Your payment for basket items has expired after 2 hours. Reserved items have been released.")
             
             await send_message_with_retry(context.bot, user_id, notification_msg, parse_mode=None)
             logger.info(f"Sent payment timeout notification to user {user_id}")
@@ -686,7 +686,7 @@ async def retry_purchase_finalization(user_id: int, basket_snapshot: list, disco
             )
             
             if purchase_finalized:
-                logger.info(f"âœ… SUCCESS: Purchase finalization retry succeeded for payment {payment_id} on attempt {attempt + 1}")
+                logger.info(f"�œ… SUCCESS: Purchase finalization retry succeeded for payment {payment_id} on attempt {attempt + 1}")
                 # Remove the pending deposit on success
                 await asyncio.to_thread(remove_pending_deposit, payment_id, trigger="retry_success")
                 return True
@@ -697,7 +697,7 @@ async def retry_purchase_finalization(user_id: int, basket_snapshot: list, disco
             logger.error(f"Exception during purchase finalization retry for payment {payment_id}, attempt {attempt + 1}: {e}", exc_info=True)
     
     # All retries failed
-    logger.critical(f"ðŸš¨ CRITICAL: All {max_retries} retry attempts failed for purchase finalization payment {payment_id} user {user_id}")
+    logger.critical(f"🚨 CRITICAL: All {max_retries} retry attempts failed for purchase finalization payment {payment_id} user {user_id}")
     
     # Send critical alert to admin
     if get_first_primary_admin_id() and telegram_app:
@@ -705,7 +705,7 @@ async def retry_purchase_finalization(user_id: int, basket_snapshot: list, disco
             await send_message_with_retry(
                 telegram_app.bot, 
                 ADMIN_ID, 
-                f"ðŸš¨ CRITICAL FAILURE: Purchase {payment_id} for user {user_id} FAILED after {max_retries} retries. "
+                f"🚨 CRITICAL FAILURE: Purchase {payment_id} for user {user_id} FAILED after {max_retries} retries. "
                 f"Payment was successful but finalization completely failed. URGENT MANUAL INTERVENTION REQUIRED!",
                 parse_mode=None
             )
@@ -803,27 +803,27 @@ def telegram_webhook(bot_token):
 @flask_app.route("/health", methods=['GET'])
 def health_check():
     """Health check endpoint to verify Flask server is running"""
-    logger.info("ðŸ” HEALTH CHECK: Health check endpoint accessed")
+    logger.info("🔧 HEALTH CHECK: Health check endpoint accessed")
     return Response("OK - Flask server is running", status=200)
 
 @flask_app.route("/webhook-test", methods=['POST'])
 def webhook_test():
     """Test endpoint to verify webhook reception"""
-    logger.info("ðŸ” WEBHOOK TEST: Test webhook received!")
-    logger.info(f"ðŸ” WEBHOOK TEST: Headers: {dict(request.headers)}")
-    logger.info(f"ðŸ” WEBHOOK TEST: Raw body: {request.get_data()}")
+    logger.info("🔧 WEBHOOK TEST: Test webhook received!")
+    logger.info(f"🔧 WEBHOOK TEST: Headers: {dict(request.headers)}")
+    logger.info(f"🔧 WEBHOOK TEST: Raw body: {request.get_data()}")
     return Response("Test webhook received successfully", status=200)
 
 @flask_app.route("/", methods=['GET'])
 def root():
     """Root endpoint to verify server is running"""
-    logger.info("ðŸ” ROOT: Root endpoint accessed")
+    logger.info("🔧 ROOT: Root endpoint accessed")
     return Response("Payment Bot Server is Running! Webhook: /webhook", status=200)
 
 def main() -> None:
     global telegram_app, telegram_apps, main_loop
     logger.info("Starting bot...")
-    logger.info(f"ðŸ¤– Multi-bot mode: Initializing {len(BOT_TOKENS)} bot(s)...")
+    logger.info(f"🤖 Multi-bot mode: Initializing {len(BOT_TOKENS)} bot(s)...")
     init_db()
     load_all_data()
     defaults = Defaults(parse_mode=None, block=False)
@@ -836,7 +836,7 @@ def main() -> None:
         bot_id = bot_info['bot_id']
         bot_index = bot_info['index']
         
-        logger.info(f"ðŸ¤– Creating application for Bot {bot_index + 1} (ID: {bot_id})...")
+        logger.info(f"🤖 Creating application for Bot {bot_index + 1} (ID: {bot_id})...")
         
         # Each bot gets its own persistence file to avoid conflicts
         persistence = PicklePersistence(filepath=f"bot_persistence_{bot_id}.pickle")
@@ -866,7 +866,7 @@ def main() -> None:
         telegram_apps[bot_id] = application
         applications.append(application)
         
-        logger.info(f"âœ… Bot {bot_index + 1} (ID: {bot_id}) application created")
+        logger.info(f"�œ… Bot {bot_index + 1} (ID: {bot_id}) application created")
     
     # Keep backward compatibility - telegram_app points to first bot
     if applications:
@@ -899,7 +899,7 @@ def main() -> None:
         for idx, application in enumerate(applications):
             bot_id = (await application.bot.get_me()).id
             bot_username = (await application.bot.get_me()).username
-            logger.info(f"ðŸ¤– Initializing Bot {idx + 1}: @{bot_username} (ID: {bot_id})...")
+            logger.info(f"🤖 Initializing Bot {idx + 1}: @{bot_username} (ID: {bot_id})...")
             
             await application.initialize()
             
@@ -907,15 +907,15 @@ def main() -> None:
             logger.info(f"Setting webhook for @{bot_username}: {WEBHOOK_URL}/telegram/***")
             
             if await application.bot.set_webhook(url=webhook_url, allowed_updates=Update.ALL_TYPES):
-                logger.info(f"âœ… Webhook set successfully for @{bot_username}")
+                logger.info(f"�œ… Webhook set successfully for @{bot_username}")
             else:
-                logger.error(f"âŒ Failed to set webhook for @{bot_username}")
+                logger.error(f"❌ Failed to set webhook for @{bot_username}")
                 return
             
             await application.start()
-            logger.info(f"âœ… @{bot_username} started (webhook mode)")
+            logger.info(f"�œ… @{bot_username} started (webhook mode)")
         
-        logger.info(f"ðŸš€ All {len(applications)} bot(s) initialized and running!")
+        logger.info(f"�Ÿš€ All {len(applications)} bot(s) initialized and running!")
         
         port = int(os.environ.get("PORT", 10000))
         flask_thread = threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=port, debug=False), daemon=True)
@@ -942,7 +942,7 @@ def main() -> None:
                 logger.info(f"Stopping Bot {idx + 1}...")
                 await application.stop()
                 await application.shutdown()
-                logger.info(f"âœ… Bot {idx + 1} stopped")
+                logger.info(f"�œ… Bot {idx + 1} stopped")
             except Exception as e:
                 logger.error(f"Error stopping Bot {idx + 1}: {e}")
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]

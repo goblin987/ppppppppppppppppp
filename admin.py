@@ -172,7 +172,7 @@ async def _prepare_and_confirm_drop(
     required_context = ["admin_city", "admin_district", "admin_product_type", "pending_drop_size", "pending_drop_price"]
     if not all(k in user_data for k in required_context):
         logger.error(f"_prepare_and_confirm_drop: Context lost for user {user_id}.")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost. Please start adding product again.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost. Please start adding product again.", parse_mode=None)
         keys_to_clear = ["state", "pending_drop", "pending_drop_size", "pending_drop_price", "collecting_media_group_id", "collected_media"]
         for key in keys_to_clear: user_data.pop(key, None)
         return
@@ -205,10 +205,10 @@ async def _prepare_and_confirm_drop(
                     logger.error(f"Unexpected error downloading media {i+1} ({file_id}): {e}", exc_info=True)
                     download_errors += 1
             if download_errors > 0:
-                await send_message_with_retry(context.bot, chat_id, f"âš ï¸ Warning: {download_errors} media file(s) failed to download. Adding drop with successfully downloaded media only.", parse_mode=None)
+                await send_message_with_retry(context.bot, chat_id, f"⚠️ Warning: {download_errors} media file(s) failed to download. Adding drop with successfully downloaded media only.", parse_mode=None)
         except Exception as e:
              logger.error(f"Error setting up/during media download loop user {user_id}: {e}", exc_info=True)
-             await send_message_with_retry(context.bot, chat_id, "âš ï¸ Warning: Error during media processing. Drop will be added without media.", parse_mode=None)
+             await send_message_with_retry(context.bot, chat_id, "⚠️ Warning: Error during media processing. Drop will be added without media.", parse_mode=None)
              media_list_for_db = []
              if temp_dir and await asyncio.to_thread(os.path.exists, temp_dir): await asyncio.to_thread(shutil.rmtree, temp_dir, ignore_errors=True); temp_dir = None
 
@@ -234,11 +234,11 @@ async def _prepare_and_confirm_drop(
     media_status = f"{media_count}/{total_submitted_media} Downloaded" if total_submitted_media > 0 else "No"
     if download_errors > 0: media_status += " (Errors)"
 
-    msg = (f"ðŸ“¦ Confirm New Drop\n\nðŸ™ï¸ City: {city_name}\nðŸ˜ï¸ District: {dist_name}\n{type_emoji} Type: {type_name}\n"
-           f"ðŸ“ Size: {size_name}\nðŸ’° Price: {price_str} EUR\nðŸ“ Details: {text_display}\n"
-           f"ðŸ“¸ Media Attached: {media_status}\n\nAdd this drop?")
-    keyboard = [[InlineKeyboardButton("âœ… Yes, Add Drop", callback_data="confirm_add_drop"),
-                InlineKeyboardButton("âŒ No, Cancel", callback_data="cancel_add")]]
+    msg = (f"📦 Confirm New Drop\n\n🏳️ City: {city_name}\n�Ÿ�˜️ District: {dist_name}\n{type_emoji} Type: {type_name}\n"
+           f"📦 Size: {size_name}\n👤 Price: {price_str} EUR\n📦 Details: {text_display}\n"
+           f"📦 Media Attached: {media_status}\n\nAdd this drop?")
+    keyboard = [[InlineKeyboardButton("�œ… Yes, Add Drop", callback_data="confirm_add_drop"),
+                InlineKeyboardButton("❌ No, Cancel", callback_data="cancel_add")]]
     await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 # --- Job Function to Process Collected Media Group ---
@@ -336,7 +336,7 @@ async def _process_bulk_collected_media(context: ContextTypes.DEFAULT_TYPE):
     try:
         from utils import send_message_with_retry
         await send_message_with_retry(context.bot, chat_id, 
-            f"âœ… Media group added to bulk collection! Total messages: {len(bulk_messages)}/10", 
+            f"�œ… Media group added to bulk collection! Total messages: {len(bulk_messages)}/10", 
             parse_mode=None)
         logger.info(f"BULK DEBUG: Sent status update for media group {media_group_id}")
     except Exception as e:
@@ -363,7 +363,7 @@ async def handle_adm_drop_details_message(update: Update, context: ContextTypes.
     required_context = ["admin_city", "admin_district", "admin_product_type", "pending_drop_size", "pending_drop_price"]
     if not all(k in user_specific_data for k in required_context):
         logger.warning(f"Context lost for user {user_id} before processing drop details.")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost. Please start adding product again.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost. Please start adding product again.", parse_mode=None)
         keys_to_clear = ["state", "pending_drop", "pending_drop_size", "pending_drop_price", "collecting_media_group_id", "collected_media"]
         for key in keys_to_clear: user_specific_data.pop(key, None)
         return
@@ -420,7 +420,7 @@ async def handle_adm_drop_details_message(update: Update, context: ContextTypes.
             if media_group_id in user_specific_data.get('collected_media', {}):
                 await _prepare_and_confirm_drop(context, user_specific_data, chat_id, user_id, text, user_specific_data['collected_media'][media_group_id]['media'])
             else:
-                await send_message_with_retry(context.bot, chat_id, "âŒ Error: Internal components missing. Cannot process media group.", parse_mode=None)
+                await send_message_with_retry(context.bot, chat_id, "❌ Error: Internal components missing. Cannot process media group.", parse_mode=None)
 
     else:
         if user_specific_data.get('collecting_media_group_id'):
@@ -486,7 +486,7 @@ async def handle_admin_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         res_sales = c.fetchone(); total_sales_value = Decimal(str(res_sales['total_sales'])) if res_sales else Decimal('0.0')
     except sqlite3.Error as e:
         logger.error(f"DB error fetching admin dashboard data: {e}", exc_info=True)
-        error_message = "âŒ Error loading admin data."
+        error_message = "❌ Error loading admin data."
         if query:
             try: await query.edit_message_text(error_message, parse_mode=None)
             except Exception: pass
@@ -498,39 +498,39 @@ async def handle_admin_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     total_user_balance_str = format_currency(total_user_balance)
     total_sales_value_str = format_currency(total_sales_value)
     msg = (
-       f"ðŸ”§ Admin Dashboard (Primary)\n\n"
-       f"ðŸ‘¥ Total Users: {total_users}\n"
-       f"ðŸ’° Sum of User Balances: {total_user_balance_str} EUR\n"
-       f"ðŸ“ˆ Total Sales Value: {total_sales_value_str} EUR\n"
-       f"ðŸ“¦ Active Products: {active_products}\n\n"
+       f"🔧 Admin Dashboard (Primary)\n\n"
+       f"�Ÿ‘� Total Users: {total_users}\n"
+       f"👤 Sum of User Balances: {total_user_balance_str} EUR\n"
+       f"�Ÿ“ˆ Total Sales Value: {total_sales_value_str} EUR\n"
+       f"📦 Active Products: {active_products}\n\n"
        "Select an action:"
     )
 
     keyboard = [
-        [InlineKeyboardButton("ðŸ“Š Sales Analytics", callback_data="sales_analytics_menu")],
-        [InlineKeyboardButton("ðŸ” Recent Purchases", callback_data="adm_recent_purchases|0")],
-        [InlineKeyboardButton("âž• Add Products", callback_data="adm_city")],
-        [InlineKeyboardButton("ðŸ“¦ Bulk Add Products", callback_data="adm_bulk_city")],
-        [InlineKeyboardButton("ðŸ—‘ï¸ Manage Products", callback_data="adm_manage_products")],
-        [InlineKeyboardButton("ðŸ” Search User", callback_data="adm_search_user_start")],
-        [InlineKeyboardButton("ðŸ‘‘ Manage Resellers", callback_data="manage_resellers_menu")],
-        [InlineKeyboardButton("ðŸ·ï¸ Manage Reseller Discounts", callback_data="manage_reseller_discounts_select_reseller|0")],
-        [InlineKeyboardButton("ðŸ·ï¸ Manage Discount Codes", callback_data="adm_manage_discounts")],
-        [InlineKeyboardButton("ðŸ‘‹ Manage Welcome Msg", callback_data="adm_manage_welcome|0")],
-        [InlineKeyboardButton("ðŸ“¦ View Bot Stock", callback_data="view_stock")],
-        [InlineKeyboardButton("ðŸ“œ View Added Products Log", callback_data="viewer_added_products|0")],
-        [InlineKeyboardButton("ðŸ—ºï¸ Manage Districts", callback_data="adm_manage_districts")],
-        [InlineKeyboardButton("ðŸ™ï¸ Manage Cities", callback_data="adm_manage_cities")],
-        [InlineKeyboardButton("ðŸ§© Manage Product Types", callback_data="adm_manage_types")],
-        [InlineKeyboardButton("ðŸ”„ Reassign Product Type", callback_data="adm_reassign_type_start")],
-        [InlineKeyboardButton("ðŸš« Manage Reviews", callback_data="adm_manage_reviews|0")],
-        [InlineKeyboardButton("ðŸ§¹ Clear ALL Reservations", callback_data="adm_clear_reservations_confirm")],
-        [InlineKeyboardButton("ðŸ“¢ Broadcast Message", callback_data="adm_broadcast_start")],
-        [InlineKeyboardButton("ðŸ”§ Manual Payment Recovery", callback_data="manual_payment_recovery")],
-        [InlineKeyboardButton("ðŸ’° Bulk Edit Prices", callback_data="adm_bulk_edit_prices_start")],
-        [InlineKeyboardButton("âž• Add New City", callback_data="adm_add_city")],
-        [InlineKeyboardButton("ðŸ“¸ Set Bot Media", callback_data="adm_set_media")],
-        [InlineKeyboardButton("ðŸ  User Home Menu", callback_data="back_start")]
+        [InlineKeyboardButton("�Ÿ“Š Sales Analytics", callback_data="sales_analytics_menu")],
+        [InlineKeyboardButton("🔧 Recent Purchases", callback_data="adm_recent_purchases|0")],
+        [InlineKeyboardButton("�ž• Add Products", callback_data="adm_city")],
+        [InlineKeyboardButton("📦 Bulk Add Products", callback_data="adm_bulk_city")],
+        [InlineKeyboardButton("�Ÿ—‘️ Manage Products", callback_data="adm_manage_products")],
+        [InlineKeyboardButton("🔧 Search User", callback_data="adm_search_user_start")],
+        [InlineKeyboardButton("�Ÿ‘‘ Manage Resellers", callback_data="manage_resellers_menu")],
+        [InlineKeyboardButton("💥️ Manage Reseller Discounts", callback_data="manage_reseller_discounts_select_reseller|0")],
+        [InlineKeyboardButton("💥️ Manage Discount Codes", callback_data="adm_manage_discounts")],
+        [InlineKeyboardButton("�Ÿ‘‹ Manage Welcome Msg", callback_data="adm_manage_welcome|0")],
+        [InlineKeyboardButton("📦 View Bot Stock", callback_data="view_stock")],
+        [InlineKeyboardButton("�Ÿ“œ View Added Products Log", callback_data="viewer_added_products|0")],
+        [InlineKeyboardButton("�Ÿ—�️ Manage Districts", callback_data="adm_manage_districts")],
+        [InlineKeyboardButton("🏳️ Manage Cities", callback_data="adm_manage_cities")],
+        [InlineKeyboardButton("💥 Manage Product Types", callback_data="adm_manage_types")],
+        [InlineKeyboardButton("�Ÿ”„ Reassign Product Type", callback_data="adm_reassign_type_start")],
+        [InlineKeyboardButton("🚨 Manage Reviews", callback_data="adm_manage_reviews|0")],
+        [InlineKeyboardButton("💥 Clear ALL Reservations", callback_data="adm_clear_reservations_confirm")],
+        [InlineKeyboardButton("📦 Broadcast Message", callback_data="adm_broadcast_start")],
+        [InlineKeyboardButton("🔧 Manual Payment Recovery", callback_data="manual_payment_recovery")],
+        [InlineKeyboardButton("👤 Bulk Edit Prices", callback_data="adm_bulk_edit_prices_start")],
+        [InlineKeyboardButton("�ž• Add New City", callback_data="adm_add_city")],
+        [InlineKeyboardButton("📦 Set Bot Media", callback_data="adm_set_media")],
+        [InlineKeyboardButton("💥 User Home Menu", callback_data="back_start")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -555,14 +555,14 @@ async def handle_sales_analytics_menu(update: Update, context: ContextTypes.DEFA
     """Displays the sales analytics submenu."""
     query = update.callback_query
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
-    msg = "ðŸ“Š Sales Analytics\n\nSelect a report or view:"
+    msg = "�Ÿ“Š Sales Analytics\n\nSelect a report or view:"
     keyboard = [
-        [InlineKeyboardButton("ðŸ“ˆ View Dashboard", callback_data="sales_dashboard")],
-        [InlineKeyboardButton("ðŸ“… Generate Report", callback_data="sales_select_period|main")],
-        [InlineKeyboardButton("ðŸ™ï¸ Sales by City", callback_data="sales_select_period|by_city")],
-        [InlineKeyboardButton("ðŸ’Ž Sales by Type", callback_data="sales_select_period|by_type")],
-        [InlineKeyboardButton("ðŸ† Top Products", callback_data="sales_select_period|top_prod")],
-        [InlineKeyboardButton("â¬…ï¸ Back", callback_data="admin_menu")]
+        [InlineKeyboardButton("�Ÿ“ˆ View Dashboard", callback_data="sales_dashboard")],
+        [InlineKeyboardButton("�Ÿ“… Generate Report", callback_data="sales_select_period|main")],
+        [InlineKeyboardButton("🏳️ Sales by City", callback_data="sales_select_period|by_city")],
+        [InlineKeyboardButton("�Ÿ’Ž Sales by Type", callback_data="sales_select_period|by_type")],
+        [InlineKeyboardButton("�Ÿ�† Top Products", callback_data="sales_select_period|top_prod")],
+        [InlineKeyboardButton("✅️ Back", callback_data="admin_menu")]
     ]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -571,11 +571,11 @@ async def handle_sales_dashboard(update: Update, context: ContextTypes.DEFAULT_T
     query = update.callback_query
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     periods = {
-        "today": ("â˜€ï¸ Today ({})", datetime.now(timezone.utc).strftime("%Y-%m-%d")), # Use UTC
-        "week": ("ðŸ—“ï¸ This Week (Mon-Sun)", None),
-        "month": ("ðŸ“† This Month", None)
+        "today": ("�˜€️ Today ({})", datetime.now(timezone.utc).strftime("%Y-%m-%d")), # Use UTC
+        "week": ("�Ÿ—“️ This Week (Mon-Sun)", None),
+        "month": ("�Ÿ“† This Month", None)
     }
-    msg = "ðŸ“Š Sales Dashboard\n\n"
+    msg = "�Ÿ“Š Sales Dashboard\n\n"
     conn = None # Initialize conn
     try:
         conn = get_db_connection() # Use helper
@@ -600,13 +600,13 @@ async def handle_sales_dashboard(update: Update, context: ContextTypes.DEFAULT_T
             msg += f"    Avg Order Value: {aov_str} EUR\n\n"
     except sqlite3.Error as e:
         logger.error(f"DB error generating sales dashboard: {e}", exc_info=True)
-        msg += "\nâŒ Error fetching dashboard data."
+        msg += "\n❌ Error fetching dashboard data."
     except Exception as e:
         logger.error(f"Unexpected error in sales dashboard: {e}", exc_info=True)
-        msg += "\nâŒ An unexpected error occurred."
+        msg += "\n❌ An unexpected error occurred."
     finally:
          if conn: conn.close() # Close connection if opened
-    keyboard = [[InlineKeyboardButton("â¬…ï¸ Back", callback_data="sales_analytics_menu")]]
+    keyboard = [[InlineKeyboardButton("✅️ Back", callback_data="sales_analytics_menu")]]
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
@@ -630,9 +630,9 @@ async def handle_sales_select_period(update: Update, context: ContextTypes.DEFAU
         [InlineKeyboardButton("This Month", callback_data=f"sales_run|{report_type}|month"),
          InlineKeyboardButton("Last Month", callback_data=f"sales_run|{report_type}|last_month")],
         [InlineKeyboardButton("Year To Date", callback_data=f"sales_run|{report_type}|year")],
-        [InlineKeyboardButton("â¬…ï¸ Back", callback_data="sales_analytics_menu")]
+        [InlineKeyboardButton("✅️ Back", callback_data="sales_analytics_menu")]
     ]
-    await query.edit_message_text("ðŸ“… Select Reporting Period", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
+    await query.edit_message_text("�Ÿ“… Select Reporting Period", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_sales_run(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     """Generates and displays the selected sales report."""
@@ -644,7 +644,7 @@ async def handle_sales_run(update: Update, context: ContextTypes.DEFAULT_TYPE, p
     report_type, period_key = params[0], params[1]
     start_time, end_time = get_date_range(period_key)
     if not start_time or not end_time:
-        return await query.edit_message_text("âŒ Error: Invalid period selected.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Invalid period selected.", parse_mode=None)
     period_title = period_key.replace('_', ' ').title()
     msg = ""
     conn = None # Initialize conn
@@ -662,12 +662,12 @@ async def handle_sales_run(update: Update, context: ContextTypes.DEFAULT_TYPE, p
             aov = revenue / units if units > 0 else 0.0
             revenue_str = format_currency(revenue)
             aov_str = format_currency(aov)
-            msg = (f"ðŸ“Š Sales Report: {period_title}\n\nRevenue: {revenue_str} EUR\n"
+            msg = (f"�Ÿ“Š Sales Report: {period_title}\n\nRevenue: {revenue_str} EUR\n"
                    f"Units Sold: {units}\nAvg Order Value: {aov_str} EUR")
         elif report_type == "by_city":
             c.execute(f"SELECT city, COALESCE(SUM(price_paid), 0.0) as city_revenue, COUNT(*) as city_units {base_query} GROUP BY city ORDER BY city_revenue DESC", base_params)
             results = c.fetchall()
-            msg = f"ðŸ™ï¸ Sales by City: {period_title}\n\n"
+            msg = f"🏳️ Sales by City: {period_title}\n\n"
             if results:
                 for row in results:
                     msg += f"{row['city'] or 'N/A'}: {format_currency(row['city_revenue'])} EUR ({row['city_units'] or 0} units)\n"
@@ -675,7 +675,7 @@ async def handle_sales_run(update: Update, context: ContextTypes.DEFAULT_TYPE, p
         elif report_type == "by_type":
             c.execute(f"SELECT product_type, COALESCE(SUM(price_paid), 0.0) as type_revenue, COUNT(*) as type_units {base_query} GROUP by product_type ORDER BY type_revenue DESC", base_params)
             results = c.fetchall()
-            msg = f"ðŸ“Š Sales by Type: {period_title}\n\n"
+            msg = f"�Ÿ“Š Sales by Type: {period_title}\n\n"
             if results:
                 for row in results:
                     type_name = row['product_type'] or 'N/A'
@@ -693,24 +693,24 @@ async def handle_sales_run(update: Update, context: ContextTypes.DEFAULT_TYPE, p
                 ORDER BY prod_revenue DESC LIMIT 10
             """, base_params) # Simplified query relying on purchase record details
             results = c.fetchall()
-            msg = f"ðŸ† Top Products: {period_title}\n\n"
+            msg = f"�Ÿ�† Top Products: {period_title}\n\n"
             if results:
                 for i, row in enumerate(results):
                     type_name = row['product_type'] or 'N/A'
                     emoji = PRODUCT_TYPES.get(type_name, DEFAULT_PRODUCT_EMOJI)
                     msg += f"{i+1}. {emoji} {row['product_name'] or 'N/A'} ({row['product_size'] or 'N/A'}): {format_currency(row['prod_revenue'])} EUR ({row['prod_units'] or 0} units)\n"
             else: msg += "No sales data for this period."
-        else: msg = "âŒ Unknown report type requested."
+        else: msg = "❌ Unknown report type requested."
     except sqlite3.Error as e:
         logger.error(f"DB error generating sales report '{report_type}' for '{period_key}': {e}", exc_info=True)
-        msg = "âŒ Error generating report due to database issue."
+        msg = "❌ Error generating report due to database issue."
     except Exception as e:
         logger.error(f"Unexpected error generating sales report: {e}", exc_info=True)
-        msg = "âŒ An unexpected error occurred."
+        msg = "❌ An unexpected error occurred."
     finally:
          if conn: conn.close()
-    keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Period", callback_data=f"sales_select_period|{report_type}"),
-                 InlineKeyboardButton("ðŸ“Š Analytics Menu", callback_data="sales_analytics_menu")]]
+    keyboard = [[InlineKeyboardButton("✅️ Back to Period", callback_data=f"sales_select_period|{report_type}"),
+                 InlineKeyboardButton("�Ÿ“Š Analytics Menu", callback_data="sales_analytics_menu")]]
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
@@ -726,8 +726,8 @@ async def handle_adm_city(update: Update, context: ContextTypes.DEFAULT_TYPE, pa
     if not CITIES:
         return await query.edit_message_text("No cities configured. Please add a city first via 'Manage Cities'.", parse_mode=None)
     sorted_city_ids = sorted(CITIES.keys(), key=lambda city_id: CITIES.get(city_id, ''))
-    keyboard = [[InlineKeyboardButton(f"ðŸ™ï¸ {CITIES.get(c,'N/A')}", callback_data=f"adm_dist|{c}")] for c in sorted_city_ids]
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back", callback_data="admin_menu")])
+    keyboard = [[InlineKeyboardButton(f"🏳️ {CITIES.get(c,'N/A')}", callback_data=f"adm_dist|{c}")] for c in sorted_city_ids]
+    keyboard.append([InlineKeyboardButton("✅️ Back", callback_data="admin_menu")])
     select_city_text = lang_data.get("admin_select_city", "Select City to Add Product:")
     await query.edit_message_text(select_city_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -744,7 +744,7 @@ async def handle_adm_dist(update: Update, context: ContextTypes.DEFAULT_TYPE, pa
     lang, lang_data = _get_lang_data(context) # Use helper
     select_district_template = lang_data.get("admin_select_district", "Select District in {city}:")
     if not districts_in_city:
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Cities", callback_data="adm_city")]]
+        keyboard = [[InlineKeyboardButton("✅️ Back to Cities", callback_data="adm_city")]]
         return await query.edit_message_text(f"No districts found for {city_name}. Please add districts via 'Manage Districts'.",
                                 reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     sorted_district_ids = sorted(districts_in_city.keys(), key=lambda dist_id: districts_in_city.get(dist_id,''))
@@ -752,9 +752,9 @@ async def handle_adm_dist(update: Update, context: ContextTypes.DEFAULT_TYPE, pa
     for d in sorted_district_ids:
         dist_name = districts_in_city.get(d)
         if dist_name:
-            keyboard.append([InlineKeyboardButton(f"ðŸ˜ï¸ {dist_name}", callback_data=f"adm_type|{city_id}|{d}")])
+            keyboard.append([InlineKeyboardButton(f"�Ÿ�˜️ {dist_name}", callback_data=f"adm_type|{city_id}|{d}")])
         else: logger.warning(f"District name missing for ID {d} in city {city_id}")
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Cities", callback_data="adm_city")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Cities", callback_data="adm_city")])
     select_district_text = select_district_template.format(city=city_name)
     await query.edit_message_text(select_district_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -777,7 +777,7 @@ async def handle_adm_type(update: Update, context: ContextTypes.DEFAULT_TYPE, pa
     for type_name, emoji in sorted(PRODUCT_TYPES.items()):
         keyboard.append([InlineKeyboardButton(f"{emoji} {type_name}", callback_data=f"adm_add|{city_id}|{dist_id}|{type_name}")])
 
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Districts", callback_data=f"adm_dist|{city_id}")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Districts", callback_data=f"adm_dist|{city_id}")])
     await query.edit_message_text(select_type_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -797,10 +797,10 @@ async def handle_adm_add(update: Update, context: ContextTypes.DEFAULT_TYPE, par
     context.user_data["admin_product_type"] = p_type
     context.user_data["admin_city"] = city_name
     context.user_data["admin_district"] = district_name
-    keyboard = [[InlineKeyboardButton(f"ðŸ“ {s}", callback_data=f"adm_size|{s}")] for s in SIZES]
-    keyboard.append([InlineKeyboardButton("ðŸ“ Custom Size", callback_data="adm_custom_size")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Types", callback_data=f"adm_type|{city_id}|{dist_id}")])
-    await query.edit_message_text(f"ðŸ“¦ Adding {type_emoji} {p_type} in {city_name} / {district_name}\n\nSelect size:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
+    keyboard = [[InlineKeyboardButton(f"📦 {s}", callback_data=f"adm_size|{s}")] for s in SIZES]
+    keyboard.append([InlineKeyboardButton("📦 Custom Size", callback_data="adm_custom_size")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Types", callback_data=f"adm_type|{city_id}|{dist_id}")])
+    await query.edit_message_text(f"📦 Adding {type_emoji} {p_type} in {city_name} / {district_name}\n\nSelect size:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_size(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     """Handles selection of a predefined size."""
@@ -809,10 +809,10 @@ async def handle_adm_size(update: Update, context: ContextTypes.DEFAULT_TYPE, pa
     if not params: return await query.answer("Error: Size missing.", show_alert=True)
     size = params[0]
     if not all(k in context.user_data for k in ["admin_city", "admin_district", "admin_product_type"]):
-        return await query.edit_message_text("âŒ Error: Context lost. Please start adding the product again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Context lost. Please start adding the product again.", parse_mode=None)
     context.user_data["pending_drop_size"] = size
     context.user_data["state"] = "awaiting_price"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Add", callback_data="cancel_add")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel Add", callback_data="cancel_add")]]
     await query.edit_message_text(f"Size set to {size}. Please reply with the price (e.g., 12.50 or 12.5):",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter price in chat.")
@@ -822,9 +822,9 @@ async def handle_adm_custom_size(update: Update, context: ContextTypes.DEFAULT_T
     query = update.callback_query
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     if not all(k in context.user_data for k in ["admin_city", "admin_district", "admin_product_type"]):
-        return await query.edit_message_text("âŒ Error: Context lost. Please start adding the product again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Context lost. Please start adding the product again.", parse_mode=None)
     context.user_data["state"] = "awaiting_custom_size"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Add", callback_data="cancel_add")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel Add", callback_data="cancel_add")]]
     await query.edit_message_text("Please reply with the custom size (e.g., 10g, 1/4 oz):",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter custom size in chat.")
@@ -841,7 +841,7 @@ async def handle_confirm_add_drop(update: Update, context: ContextTypes.DEFAULT_
     if not pending_drop:
         logger.error(f"Confirmation 'yes' received for add drop, but no pending_drop data found for user {user_id}.")
         user_specific_data.pop("state", None)
-        return await query.edit_message_text("âŒ Error: No pending drop data found. Please start again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: No pending drop data found. Please start again.", parse_mode=None)
 
     city = pending_drop.get("city"); district = pending_drop.get("district"); p_type = pending_drop.get("product_type")
     size = pending_drop.get("size"); price = pending_drop.get("price"); original_text = pending_drop.get("original_text", "")
@@ -852,7 +852,7 @@ async def handle_confirm_add_drop(update: Update, context: ContextTypes.DEFAULT_
         if temp_dir and await asyncio.to_thread(os.path.exists, temp_dir): await asyncio.to_thread(shutil.rmtree, temp_dir, ignore_errors=True)
         keys_to_clear = ["state", "pending_drop", "pending_drop_size", "pending_drop_price", "admin_city_id", "admin_district_id", "admin_product_type", "admin_city", "admin_district"]
         for key in keys_to_clear: user_specific_data.pop(key, None)
-        return await query.edit_message_text("âŒ Error: Incomplete drop data. Please start again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Incomplete drop data. Please start again.", parse_mode=None)
 
     product_name = f"{p_type} {size} {int(time.time())}"; conn = None; product_id = None
     try:
@@ -905,17 +905,17 @@ async def handle_confirm_add_drop(update: Update, context: ContextTypes.DEFAULT_
 
         conn.commit(); logger.info(f"Added product {product_id} ({product_name}).")
         if temp_dir and await asyncio.to_thread(os.path.exists, temp_dir): await asyncio.to_thread(shutil.rmtree, temp_dir, ignore_errors=True); logger.info(f"Cleaned temp dir: {temp_dir}")
-        await query.edit_message_text("âœ… Drop Added Successfully!", parse_mode=None)
+        await query.edit_message_text("�œ… Drop Added Successfully!", parse_mode=None)
         ctx_city_id = user_specific_data.get('admin_city_id'); ctx_dist_id = user_specific_data.get('admin_district_id'); ctx_p_type = user_specific_data.get('admin_product_type')
         add_another_callback = f"adm_add|{ctx_city_id}|{ctx_dist_id}|{ctx_p_type}" if all([ctx_city_id, ctx_dist_id, ctx_p_type]) else "admin_menu"
-        keyboard = [ [InlineKeyboardButton("âž• Add Another Same Type", callback_data=add_another_callback)],
-                     [InlineKeyboardButton("ðŸ”§ Admin Menu", callback_data="admin_menu"), InlineKeyboardButton("ðŸ  User Home", callback_data="back_start")] ]
+        keyboard = [ [InlineKeyboardButton("�ž• Add Another Same Type", callback_data=add_another_callback)],
+                     [InlineKeyboardButton("🔧 Admin Menu", callback_data="admin_menu"), InlineKeyboardButton("💥 User Home", callback_data="back_start")] ]
         await send_message_with_retry(context.bot, chat_id, "What next?", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except (sqlite3.Error, OSError, Exception) as e:
         try: conn.rollback() if conn and conn.in_transaction else None
         except Exception as rb_err: logger.error(f"Rollback failed: {rb_err}")
         logger.error(f"Error saving confirmed drop for user {user_id}: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error: Failed to save the drop. Please check logs and try again.", parse_mode=None)
+        await query.edit_message_text("❌ Error: Failed to save the drop. Please check logs and try again.", parse_mode=None)
         if temp_dir and await asyncio.to_thread(os.path.exists, temp_dir): await asyncio.to_thread(shutil.rmtree, temp_dir, ignore_errors=True); logger.info(f"Cleaned temp dir after error: {temp_dir}")
     finally:
         if conn: conn.close()
@@ -941,13 +941,13 @@ async def cancel_add(update: Update, context: ContextTypes.DEFAULT_TYPE, params=
         if media_group_id: job_name = f"process_media_group_{user_id}_{media_group_id}"; remove_job_if_exists(job_name, context)
     if query:
          try:
-             await query.edit_message_text("âŒ Add Product Cancelled", parse_mode=None)
+             await query.edit_message_text("❌ Add Product Cancelled", parse_mode=None)
          except telegram_error.BadRequest as e:
              if "message is not modified" in str(e).lower():
                  pass # It's okay if the message wasn't modified
              else:
                  logger.error(f"Error editing cancel message: {e}")
-         keyboard = [[InlineKeyboardButton("ðŸ”§ Admin Menu", callback_data="admin_menu"), InlineKeyboardButton("ðŸ  User Home", callback_data="back_start")]]; await send_message_with_retry(context.bot, query.message.chat_id, "Returning to Admin Menu.", reply_markup=InlineKeyboardMarkup(keyboard))
+         keyboard = [[InlineKeyboardButton("🔧 Admin Menu", callback_data="admin_menu"), InlineKeyboardButton("💥 User Home", callback_data="back_start")]]; await send_message_with_retry(context.bot, query.message.chat_id, "Returning to Admin Menu.", reply_markup=InlineKeyboardMarkup(keyboard))
     elif update.message: await send_message_with_retry(context.bot, update.message.chat_id, "Add product cancelled.")
     else: logger.info("Add product flow cancelled internally (no query/message object).")
 
@@ -961,10 +961,10 @@ async def handle_adm_bulk_city(update: Update, context: ContextTypes.DEFAULT_TYP
     if not CITIES:
         return await query.edit_message_text("No cities configured. Please add a city first via 'Manage Cities'.", parse_mode=None)
     sorted_city_ids = sorted(CITIES.keys(), key=lambda city_id: CITIES.get(city_id, ''))
-    keyboard = [[InlineKeyboardButton(f"ðŸ™ï¸ {CITIES.get(c,'N/A')}", callback_data=f"adm_bulk_dist|{c}")] for c in sorted_city_ids]
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back", callback_data="admin_menu")])
+    keyboard = [[InlineKeyboardButton(f"🏳️ {CITIES.get(c,'N/A')}", callback_data=f"adm_bulk_dist|{c}")] for c in sorted_city_ids]
+    keyboard.append([InlineKeyboardButton("✅️ Back", callback_data="admin_menu")])
     select_city_text = lang_data.get("admin_select_city", "Select City to Add Bulk Products:")
-    await query.edit_message_text(f"ðŸ“¦ Bulk Add Products\n\n{select_city_text}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
+    await query.edit_message_text(f"📦 Bulk Add Products\n\n{select_city_text}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_bulk_dist(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     """Admin selects district for bulk products."""
@@ -979,7 +979,7 @@ async def handle_adm_bulk_dist(update: Update, context: ContextTypes.DEFAULT_TYP
     lang, lang_data = _get_lang_data(context) # Use helper
     select_district_template = lang_data.get("admin_select_district", "Select District in {city}:")
     if not districts_in_city:
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Cities", callback_data="adm_bulk_city")]]
+        keyboard = [[InlineKeyboardButton("✅️ Back to Cities", callback_data="adm_bulk_city")]]
         return await query.edit_message_text(f"No districts found for {city_name}. Please add districts via 'Manage Districts'.",
                                 reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     sorted_district_ids = sorted(districts_in_city.keys(), key=lambda d_id: districts_in_city.get(d_id,''))
@@ -987,9 +987,9 @@ async def handle_adm_bulk_dist(update: Update, context: ContextTypes.DEFAULT_TYP
     for d in sorted_district_ids:
         dist_name = districts_in_city.get(d)
         if dist_name:
-            keyboard.append([InlineKeyboardButton(f"ðŸ˜ï¸ {dist_name}", callback_data=f"adm_bulk_type|{city_id}|{d}")])
+            keyboard.append([InlineKeyboardButton(f"�Ÿ�˜️ {dist_name}", callback_data=f"adm_bulk_type|{city_id}|{d}")])
         else: logger.warning(f"District name missing for ID {d} in city {city_id}")
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Cities", callback_data="adm_bulk_city")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Cities", callback_data="adm_bulk_city")])
     select_district_text = select_district_template.format(city=city_name)
     await query.edit_message_text(select_district_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -1012,8 +1012,8 @@ async def handle_adm_bulk_type(update: Update, context: ContextTypes.DEFAULT_TYP
     for type_name, emoji in sorted(PRODUCT_TYPES.items()):
         keyboard.append([InlineKeyboardButton(f"{emoji} {type_name}", callback_data=f"adm_bulk_add|{city_id}|{dist_id}|{type_name}")])
 
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Districts", callback_data=f"adm_bulk_dist|{city_id}")])
-    await query.edit_message_text(f"ðŸ“¦ Bulk Add Products - {city_name} / {district_name}\n\n{select_type_text}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
+    keyboard.append([InlineKeyboardButton("✅️ Back to Districts", callback_data=f"adm_bulk_dist|{city_id}")])
+    await query.edit_message_text(f"📦 Bulk Add Products - {city_name} / {district_name}\n\n{select_type_text}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_bulk_add(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     """Admin selects size for the bulk products."""
@@ -1034,10 +1034,10 @@ async def handle_adm_bulk_add(update: Update, context: ContextTypes.DEFAULT_TYPE
     context.user_data["bulk_admin_city"] = city_name
     context.user_data["bulk_admin_district"] = district_name
     
-    keyboard = [[InlineKeyboardButton(f"ðŸ“ {s}", callback_data=f"adm_bulk_size|{s}")] for s in SIZES]
-    keyboard.append([InlineKeyboardButton("ðŸ“ Custom Size", callback_data="adm_bulk_custom_size")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Types", callback_data=f"adm_bulk_type|{city_id}|{dist_id}")])
-    await query.edit_message_text(f"ðŸ“¦ Bulk Adding {type_emoji} {p_type} in {city_name} / {district_name}\n\nSelect size:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
+    keyboard = [[InlineKeyboardButton(f"📦 {s}", callback_data=f"adm_bulk_size|{s}")] for s in SIZES]
+    keyboard.append([InlineKeyboardButton("📦 Custom Size", callback_data="adm_bulk_custom_size")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Types", callback_data=f"adm_bulk_type|{city_id}|{dist_id}")])
+    await query.edit_message_text(f"📦 Bulk Adding {type_emoji} {p_type} in {city_name} / {district_name}\n\nSelect size:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_bulk_size(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     """Handles selection of a predefined size for bulk products."""
@@ -1046,11 +1046,11 @@ async def handle_adm_bulk_size(update: Update, context: ContextTypes.DEFAULT_TYP
     if not params: return await query.answer("Error: Size missing.", show_alert=True)
     size = params[0]
     if not all(k in context.user_data for k in ["bulk_admin_city", "bulk_admin_district", "bulk_admin_product_type"]):
-        return await query.edit_message_text("âŒ Error: Context lost. Please start adding the bulk products again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Context lost. Please start adding the bulk products again.", parse_mode=None)
     context.user_data["bulk_pending_drop_size"] = size
     context.user_data["state"] = "awaiting_bulk_price"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Bulk Add", callback_data="cancel_bulk_add")]]
-    await query.edit_message_text(f"ðŸ“¦ Bulk Products - Size set to {size}. Please reply with the price (e.g., 12.50 or 12.5):",
+    keyboard = [[InlineKeyboardButton("❌ Cancel Bulk Add", callback_data="cancel_bulk_add")]]
+    await query.edit_message_text(f"📦 Bulk Products - Size set to {size}. Please reply with the price (e.g., 12.50 or 12.5):",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter price in chat.")
 
@@ -1059,10 +1059,10 @@ async def handle_adm_bulk_custom_size(update: Update, context: ContextTypes.DEFA
     query = update.callback_query
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     if not all(k in context.user_data for k in ["bulk_admin_city", "bulk_admin_district", "bulk_admin_product_type"]):
-        return await query.edit_message_text("âŒ Error: Context lost. Please start adding the bulk products again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Context lost. Please start adding the bulk products again.", parse_mode=None)
     context.user_data["state"] = "awaiting_bulk_custom_size"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Bulk Add", callback_data="cancel_bulk_add")]]
-    await query.edit_message_text("ðŸ“¦ Bulk Products - Please reply with the custom size (e.g., 10g, 1/4 oz):",
+    keyboard = [[InlineKeyboardButton("❌ Cancel Bulk Add", callback_data="cancel_bulk_add")]]
+    await query.edit_message_text("📦 Bulk Products - Please reply with the custom size (e.g., 10g, 1/4 oz):",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter custom size in chat.")
 
@@ -1080,8 +1080,8 @@ async def handle_adm_bulk_custom_size_message(update: Update, context: ContextTy
 
     context.user_data["bulk_pending_drop_size"] = size
     context.user_data["state"] = "awaiting_bulk_price"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Bulk Add", callback_data="cancel_bulk_add")]]
-    await send_message_with_retry(context.bot, chat_id, f"ðŸ“¦ Bulk Products - Size set to: {size}\n\nPlease reply with the price (e.g., 12.50 or 12.5):",
+    keyboard = [[InlineKeyboardButton("❌ Cancel Bulk Add", callback_data="cancel_bulk_add")]]
+    await send_message_with_retry(context.bot, chat_id, f"📦 Bulk Products - Size set to: {size}\n\nPlease reply with the price (e.g., 12.50 or 12.5):",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_bulk_price_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1094,9 +1094,9 @@ async def handle_adm_bulk_price_message(update: Update, context: ContextTypes.DE
 
     price_text = update.message.text.strip()
     try: price = float(price_text)
-    except ValueError: return await send_message_with_retry(context.bot, chat_id, "âŒ Invalid price format. Please enter a number (e.g., 12.50).", parse_mode=None)
-    if price <= 0: return await send_message_with_retry(context.bot, chat_id, "âŒ Price must be greater than 0.", parse_mode=None)
-    if price > 999999: return await send_message_with_retry(context.bot, chat_id, "âŒ Price too high (max 999999).", parse_mode=None)
+    except ValueError: return await send_message_with_retry(context.bot, chat_id, "❌ Invalid price format. Please enter a number (e.g., 12.50).", parse_mode=None)
+    if price <= 0: return await send_message_with_retry(context.bot, chat_id, "❌ Price must be greater than 0.", parse_mode=None)
+    if price > 999999: return await send_message_with_retry(context.bot, chat_id, "❌ Price too high (max 999999).", parse_mode=None)
 
     context.user_data["bulk_pending_drop_price"] = price
     context.user_data["state"] = "awaiting_bulk_messages"
@@ -1111,21 +1111,21 @@ async def handle_adm_bulk_price_message(update: Update, context: ContextTypes.DE
     district = context.user_data.get("bulk_admin_district", "")
     type_emoji = PRODUCT_TYPES.get(p_type, DEFAULT_PRODUCT_EMOJI)
     
-    msg = (f"ðŸ“¦ Bulk Products Setup Complete\n\n"
-           f"ðŸ“ Location: {city} / {district}\n"
+    msg = (f"📦 Bulk Products Setup Complete\n\n"
+           f"📦 Location: {city} / {district}\n"
            f"{type_emoji} Type: {p_type}\n"
-           f"ðŸ“ Size: {size}\n"
-           f"ðŸ’° Price: {price_str}â‚¬\n\n"
+           f"📦 Size: {size}\n"
+           f"👤 Price: {price_str}�‚�\n\n"
            f"Now forward or send up to 10 different messages. Each message can contain:\n"
-           f"â€¢ Photos, videos, GIFs\n"
-           f"â€¢ Text descriptions\n"
-           f"â€¢ Any combination of media and text\n\n"
+           f"�€� Photos, videos, GIFs\n"
+           f"�€� Text descriptions\n"
+           f"�€� Any combination of media and text\n\n"
            f"Each message will become a separate product drop in this category.\n\n"
            f"Messages collected: 0/10")
     
     keyboard = [
-        [InlineKeyboardButton("âœ… Finish & Create Products", callback_data="adm_bulk_create_all")],
-        [InlineKeyboardButton("âŒ Cancel Bulk Operation", callback_data="cancel_bulk_add")]
+        [InlineKeyboardButton("�œ… Finish & Create Products", callback_data="adm_bulk_create_all")],
+        [InlineKeyboardButton("❌ Cancel Bulk Operation", callback_data="cancel_bulk_add")]
     ]
     
     await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -1143,7 +1143,7 @@ async def handle_adm_bulk_drop_details_message(update: Update, context: ContextT
     # Check if we've reached the limit
     if len(bulk_messages) >= 10:
         await send_message_with_retry(context.bot, chat_id, 
-            "âŒ You've already collected 10 messages (maximum). Please finish creating the products or cancel the operation.", 
+            "❌ You've already collected 10 messages (maximum). Please finish creating the products or cancel the operation.", 
             parse_mode=None)
         return
 
@@ -1205,7 +1205,7 @@ async def handle_adm_bulk_drop_details_message(update: Update, context: ContextT
                 bulk_messages.append(message_data)
                 context.user_data["bulk_messages"] = bulk_messages
                 await send_message_with_retry(context.bot, chat_id, 
-                    f"âœ… Media group added to bulk collection! Total messages: {len(bulk_messages)}/10", 
+                    f"�œ… Media group added to bulk collection! Total messages: {len(bulk_messages)}/10", 
                     parse_mode=None)
         else:
             logger.error("JobQueue not found in context. Cannot schedule bulk media group processing.")
@@ -1221,10 +1221,10 @@ async def handle_adm_bulk_drop_details_message(update: Update, context: ContextT
                 bulk_messages.append(message_data)
                 context.user_data["bulk_messages"] = bulk_messages
                 await send_message_with_retry(context.bot, chat_id, 
-                    f"âœ… Media group added to bulk collection! Total messages: {len(bulk_messages)}/10", 
+                    f"�œ… Media group added to bulk collection! Total messages: {len(bulk_messages)}/10", 
                     parse_mode=None)
             else:
-                await send_message_with_retry(context.bot, chat_id, "âŒ Error: Internal components missing. Cannot process media group.", parse_mode=None)
+                await send_message_with_retry(context.bot, chat_id, "❌ Error: Internal components missing. Cannot process media group.", parse_mode=None)
 
     else:
         if context.user_data.get('bulk_collecting_media_group_id'):
@@ -1268,11 +1268,11 @@ async def show_bulk_messages_status(update: Update, context: ContextTypes.DEFAUL
     type_emoji = PRODUCT_TYPES.get(p_type, DEFAULT_PRODUCT_EMOJI)
     price_str = format_currency(price)
     
-    msg = (f"ðŸ“¦ Bulk Products Collection\n\n"
-           f"ðŸ“ Location: {city} / {district}\n"
+    msg = (f"📦 Bulk Products Collection\n\n"
+           f"📦 Location: {city} / {district}\n"
            f"{type_emoji} Type: {p_type}\n"
-           f"ðŸ“ Size: {size}\n"
-           f"ðŸ’° Price: {price_str}â‚¬\n\n"
+           f"📦 Size: {size}\n"
+           f"👤 Price: {price_str}�‚�\n\n"
            f"Messages collected: {len(bulk_messages)}/10\n\n")
     
     if not bulk_messages:
@@ -1296,13 +1296,13 @@ async def show_bulk_messages_status(update: Update, context: ContextTypes.DEFAUL
     keyboard = []
     
     if bulk_messages:
-        keyboard.append([InlineKeyboardButton("ðŸ—‘ï¸ Remove Last Message", callback_data="adm_bulk_remove_last_message")])
-        keyboard.append([InlineKeyboardButton("âœ… Create All Products", callback_data="adm_bulk_create_all")])
+        keyboard.append([InlineKeyboardButton("�Ÿ—‘️ Remove Last Message", callback_data="adm_bulk_remove_last_message")])
+        keyboard.append([InlineKeyboardButton("�œ… Create All Products", callback_data="adm_bulk_create_all")])
     
     if len(bulk_messages) < 10:
         msg += "\n\nSend or forward your next message..."
     
-    keyboard.append([InlineKeyboardButton("âŒ Cancel Bulk Operation", callback_data="cancel_bulk_add")])
+    keyboard.append([InlineKeyboardButton("❌ Cancel Bulk Operation", callback_data="cancel_bulk_add")])
     
     await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -1355,18 +1355,18 @@ async def handle_adm_bulk_confirm_all(update: Update, context: ContextTypes.DEFA
     price = context.user_data.get("bulk_pending_drop_price", 0)
     
     if not all([city, district, p_type, size, price]):
-        return await query.edit_message_text("âŒ Error: Missing setup data. Please start again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Missing setup data. Please start again.", parse_mode=None)
     
     # Show confirmation
     type_emoji = PRODUCT_TYPES.get(p_type, DEFAULT_PRODUCT_EMOJI)
     price_str = format_currency(price)
     
-    msg = f"âš ï¸ Confirm Bulk Creation\n\n"
+    msg = f"⚠️ Confirm Bulk Creation\n\n"
     msg += f"You are about to create {len(bulk_messages)} products:\n\n"
-    msg += f"ðŸ“ Location: {city} / {district}\n"
+    msg += f"📦 Location: {city} / {district}\n"
     msg += f"{type_emoji} Type: {p_type}\n"
-    msg += f"ðŸ“ Size: {size}\n"
-    msg += f"ðŸ’° Price: {price_str}â‚¬\n\n"
+    msg += f"📦 Size: {size}\n"
+    msg += f"👤 Price: {price_str}�‚�\n\n"
     msg += f"Products to create:\n"
     for i, msg_data in enumerate(bulk_messages, 1):
         text_preview = msg_data.get("text", "")[:40]
@@ -1383,8 +1383,8 @@ async def handle_adm_bulk_confirm_all(update: Update, context: ContextTypes.DEFA
     msg += f"\nProceed with creation?"
     
     keyboard = [
-        [InlineKeyboardButton("âœ… Yes, Create All Products", callback_data="adm_bulk_execute_messages")],
-        [InlineKeyboardButton("âŒ No, Go Back", callback_data="adm_bulk_back_to_messages")]
+        [InlineKeyboardButton("�œ… Yes, Create All Products", callback_data="adm_bulk_execute_messages")],
+        [InlineKeyboardButton("❌ No, Go Back", callback_data="adm_bulk_back_to_messages")]
     ]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -1399,9 +1399,9 @@ async def handle_adm_bulk_execute(update: Update, context: ContextTypes.DEFAULT_
     bulk_drops = context.user_data.get("bulk_drops", [])
     
     if not bulk_drops or not bulk_template:
-        return await query.edit_message_text("âŒ Error: Missing bulk data. Please start again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Missing bulk data. Please start again.", parse_mode=None)
     
-    await query.edit_message_text("â³ Creating bulk products...", parse_mode=None)
+    await query.edit_message_text("⏳ Creating bulk products...", parse_mode=None)
     
     p_type = bulk_template.get("product_type", "")
     size = bulk_template.get("size", "")
@@ -1526,18 +1526,18 @@ async def handle_adm_bulk_execute(update: Update, context: ContextTypes.DEFAULT_
     
     # Show results
     type_emoji = PRODUCT_TYPES.get(p_type, DEFAULT_PRODUCT_EMOJI)
-    result_msg = f"âœ… Bulk Operation Complete!\n\n"
+    result_msg = f"�œ… Bulk Operation Complete!\n\n"
     result_msg += f"{type_emoji} Product: {p_type} {size}\n"
-    result_msg += f"ðŸ’° Price: {format_currency(price)}â‚¬\n\n"
-    result_msg += f"ðŸ“Š Results:\n"
-    result_msg += f"âœ… Created: {created_count}\n"
+    result_msg += f"👤 Price: {format_currency(price)}�‚�\n\n"
+    result_msg += f"�Ÿ“Š Results:\n"
+    result_msg += f"�œ… Created: {created_count}\n"
     if failed_count > 0:
-        result_msg += f"âŒ Failed: {failed_count}\n"
+        result_msg += f"❌ Failed: {failed_count}\n"
     
     keyboard = [
-        [InlineKeyboardButton("ðŸ“¦ Add More Bulk Products", callback_data="adm_bulk_city")],
-        [InlineKeyboardButton("ðŸ”§ Admin Menu", callback_data="admin_menu"), 
-         InlineKeyboardButton("ðŸ  User Home", callback_data="back_start")]
+        [InlineKeyboardButton("📦 Add More Bulk Products", callback_data="adm_bulk_city")],
+        [InlineKeyboardButton("🔧 Admin Menu", callback_data="admin_menu"), 
+         InlineKeyboardButton("💥 User Home", callback_data="back_start")]
     ]
     
     await send_message_with_retry(context.bot, chat_id, result_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -1581,15 +1581,15 @@ async def cancel_bulk_add(update: Update, context: ContextTypes.DEFAULT_TYPE, pa
     
     if query:
         try:
-            await query.edit_message_text("âŒ Bulk Add Products Cancelled", parse_mode=None)
+            await query.edit_message_text("❌ Bulk Add Products Cancelled", parse_mode=None)
         except telegram_error.BadRequest as e:
             if "message is not modified" in str(e).lower():
                 pass  # It's okay if the message wasn't modified
             else:
                 logger.error(f"Error editing cancel bulk message: {e}")
         
-        keyboard = [[InlineKeyboardButton("ðŸ”§ Admin Menu", callback_data="admin_menu"), 
-                     InlineKeyboardButton("ðŸ  User Home", callback_data="back_start")]]
+        keyboard = [[InlineKeyboardButton("🔧 Admin Menu", callback_data="admin_menu"), 
+                     InlineKeyboardButton("💥 User Home", callback_data="back_start")]]
         await send_message_with_retry(context.bot, query.message.chat_id, "Returning to Admin Menu.", 
                                       reply_markup=InlineKeyboardMarkup(keyboard))
     elif update.message:
@@ -1605,19 +1605,19 @@ async def handle_adm_manage_cities(update: Update, context: ContextTypes.DEFAULT
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     if not CITIES:
          return await query.edit_message_text("No cities configured. Use 'Add New City'.", parse_mode=None,
-                                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("âž• Add New City", callback_data="adm_add_city")],
-                                                                      [InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]))
+                                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("�ž• Add New City", callback_data="adm_add_city")],
+                                                                      [InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]))
     sorted_city_ids = sorted(CITIES.keys(), key=lambda city_id: CITIES.get(city_id, ''))
     keyboard = []
     for c in sorted_city_ids:
         city_name = CITIES.get(c,'N/A')
         keyboard.append([
-             InlineKeyboardButton(f"ðŸ™ï¸ {city_name}", callback_data=f"adm_edit_city|{c}"),
-             InlineKeyboardButton(f"ðŸ—‘ï¸ Delete", callback_data=f"adm_delete_city|{c}")
+             InlineKeyboardButton(f"🏳️ {city_name}", callback_data=f"adm_edit_city|{c}"),
+             InlineKeyboardButton(f"�Ÿ—‘️ Delete", callback_data=f"adm_delete_city|{c}")
         ])
-    keyboard.append([InlineKeyboardButton("âž• Add New City", callback_data="adm_add_city")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
-    await query.edit_message_text("ðŸ™ï¸ Manage Cities\n\nSelect a city or action:",
+    keyboard.append([InlineKeyboardButton("�ž• Add New City", callback_data="adm_add_city")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
+    await query.edit_message_text("🏳️ Manage Cities\n\nSelect a city or action:",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_add_city(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -1625,8 +1625,8 @@ async def handle_adm_add_city(update: Update, context: ContextTypes.DEFAULT_TYPE
     query = update.callback_query
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     context.user_data["state"] = "awaiting_new_city_name"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_cities")]]
-    await query.edit_message_text("ðŸ™ï¸ Please reply with the name for the new city:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_cities")]]
+    await query.edit_message_text("🏳️ Please reply with the name for the new city:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter city name in chat.")
 
 async def handle_adm_edit_city(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -1640,8 +1640,8 @@ async def handle_adm_edit_city(update: Update, context: ContextTypes.DEFAULT_TYP
         return await query.edit_message_text("Error: City not found.", parse_mode=None)
     context.user_data["state"] = "awaiting_edit_city_name"
     context.user_data["edit_city_id"] = city_id
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_cities")]]
-    await query.edit_message_text(f"âœï¸ Editing city: {city_name}\n\nPlease reply with the new name for this city:",
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_cities")]]
+    await query.edit_message_text(f"✅️ Editing city: {city_name}\n\nPlease reply with the new name for this city:",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter new city name in chat.")
 
@@ -1655,11 +1655,11 @@ async def handle_adm_delete_city(update: Update, context: ContextTypes.DEFAULT_T
     if not city_name:
         return await query.edit_message_text("Error: City not found.", parse_mode=None)
     context.user_data["confirm_action"] = f"delete_city|{city_id}"
-    msg = (f"âš ï¸ Confirm Deletion\n\n"
+    msg = (f"⚠️ Confirm Deletion\n\n"
            f"Are you sure you want to delete city: {city_name}?\n\n"
-           f"ðŸš¨ This will permanently delete this city, all its districts, and all products listed within those districts!")
-    keyboard = [[InlineKeyboardButton("âœ… Yes, Delete City", callback_data="confirm_yes"),
-                 InlineKeyboardButton("âŒ No, Cancel", callback_data="adm_manage_cities")]]
+           f"🚨 This will permanently delete this city, all its districts, and all products listed within those districts!")
+    keyboard = [[InlineKeyboardButton("�œ… Yes, Delete City", callback_data="confirm_yes"),
+                 InlineKeyboardButton("❌ No, Cancel", callback_data="adm_manage_cities")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_manage_districts(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -1668,11 +1668,11 @@ async def handle_adm_manage_districts(update: Update, context: ContextTypes.DEFA
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     if not CITIES:
          return await query.edit_message_text("No cities configured. Add a city first.", parse_mode=None,
-                                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]))
+                                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]))
     sorted_city_ids = sorted(CITIES.keys(), key=lambda city_id: CITIES.get(city_id,''))
-    keyboard = [[InlineKeyboardButton(f"ðŸ™ï¸ {CITIES.get(c, 'N/A')}", callback_data=f"adm_manage_districts_city|{c}")] for c in sorted_city_ids]
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
-    await query.edit_message_text("ðŸ—ºï¸ Manage Districts\n\nSelect the city whose districts you want to manage:",
+    keyboard = [[InlineKeyboardButton(f"🏳️ {CITIES.get(c, 'N/A')}", callback_data=f"adm_manage_districts_city|{c}")] for c in sorted_city_ids]
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
+    await query.edit_message_text("�Ÿ—�️ Manage Districts\n\nSelect the city whose districts you want to manage:",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_manage_districts_city(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -1698,7 +1698,7 @@ async def handle_adm_manage_districts_city(update: Update, context: ContextTypes
     finally:
         if conn: conn.close()
 
-    msg = f"ðŸ—ºï¸ Districts in {city_name}\n\n"
+    msg = f"�Ÿ—�️ Districts in {city_name}\n\n"
     keyboard = []
     if not districts_in_city: msg += "No districts found for this city."
     else:
@@ -1707,13 +1707,13 @@ async def handle_adm_manage_districts_city(update: Update, context: ContextTypes
             dist_name = districts_in_city.get(d_id)
             if dist_name:
                  keyboard.append([
-                     InlineKeyboardButton(f"âœï¸ Edit {dist_name}", callback_data=f"adm_edit_district|{city_id}|{d_id}"),
-                     InlineKeyboardButton(f"ðŸ—‘ï¸ Delete {dist_name}", callback_data=f"adm_remove_district|{city_id}|{d_id}")
+                     InlineKeyboardButton(f"✅️ Edit {dist_name}", callback_data=f"adm_edit_district|{city_id}|{d_id}"),
+                     InlineKeyboardButton(f"�Ÿ—‘️ Delete {dist_name}", callback_data=f"adm_remove_district|{city_id}|{d_id}")
                  ])
             else: logger.warning(f"District name missing for ID {d_id} in city {city_id} (manage view)")
     keyboard.extend([
-        [InlineKeyboardButton("âž• Add New District", callback_data=f"adm_add_district|{city_id}")],
-        [InlineKeyboardButton("â¬…ï¸ Back to Cities", callback_data="adm_manage_districts")]
+        [InlineKeyboardButton("�ž• Add New District", callback_data=f"adm_add_district|{city_id}")],
+        [InlineKeyboardButton("✅️ Back to Cities", callback_data="adm_manage_districts")]
     ])
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -1732,8 +1732,8 @@ async def handle_adm_add_district(update: Update, context: ContextTypes.DEFAULT_
         return await query.edit_message_text("Error: City not found.", parse_mode=None)
     context.user_data["state"] = "awaiting_new_district_name"
     context.user_data["admin_add_district_city_id"] = city_id
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data=f"adm_manage_districts_city|{city_id}")]]
-    await query.edit_message_text(f"âž• Adding district to {city_name}\n\nPlease reply with the name for the new district:",
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data=f"adm_manage_districts_city|{city_id}")]]
+    await query.edit_message_text(f"�ž• Adding district to {city_name}\n\nPlease reply with the name for the new district:",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter district name in chat.")
 
@@ -1760,8 +1760,8 @@ async def handle_adm_edit_district(update: Update, context: ContextTypes.DEFAULT
     context.user_data["state"] = "awaiting_edit_district_name"
     context.user_data["edit_city_id"] = city_id
     context.user_data["edit_district_id"] = dist_id
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data=f"adm_manage_districts_city|{city_id}")]]
-    await query.edit_message_text(f"âœï¸ Editing district: {district_name} in {city_name}\n\nPlease reply with the new name for this district:",
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data=f"adm_manage_districts_city|{city_id}")]]
+    await query.edit_message_text(f"✅️ Editing district: {district_name} in {city_name}\n\nPlease reply with the new name for this district:",
                            reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter new district name in chat.")
 
@@ -1786,11 +1786,11 @@ async def handle_adm_remove_district(update: Update, context: ContextTypes.DEFAU
     if not city_name or district_name is None:
         return await query.edit_message_text("Error: City/District not found.", parse_mode=None)
     context.user_data["confirm_action"] = f"remove_district|{city_id}|{dist_id}"
-    msg = (f"âš ï¸ Confirm Deletion\n\n"
+    msg = (f"⚠️ Confirm Deletion\n\n"
            f"Are you sure you want to delete district: {district_name} from {city_name}?\n\n"
-           f"ðŸš¨ This will permanently delete this district and all products listed within it!")
-    keyboard = [[InlineKeyboardButton("âœ… Yes, Delete District", callback_data="confirm_yes"),
-                 InlineKeyboardButton("âŒ No, Cancel", callback_data=f"adm_manage_districts_city|{city_id}")]]
+           f"🚨 This will permanently delete this district and all products listed within it!")
+    keyboard = [[InlineKeyboardButton("�œ… Yes, Delete District", callback_data="confirm_yes"),
+                 InlineKeyboardButton("❌ No, Cancel", callback_data=f"adm_manage_districts_city|{city_id}")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -1801,11 +1801,11 @@ async def handle_adm_manage_products(update: Update, context: ContextTypes.DEFAU
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     if not CITIES:
          return await query.edit_message_text("No cities configured. Add a city first.", parse_mode=None,
-                                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]))
+                                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]))
     sorted_city_ids = sorted(CITIES.keys(), key=lambda city_id: CITIES.get(city_id,''))
-    keyboard = [[InlineKeyboardButton(f"ðŸ™ï¸ {CITIES.get(c,'N/A')}", callback_data=f"adm_manage_products_city|{c}")] for c in sorted_city_ids]
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
-    await query.edit_message_text("ðŸ—‘ï¸ Manage Products\n\nSelect the city where the products are located:",
+    keyboard = [[InlineKeyboardButton(f"🏳️ {CITIES.get(c,'N/A')}", callback_data=f"adm_manage_products_city|{c}")] for c in sorted_city_ids]
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
+    await query.edit_message_text("�Ÿ—‘️ Manage Products\n\nSelect the city where the products are located:",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -1820,7 +1820,7 @@ async def handle_adm_manage_products_city(update: Update, context: ContextTypes.
         return await query.edit_message_text("Error: City not found.", parse_mode=None)
     districts_in_city = DISTRICTS.get(city_id, {})
     if not districts_in_city:
-         keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Cities", callback_data="adm_manage_products")]]
+         keyboard = [[InlineKeyboardButton("✅️ Back to Cities", callback_data="adm_manage_products")]]
          return await query.edit_message_text(f"No districts found for {city_name}. Cannot manage products.",
                                  reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     sorted_district_ids = sorted(districts_in_city.keys(), key=lambda d_id: districts_in_city.get(d_id,''))
@@ -1828,10 +1828,10 @@ async def handle_adm_manage_products_city(update: Update, context: ContextTypes.
     for d in sorted_district_ids:
          dist_name = districts_in_city.get(d)
          if dist_name:
-             keyboard.append([InlineKeyboardButton(f"ðŸ˜ï¸ {dist_name}", callback_data=f"adm_manage_products_dist|{city_id}|{d}")])
+             keyboard.append([InlineKeyboardButton(f"�Ÿ�˜️ {dist_name}", callback_data=f"adm_manage_products_dist|{city_id}|{d}")])
          else: logger.warning(f"District name missing for ID {d} in city {city_id} (manage products)")
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Cities", callback_data="adm_manage_products")])
-    await query.edit_message_text(f"ðŸ—‘ï¸ Manage Products in {city_name}\n\nSelect district:",
+    keyboard.append([InlineKeyboardButton("✅️ Back to Cities", callback_data="adm_manage_products")])
+    await query.edit_message_text(f"�Ÿ—‘️ Manage Products in {city_name}\n\nSelect district:",
                             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -1853,7 +1853,7 @@ async def handle_adm_manage_products_dist(update: Update, context: ContextTypes.
         c.execute("SELECT DISTINCT product_type FROM products WHERE city = ? AND district = ? ORDER BY product_type", (city_name, district_name))
         product_types_in_dist = sorted([row['product_type'] for row in c.fetchall()])
         if not product_types_in_dist:
-             keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Districts", callback_data=f"adm_manage_products_city|{city_id}")]]
+             keyboard = [[InlineKeyboardButton("✅️ Back to Districts", callback_data=f"adm_manage_products_city|{city_id}")]]
              return await query.edit_message_text(f"No product types found in {city_name} / {district_name}.",
                                      reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         keyboard = []
@@ -1861,12 +1861,12 @@ async def handle_adm_manage_products_dist(update: Update, context: ContextTypes.
              emoji = PRODUCT_TYPES.get(pt, DEFAULT_PRODUCT_EMOJI)
              keyboard.append([InlineKeyboardButton(f"{emoji} {pt}", callback_data=f"adm_manage_products_type|{city_id}|{dist_id}|{pt}")])
 
-        keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Districts", callback_data=f"adm_manage_products_city|{city_id}")])
-        await query.edit_message_text(f"ðŸ—‘ï¸ Manage Products in {city_name} / {district_name}\n\nSelect product type:",
+        keyboard.append([InlineKeyboardButton("✅️ Back to Districts", callback_data=f"adm_manage_products_city|{city_id}")])
+        await query.edit_message_text(f"�Ÿ—‘️ Manage Products in {city_name} / {district_name}\n\nSelect product type:",
                                 reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except sqlite3.Error as e:
         logger.error(f"DB error fetching product types for managing in {city_name}/{district_name}: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error fetching product types.", parse_mode=None)
+        await query.edit_message_text("❌ Error fetching product types.", parse_mode=None)
     finally:
         if conn: conn.close() # Close connection if opened
 
@@ -1895,7 +1895,7 @@ async def handle_adm_manage_products_type(update: Update, context: ContextTypes.
             ORDER BY size, price, id
         """, (city_name, district_name, p_type))
         products = c.fetchall()
-        msg = f"ðŸ—‘ï¸ Products: {type_emoji} {p_type} in {city_name} / {district_name}\n\n"
+        msg = f"�Ÿ—‘️ Products: {type_emoji} {p_type} in {city_name} / {district_name}\n\n"
         keyboard = []
         full_msg = msg # Initialize full message
 
@@ -1908,11 +1908,11 @@ async def handle_adm_manage_products_type(update: Update, context: ContextTypes.
              for prod in products:
                 prod_id, size_str, price_str = prod['id'], prod['size'], format_currency(prod['price'])
                 status_str = f"{prod['available']}/{prod['reserved']}"
-                items_text_list.append(f"{prod_id} | {size_str} | {price_str}â‚¬ | {status_str}")
-                keyboard.append([InlineKeyboardButton(f"ðŸ—‘ï¸ Delete ID {prod_id}", callback_data=f"adm_delete_prod|{prod_id}")])
+                items_text_list.append(f"{prod_id} | {size_str} | {price_str}�‚� | {status_str}")
+                keyboard.append([InlineKeyboardButton(f"�Ÿ—‘️ Delete ID {prod_id}", callback_data=f"adm_delete_prod|{prod_id}")])
              full_msg += "\n".join(items_text_list)
 
-        keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Types", callback_data=f"adm_manage_products_dist|{city_id}|{dist_id}")])
+        keyboard.append([InlineKeyboardButton("✅️ Back to Types", callback_data=f"adm_manage_products_dist|{city_id}|{dist_id}")])
         try:
             await query.edit_message_text(full_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         except telegram_error.BadRequest as e:
@@ -1920,7 +1920,7 @@ async def handle_adm_manage_products_type(update: Update, context: ContextTypes.
              else: await query.answer() # Acknowledge if not modified
     except sqlite3.Error as e:
         logger.error(f"DB error fetching products for deletion: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error fetching products.", parse_mode=None)
+        await query.edit_message_text("❌ Error fetching products.", parse_mode=None)
     finally:
         if conn: conn.close() # Close connection if opened
 
@@ -1951,7 +1951,7 @@ async def handle_adm_delete_prod(update: Update, context: ContextTypes.DEFAULT_T
             type_name = result['product_type']
             emoji = PRODUCT_TYPES.get(type_name, DEFAULT_PRODUCT_EMOJI)
             product_name = result['name'] or product_name
-            product_details = f"{emoji} {type_name} {result['size']} ({format_currency(result['price'])}â‚¬) in {result['city']}/{result['district']}"
+            product_details = f"{emoji} {type_name} {result['size']} ({format_currency(result['price'])}�‚�) in {result['city']}/{result['district']}"
             if result['city_id'] and result['dist_id'] and result['product_type']:
                 back_callback = f"adm_manage_products_type|{result['city_id']}|{result['dist_id']}|{result['product_type']}"
             else: logger.warning(f"Could not retrieve full details for product {product_id} during delete confirmation.")
@@ -1963,10 +1963,10 @@ async def handle_adm_delete_prod(update: Update, context: ContextTypes.DEFAULT_T
         if conn: conn.close() # Close connection if opened
 
     context.user_data["confirm_action"] = f"confirm_remove_product|{product_id}"
-    msg = (f"âš ï¸ Confirm Deletion\n\nAre you sure you want to permanently delete this specific product instance?\n"
-           f"Product ID: {product_id}\nDetails: {product_details}\n\nðŸš¨ This action is irreversible!")
-    keyboard = [[InlineKeyboardButton("âœ… Yes, Delete Product", callback_data="confirm_yes"),
-                 InlineKeyboardButton("âŒ No, Cancel", callback_data=back_callback)]] # Use dynamic back callback
+    msg = (f"⚠️ Confirm Deletion\n\nAre you sure you want to permanently delete this specific product instance?\n"
+           f"Product ID: {product_id}\nDetails: {product_details}\n\n🚨 This action is irreversible!")
+    keyboard = [[InlineKeyboardButton("�œ… Yes, Delete Product", callback_data="confirm_yes"),
+                 InlineKeyboardButton("❌ No, Cancel", callback_data=back_callback)]] # Use dynamic back callback
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -1980,17 +1980,17 @@ async def handle_adm_reassign_type_start(update: Update, context: ContextTypes.D
     load_all_data()
     if len(PRODUCT_TYPES) < 2:
         return await query.edit_message_text(
-            "ðŸ”„ Reassign Product Type\n\nâŒ You need at least 2 product types to perform reassignment.",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="admin_menu")]]),
+            "�Ÿ”„ Reassign Product Type\n\n❌ You need at least 2 product types to perform reassignment.",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="admin_menu")]]),
             parse_mode=None
         )
     
-    msg = "ðŸ”„ Reassign Product Type\n\n"
+    msg = "�Ÿ”„ Reassign Product Type\n\n"
     msg += "Select the OLD product type (the one you want to change FROM):\n\n"
-    msg += "âš ï¸ This will:\n"
-    msg += "â€¢ Move all products from OLD type to NEW type\n"
-    msg += "â€¢ Update all reseller discounts to use NEW type\n"
-    msg += "â€¢ Delete the OLD product type\n"
+    msg += "⚠️ This will:\n"
+    msg += "�€� Move all products from OLD type to NEW type\n"
+    msg += "�€� Update all reseller discounts to use NEW type\n"
+    msg += "�€� Delete the OLD product type\n"
     
     keyboard = []
     for type_name, emoji in sorted(PRODUCT_TYPES.items()):
@@ -2013,7 +2013,7 @@ async def handle_adm_reassign_type_start(update: Update, context: ContextTypes.D
             button_text += f" ({product_count} products)"
         keyboard.append([InlineKeyboardButton(button_text, callback_data=f"adm_reassign_select_old|{type_name}")])
     
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_reassign_select_old(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -2030,15 +2030,15 @@ async def handle_adm_reassign_select_old(update: Update, context: ContextTypes.D
     
     if old_type_name not in PRODUCT_TYPES:
         return await query.edit_message_text(
-            f"âŒ Error: Product type '{old_type_name}' not found.",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_reassign_type_start")]]),
+            f"❌ Error: Product type '{old_type_name}' not found.",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="adm_reassign_type_start")]]),
             parse_mode=None
         )
     
     # Store the old type selection
     context.user_data['reassign_old_type_name'] = old_type_name
     
-    msg = f"ðŸ”„ Reassign Product Type\n\n"
+    msg = f"�Ÿ”„ Reassign Product Type\n\n"
     msg += f"OLD Type: {PRODUCT_TYPES[old_type_name]} {old_type_name}\n\n"
     msg += "Select the NEW product type (where products will be moved TO):\n"
     
@@ -2049,7 +2049,7 @@ async def handle_adm_reassign_select_old(update: Update, context: ContextTypes.D
         
         keyboard.append([InlineKeyboardButton(f"{emoji} {type_name}", callback_data=f"adm_reassign_confirm|{old_type_name}|{type_name}")])
     
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Select Old Type", callback_data="adm_reassign_type_start")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Select Old Type", callback_data="adm_reassign_type_start")])
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_reassign_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -2068,8 +2068,8 @@ async def handle_adm_reassign_confirm(update: Update, context: ContextTypes.DEFA
     
     if old_type_name not in PRODUCT_TYPES or new_type_name not in PRODUCT_TYPES:
         return await query.edit_message_text(
-            "âŒ Error: One or both product types not found.",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_reassign_type_start")]]),
+            "❌ Error: One or both product types not found.",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="adm_reassign_type_start")]]),
             parse_mode=None
         )
     
@@ -2095,35 +2095,35 @@ async def handle_adm_reassign_confirm(update: Update, context: ContextTypes.DEFA
     except sqlite3.Error as e:
         logger.error(f"Error counting items for reassignment: {e}")
         return await query.edit_message_text(
-            "âŒ Database error checking reassignment impact.",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_reassign_type_start")]]),
+            "❌ Database error checking reassignment impact.",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="adm_reassign_type_start")]]),
             parse_mode=None
         )
     finally:
         if conn: conn.close()
     
-    old_emoji = PRODUCT_TYPES.get(old_type_name, 'ðŸ“¦')
-    new_emoji = PRODUCT_TYPES.get(new_type_name, 'ðŸ“¦')
+    old_emoji = PRODUCT_TYPES.get(old_type_name, '📦')
+    new_emoji = PRODUCT_TYPES.get(new_type_name, '📦')
     
-    msg = f"ðŸ”„ Confirm Product Type Reassignment\n\n"
+    msg = f"�Ÿ”„ Confirm Product Type Reassignment\n\n"
     msg += f"FROM: {old_emoji} {old_type_name}\n"
     msg += f"TO: {new_emoji} {new_type_name}\n\n"
-    msg += f"ðŸ“Š Impact Summary:\n"
-    msg += f"â€¢ Products to reassign: {product_count}\n"
-    msg += f"â€¢ Reseller discount rules to update: {reseller_discount_count}\n\n"
-    msg += f"âš ï¸ This action will:\n"
+    msg += f"�Ÿ“Š Impact Summary:\n"
+    msg += f"�€� Products to reassign: {product_count}\n"
+    msg += f"�€� Reseller discount rules to update: {reseller_discount_count}\n\n"
+    msg += f"⚠️ This action will:\n"
     msg += f"1. Move all {product_count} products from '{old_type_name}' to '{new_type_name}'\n"
     msg += f"2. Update {reseller_discount_count} reseller discount rules\n"
     msg += f"3. Delete the '{old_type_name}' product type completely\n\n"
-    msg += f"ðŸš¨ THIS ACTION CANNOT BE UNDONE!"
+    msg += f"🚨 THIS ACTION CANNOT BE UNDONE!"
     
     # Store data for confirmation
     context.user_data['reassign_old_type_name'] = old_type_name
     context.user_data['reassign_new_type_name'] = new_type_name
     
     keyboard = [
-        [InlineKeyboardButton(f"âœ… YES, Reassign {product_count} Products", callback_data=f"confirm_yes|confirm_reassign_type|{old_type_name}|{new_type_name}")],
-        [InlineKeyboardButton("âŒ Cancel", callback_data="adm_reassign_type_start")]
+        [InlineKeyboardButton(f"�œ… YES, Reassign {product_count} Products", callback_data=f"confirm_yes|confirm_reassign_type|{old_type_name}|{new_type_name}")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="adm_reassign_type_start")]
     ]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -2134,17 +2134,17 @@ async def handle_adm_manage_types(update: Update, context: ContextTypes.DEFAULT_
     query = update.callback_query
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     load_all_data() # Ensure PRODUCT_TYPES is up-to-date
-    if not PRODUCT_TYPES: msg = "ðŸ§© Manage Product Types\n\nNo product types configured."
-    else: msg = "ðŸ§© Manage Product Types\n\nSelect a type to edit or delete:"
+    if not PRODUCT_TYPES: msg = "💥 Manage Product Types\n\nNo product types configured."
+    else: msg = "💥 Manage Product Types\n\nSelect a type to edit or delete:"
     keyboard = []
     for type_name, emoji in sorted(PRODUCT_TYPES.items()):
          keyboard.append([
              InlineKeyboardButton(f"{emoji} {type_name}", callback_data=f"adm_edit_type_menu|{type_name}"),
-             InlineKeyboardButton(f"ðŸ—‘ï¸ Delete", callback_data=f"adm_delete_type|{type_name}")
+             InlineKeyboardButton(f"�Ÿ—‘️ Delete", callback_data=f"adm_delete_type|{type_name}")
          ])
     keyboard.extend([
-        [InlineKeyboardButton("âž• Add New Type", callback_data="adm_add_type")],
-        [InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]
+        [InlineKeyboardButton("�ž• Add New Type", callback_data="adm_add_type")],
+        [InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]
     ])
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -2179,19 +2179,19 @@ async def handle_adm_edit_type_menu(update: Update, context: ContextTypes.DEFAUL
     safe_name = type_name # No Markdown V2 here
     safe_desc = current_description # No Markdown V2 here
 
-    msg_template = lang_data.get("admin_edit_type_menu", "ðŸ§© Editing Type: {type_name}\n\nCurrent Emoji: {emoji}\nDescription: {description}\n\nWhat would you like to do?")
+    msg_template = lang_data.get("admin_edit_type_menu", "💥 Editing Type: {type_name}\n\nCurrent Emoji: {emoji}\nDescription: {description}\n\nWhat would you like to do?")
     msg = msg_template.format(type_name=safe_name, emoji=current_emoji, description=safe_desc)
 
-    change_emoji_button_text = lang_data.get("admin_edit_type_emoji_button", "âœï¸ Change Emoji")
-    change_name_button_text = lang_data.get("admin_edit_type_name_button", "ðŸ“ Change Name")
-    change_desc_button_text = lang_data.get("admin_edit_type_desc_button", "ðŸ“ Edit Description") # Keep commented out
+    change_emoji_button_text = lang_data.get("admin_edit_type_emoji_button", "✅️ Change Emoji")
+    change_name_button_text = lang_data.get("admin_edit_type_name_button", "📦 Change Name")
+    change_desc_button_text = lang_data.get("admin_edit_type_desc_button", "📦 Edit Description") # Keep commented out
 
     keyboard = [
         [InlineKeyboardButton(change_emoji_button_text, callback_data=f"adm_change_type_emoji|{type_name}")],
         [InlineKeyboardButton(change_name_button_text, callback_data=f"adm_change_type_name|{type_name}")],
         # [InlineKeyboardButton(change_desc_button_text, callback_data=f"adm_edit_type_desc|{type_name}")], # Description editing for types not implemented
-        [InlineKeyboardButton(f"ðŸ—‘ï¸ Delete {type_name}", callback_data=f"adm_delete_type|{type_name}")],
-        [InlineKeyboardButton("â¬…ï¸ Back to Types", callback_data="adm_manage_types")]
+        [InlineKeyboardButton(f"�Ÿ—‘️ Delete {type_name}", callback_data=f"adm_delete_type|{type_name}")],
+        [InlineKeyboardButton("✅️ Back to Types", callback_data="adm_manage_types")]
     ]
 
     try:
@@ -2215,8 +2215,8 @@ async def handle_adm_change_type_emoji(update: Update, context: ContextTypes.DEF
     context.user_data["edit_type_name"] = type_name
     current_emoji = PRODUCT_TYPES.get(type_name, DEFAULT_PRODUCT_EMOJI)
 
-    prompt_text = lang_data.get("admin_enter_type_emoji", "âœï¸ Please reply with a single emoji for the product type:")
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data=f"adm_edit_type_menu|{type_name}")]]
+    prompt_text = lang_data.get("admin_enter_type_emoji", "✅️ Please reply with a single emoji for the product type:")
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data=f"adm_edit_type_menu|{type_name}")]]
     await query.edit_message_text(f"Current Emoji: {current_emoji}\n\n{prompt_text}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter new emoji in chat.")
 
@@ -2232,9 +2232,9 @@ async def handle_adm_change_type_name(update: Update, context: ContextTypes.DEFA
     context.user_data["state"] = "awaiting_edit_type_name"
     context.user_data["edit_old_type_name"] = old_type_name
     
-    prompt_text = lang_data.get("admin_enter_type_name", "âœï¸ Please reply with the new name for this product type:")
-    warning_text = "âš ï¸ WARNING: This will update ALL products and reseller discounts using this type!"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data=f"adm_edit_type_menu|{old_type_name}")]]
+    prompt_text = lang_data.get("admin_enter_type_name", "✅️ Please reply with the new name for this product type:")
+    warning_text = "⚠️ WARNING: This will update ALL products and reseller discounts using this type!"
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data=f"adm_edit_type_menu|{old_type_name}")]]
     
     await query.edit_message_text(
         f"Current Name: {old_type_name}\n\n{warning_text}\n\n{prompt_text}", 
@@ -2248,8 +2248,8 @@ async def handle_adm_add_type(update: Update, context: ContextTypes.DEFAULT_TYPE
     query = update.callback_query
     if not is_primary_admin(query.from_user.id): return await query.answer("Access denied.", show_alert=True)
     context.user_data["state"] = "awaiting_new_type_name"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_types")]]
-    await query.edit_message_text("ðŸ§© Please reply with the name for the new product type:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_types")]]
+    await query.edit_message_text("💥 Please reply with the name for the new product type:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter type name in chat.")
 
 async def handle_adm_delete_type(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -2277,27 +2277,27 @@ async def handle_adm_delete_type(update: Update, context: ContextTypes.DEFAULT_T
             context.user_data['force_delete_type_name'] = type_name_to_delete
 
             force_delete_msg = (
-                f"âš ï¸ Type '{type_name_to_delete}' is currently used by {usage_details}.\n\n"
+                f"⚠️ Type '{type_name_to_delete}' is currently used by {usage_details}.\n\n"
                 f"You can 'Force Delete' to remove this type AND all associated products/discount rules.\n\n"
-                f"ðŸš¨ THIS IS IRREVERSIBLE AND WILL DELETE THE LISTED ITEMS."
+                f"🚨 THIS IS IRREVERSIBLE AND WILL DELETE THE LISTED ITEMS."
             )
             # Use a very short callback_data, type_name is now in user_data
             keyboard = [
-                [InlineKeyboardButton(f"ðŸ’£ Force Delete Type & {usage_details}", callback_data="confirm_force_delete_prompt")],
-                [InlineKeyboardButton("â¬…ï¸ Back to Manage Types", callback_data="adm_manage_types")]
+                [InlineKeyboardButton(f"👤 Force Delete Type & {usage_details}", callback_data="confirm_force_delete_prompt")],
+                [InlineKeyboardButton("✅️ Back to Manage Types", callback_data="adm_manage_types")]
             ]
             await query.edit_message_text(force_delete_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         else:
             # No usage, proceed with normal delete confirmation
             context.user_data["confirm_action"] = f"delete_type|{type_name_to_delete}" # Normal delete
-            msg = (f"âš ï¸ Confirm Deletion\n\nAre you sure you want to delete product type: {type_name_to_delete}?\n\n"
-                   f"ðŸš¨ This action is irreversible!")
-            keyboard = [[InlineKeyboardButton("âœ… Yes, Delete Type", callback_data="confirm_yes"),
-                         InlineKeyboardButton("âŒ No, Cancel", callback_data="adm_manage_types")]]
+            msg = (f"⚠️ Confirm Deletion\n\nAre you sure you want to delete product type: {type_name_to_delete}?\n\n"
+                   f"🚨 This action is irreversible!")
+            keyboard = [[InlineKeyboardButton("�œ… Yes, Delete Type", callback_data="confirm_yes"),
+                         InlineKeyboardButton("❌ No, Cancel", callback_data="adm_manage_types")]]
             await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except sqlite3.Error as e:
         logger.error(f"DB error checking product type usage for '{type_name_to_delete}': {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error checking type usage.", parse_mode=None)
+        await query.edit_message_text("❌ Error checking type usage.", parse_mode=None)
     finally:
         if conn: conn.close()
 
@@ -2312,7 +2312,7 @@ async def handle_confirm_force_delete_prompt(update: Update, context: ContextTyp
     if not type_name:
         logger.error("handle_confirm_force_delete_prompt: force_delete_type_name not found in user_data.")
         await query.edit_message_text("Error: Could not retrieve type name for force delete. Please try again.",
-                                      reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_manage_types")]]))
+                                      reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="adm_manage_types")]]))
         return
 
     context.user_data["confirm_action"] = f"force_delete_type_CASCADE|{type_name}" # Set up for handle_confirm_yes
@@ -2344,14 +2344,14 @@ async def handle_confirm_force_delete_prompt(update: Update, context: ContextTyp
     usage_details = " and ".join(usage_details_parts) if usage_details_parts else "associated items"
 
 
-    msg = (f"ðŸš¨ðŸš¨ðŸš¨ FINAL CONFIRMATION ðŸš¨ðŸš¨ðŸš¨\n\n"
+    msg = (f"⚠⚠🚨 FINAL CONFIRMATION ⚠⚠⚠\n\n"
            f"Are you ABSOLUTELY SURE you want to delete product type '{type_name}'?\n\n"
            f"This will also PERMANENTLY DELETE:\n"
-           f"  â€¢ All {usage_details} linked to this type.\n"
-           f"  â€¢ All media associated with those products.\n\n"
+           f"  �€� All {usage_details} linked to this type.\n"
+           f"  �€� All media associated with those products.\n\n"
            f"THIS ACTION CANNOT BE UNDONE AND WILL RESULT IN DATA LOSS.")
-    keyboard = [[InlineKeyboardButton("âœ… YES, I understand, DELETE ALL", callback_data="confirm_yes")],
-                 [InlineKeyboardButton("âŒ NO, Cancel Force Delete", callback_data="adm_manage_types")]]
+    keyboard = [[InlineKeyboardButton("�œ… YES, I understand, DELETE ALL", callback_data="confirm_yes")],
+                 [InlineKeyboardButton("❌ NO, Cancel Force Delete", callback_data="adm_manage_types")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -2369,14 +2369,14 @@ async def handle_adm_manage_discounts(update: Update, context: ContextTypes.DEFA
             FROM discount_codes ORDER BY created_date DESC
         """)
         codes = c.fetchall()
-        msg = "ðŸ·ï¸ Manage General Discount Codes\n\n" # Clarified title
+        msg = "💥️ Manage General Discount Codes\n\n" # Clarified title
         keyboard = []
         if not codes: msg += "No general discount codes found."
         else:
             for code in codes: # Access by column name
-                status = "âœ… Active" if code['is_active'] else "âŒ Inactive"
+                status = "�œ… Active" if code['is_active'] else "❌ Inactive"
                 value_str = format_discount_value(code['discount_type'], code['value'])
-                usage_limit = f"/{code['max_uses']}" if code['max_uses'] is not None else "/âˆž"
+                usage_limit = f"/{code['max_uses']}" if code['max_uses'] is not None else "/�ˆž"
                 usage = f"{code['uses_count']}{usage_limit}"
                 expiry_info = ""
                 if code['expiry_date']:
@@ -2385,19 +2385,19 @@ async def handle_adm_manage_discounts(update: Update, context: ContextTypes.DEFA
                          expiry_dt = datetime.fromisoformat(code['expiry_date']).replace(tzinfo=timezone.utc)
                          expiry_info = f" | Expires: {expiry_dt.strftime('%Y-%m-%d')}"
                          # Compare with current UTC time
-                         if datetime.now(timezone.utc) > expiry_dt and code['is_active']: status = "â³ Expired"
+                         if datetime.now(timezone.utc) > expiry_dt and code['is_active']: status = "⏳ Expired"
                      except ValueError: expiry_info = " | Invalid Date"
                 toggle_text = "Deactivate" if code['is_active'] else "Activate"
-                delete_text = "ðŸ—‘ï¸ Delete"
+                delete_text = "�Ÿ—‘️ Delete"
                 code_text = code['code']
                 msg += f"`{code_text}` ({value_str} {code['discount_type']}) | {status} | Used: {usage}{expiry_info}\n" # Use markdown for code
                 keyboard.append([
-                    InlineKeyboardButton(f"{'âŒ' if code['is_active'] else 'âœ…'} {toggle_text}", callback_data=f"adm_toggle_discount|{code['id']}"),
+                    InlineKeyboardButton(f"{'�Œ' if code['is_active'] else '�œ…'} {toggle_text}", callback_data=f"adm_toggle_discount|{code['id']}"),
                     InlineKeyboardButton(f"{delete_text}", callback_data=f"adm_delete_discount|{code['id']}")
                 ])
         keyboard.extend([
-            [InlineKeyboardButton("âž• Add New General Discount", callback_data="adm_add_discount_start")],
-            [InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]
+            [InlineKeyboardButton("�ž• Add New General Discount", callback_data="adm_add_discount_start")],
+            [InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]
         ])
         try:
              # Use MarkdownV2 for code formatting
@@ -2415,10 +2415,10 @@ async def handle_adm_manage_discounts(update: Update, context: ContextTypes.DEFA
              else: await query.answer() # Ignore not modified
     except sqlite3.Error as e:
         logger.error(f"DB error loading discount codes: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error loading discount codes.", parse_mode=None)
+        await query.edit_message_text("❌ Error loading discount codes.", parse_mode=None)
     except Exception as e:
          logger.error(f"Unexpected error managing discounts: {e}", exc_info=True)
-         await query.edit_message_text("âŒ An unexpected error occurred.", parse_mode=None)
+         await query.edit_message_text("❌ An unexpected error occurred.", parse_mode=None)
     finally:
         if conn: conn.close() # Close connection if opened
 
@@ -2466,10 +2466,10 @@ async def handle_adm_delete_discount(update: Update, context: ContextTypes.DEFAU
         if not result: return await query.answer("Code not found.", show_alert=True)
         code_text = result['code']
         context.user_data["confirm_action"] = f"delete_discount|{code_id}"
-        msg = (f"âš ï¸ Confirm Deletion\n\nAre you sure you want to permanently delete discount code: `{helpers.escape_markdown(code_text, version=2)}`?\n\n"
-               f"ðŸš¨ This action is irreversible!")
-        keyboard = [[InlineKeyboardButton("âœ… Yes, Delete Code", callback_data="confirm_yes"),
-                     InlineKeyboardButton("âŒ No, Cancel", callback_data="adm_manage_discounts")]]
+        msg = (f"⚠️ Confirm Deletion\n\nAre you sure you want to permanently delete discount code: `{helpers.escape_markdown(code_text, version=2)}`?\n\n"
+               f"🚨 This action is irreversible!")
+        keyboard = [[InlineKeyboardButton("�œ… Yes, Delete Code", callback_data="confirm_yes"),
+                     InlineKeyboardButton("❌ No, Cancel", callback_data="adm_manage_discounts")]]
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN_V2)
     except (sqlite3.Error, ValueError) as e:
         logger.error(f"Error preparing delete confirmation for discount code {params[0]}: {e}", exc_info=True)
@@ -2492,10 +2492,10 @@ async def handle_adm_add_discount_start(update: Update, context: ContextTypes.DE
     random_code = secrets.token_urlsafe(8).upper().replace('-', '').replace('_', '')[:8]
     keyboard = [
         [InlineKeyboardButton(f"Use Generated: {random_code}", callback_data=f"adm_use_generated_code|{random_code}")],
-        [InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_discounts")]
+        [InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_discounts")]
     ]
     await query.edit_message_text(
-        "ðŸ·ï¸ Add New General Discount Code\n\nPlease reply with the code text you want to use (e.g., SUMMER20), or use the generated one below.\n"
+        "💥️ Add New General Discount Code\n\nPlease reply with the code text you want to use (e.g., SUMMER20), or use the generated one below.\n"
         "Codes are case-sensitive.",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode=None
@@ -2525,9 +2525,9 @@ async def process_discount_code_input(update, context, code_text):
     
     # Validate code
     if not code_text or not code_text.strip():
-        error_msg = "âŒ Code cannot be empty."
+        error_msg = "❌ Code cannot be empty."
         if query:
-            await query.edit_message_text(error_msg, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_manage_discounts")]]), parse_mode=None)
+            await query.edit_message_text(error_msg, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="adm_manage_discounts")]]), parse_mode=None)
         else:
             await send_message_with_retry(context.bot, chat_id, error_msg, parse_mode=None)
         return
@@ -2542,18 +2542,18 @@ async def process_discount_code_input(update, context, code_text):
         c.execute("SELECT code FROM discount_codes WHERE UPPER(code) = ?", (code_text.upper(),))
         existing = c.fetchone()
         if existing:
-            error_msg = f"âŒ Code '{code_text}' already exists. Please choose a different one."
+            error_msg = f"❌ Code '{code_text}' already exists. Please choose a different one."
             if query:
-                keyboard = [[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_add_discount_start")]]
+                keyboard = [[InlineKeyboardButton("✅️ Back", callback_data="adm_add_discount_start")]]
                 await query.edit_message_text(error_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
             else:
                 await send_message_with_retry(context.bot, chat_id, error_msg, parse_mode=None)
             return
     except sqlite3.Error as e:
         logger.error(f"DB error checking existing discount codes: {e}")
-        error_msg = "âŒ Database error. Please try again."
+        error_msg = "❌ Database error. Please try again."
         if query:
-            await query.edit_message_text(error_msg, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_manage_discounts")]]), parse_mode=None)
+            await query.edit_message_text(error_msg, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="adm_manage_discounts")]]), parse_mode=None)
         else:
             await send_message_with_retry(context.bot, chat_id, error_msg, parse_mode=None)
         return
@@ -2567,9 +2567,9 @@ async def process_discount_code_input(update, context, code_text):
     
     msg = f"Code: {code_text}\n\nSelect discount type:"
     keyboard = [
-        [InlineKeyboardButton("ðŸ“Š Percentage", callback_data="adm_set_discount_type|percentage")],
-        [InlineKeyboardButton("ðŸ’° Fixed Amount", callback_data="adm_set_discount_type|fixed")],
-        [InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_discounts")]
+        [InlineKeyboardButton("�Ÿ“Š Percentage", callback_data="adm_set_discount_type|percentage")],
+        [InlineKeyboardButton("👤 Fixed Amount", callback_data="adm_set_discount_type|fixed")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_discounts")]
     ]
     
     if query:
@@ -2619,10 +2619,10 @@ async def handle_adm_discount_value_message(update: Update, context: ContextType
     discount_info = context.user_data.get('new_discount_info', {})
     
     if not discount_info.get('code') or not discount_info.get('type'):
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost. Please start again.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost. Please start again.", parse_mode=None)
         context.user_data.pop('state', None)
         context.user_data.pop('new_discount_info', None)
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Discounts", callback_data="adm_manage_discounts")]]
+        keyboard = [[InlineKeyboardButton("✅️ Back to Discounts", callback_data="adm_manage_discounts")]]
         await send_message_with_retry(context.bot, chat_id, "Returning to discount management.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         return
     
@@ -2630,19 +2630,19 @@ async def handle_adm_discount_value_message(update: Update, context: ContextType
     try:
         value = float(value_text)
         if value <= 0:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Value must be greater than 0.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Value must be greater than 0.", parse_mode=None)
             return
             
         if discount_info['type'] == 'percentage' and value > 100:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Percentage cannot exceed 100%.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Percentage cannot exceed 100%.", parse_mode=None)
             return
             
         if discount_info['type'] == 'fixed' and value > 10000:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Fixed amount too high (max 10000).", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Fixed amount too high (max 10000).", parse_mode=None)
             return
             
     except ValueError:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Invalid number format. Please enter a valid number.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Invalid number format. Please enter a valid number.", parse_mode=None)
         return
     
     # Save the discount code
@@ -2661,20 +2661,20 @@ async def handle_adm_discount_value_message(update: Update, context: ContextType
         
         # Success message
         value_str = format_discount_value(discount_info['type'], value)
-        success_msg = f"âœ… Discount code created successfully!\n\nCode: {discount_info['code']}\nType: {discount_info['type'].capitalize()}\nValue: {value_str}"
+        success_msg = f"�œ… Discount code created successfully!\n\nCode: {discount_info['code']}\nType: {discount_info['type'].capitalize()}\nValue: {value_str}"
         
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Discounts", callback_data="adm_manage_discounts")]]
+        keyboard = [[InlineKeyboardButton("✅️ Back to Discounts", callback_data="adm_manage_discounts")]]
         await send_message_with_retry(context.bot, chat_id, success_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
         logger.info(f"Admin {user_id} created discount code '{discount_info['code']}' ({discount_info['type']}: {value})")
         
     except sqlite3.Error as e:
         logger.error(f"DB error creating discount code: {e}", exc_info=True)
-        await send_message_with_retry(context.bot, chat_id, "âŒ Database error creating discount code.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Database error creating discount code.", parse_mode=None)
         
     except Exception as e:
         logger.error(f"Unexpected error creating discount code: {e}", exc_info=True)
-        await send_message_with_retry(context.bot, chat_id, "âŒ An unexpected error occurred.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ An unexpected error occurred.", parse_mode=None)
         
     finally:
         if conn:
@@ -2709,7 +2709,7 @@ async def handle_adm_set_discount_type(update: Update, context: ContextTypes.DEF
                     "Enter the fixed discount amount in EUR (e.g., 5.50):")
     code_text = context.user_data.get('new_discount_info', {}).get('code', 'N/A')
     msg = f"Code: {code_text} | Type: {discount_type.capitalize()}\n\n{value_prompt}"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_discounts")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_discounts")]]
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         await query.answer("Enter the discount value.")
@@ -2727,7 +2727,7 @@ async def handle_adm_set_media(update: Update, context: ContextTypes.DEFAULT_TYP
     lang, lang_data = _get_lang_data(context) # Use helper
     set_media_prompt_text = lang_data.get("set_media_prompt_plain", "Send a photo, video, or GIF to display above all messages:")
     context.user_data["state"] = "awaiting_bot_media"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]]
     await query.edit_message_text(set_media_prompt_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Send photo, video, or GIF.")
 
@@ -2758,7 +2758,7 @@ async def handle_adm_bot_media_message(update: Update, context: ContextTypes.DEF
         media_type = "gif"
     else:
         await send_message_with_retry(context.bot, chat_id, 
-            "âŒ Please send a photo, video, or GIF only.", parse_mode=None)
+            "❌ Please send a photo, video, or GIF only.", parse_mode=None)
         return
     
     try:
@@ -2794,9 +2794,9 @@ async def handle_adm_bot_media_message(update: Update, context: ContextTypes.DEF
         context.user_data.pop('state', None)
         
         # Confirmation message
-        success_msg = f"âœ… Bot media updated successfully!\n\nðŸ“Ž Type: {media_type.upper()}\nðŸ“ Saved as: {media_filename}\n\nThis media will now be displayed when users start the bot."
+        success_msg = f"�œ… Bot media updated successfully!\n\n�Ÿ“Ž Type: {media_type.upper()}\n📦 Saved as: {media_filename}\n\nThis media will now be displayed when users start the bot."
         
-        keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
         await send_message_with_retry(context.bot, chat_id, success_msg, 
             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
@@ -2807,7 +2807,7 @@ async def handle_adm_bot_media_message(update: Update, context: ContextTypes.DEF
     except Exception as e:
         logger.error(f"Error processing bot media upload: {e}", exc_info=True)
         await send_message_with_retry(context.bot, chat_id, 
-            "âŒ Error processing media upload. Please try again.", parse_mode=None)
+            "❌ Error processing media upload. Please try again.", parse_mode=None)
 
 
 # --- Review Management Handlers ---
@@ -2822,7 +2822,7 @@ async def handle_adm_manage_reviews(update: Update, context: ContextTypes.DEFAUL
     if params and len(params) > 0 and params[0].isdigit(): offset = int(params[0])
     reviews_per_page = 5
     reviews_data = fetch_reviews(offset=offset, limit=reviews_per_page + 1) # Sync function uses helper
-    msg = "ðŸš« Manage Reviews\n\n"
+    msg = "🚨 Manage Reviews\n\n"
     keyboard = []
     item_buttons = []
     if not reviews_data:
@@ -2845,18 +2845,18 @@ async def handle_adm_manage_reviews(update: Update, context: ContextTypes.DEFAUL
                 review_text_preview = review_text[:100] + ('...' if len(review_text) > 100 else '')
                 msg += f"ID {review_id} | {username_display} ({formatted_date}):\n{review_text_preview}\n\n"
                 if primary_admin: # Only primary admin can delete
-                     item_buttons.append([InlineKeyboardButton(f"ðŸ—‘ï¸ Delete Review #{review_id}", callback_data=f"adm_delete_review_confirm|{review_id}")])
+                     item_buttons.append([InlineKeyboardButton(f"�Ÿ—‘️ Delete Review #{review_id}", callback_data=f"adm_delete_review_confirm|{review_id}")])
             except Exception as e:
                  logger.error(f"Error formatting review item #{review_id} for admin view: {review}, Error: {e}")
                  msg += f"ID {review_id} | (Error displaying review)\n\n"
-                 if primary_admin: item_buttons.append([InlineKeyboardButton(f"ðŸ—‘ï¸ Delete Review #{review_id}", callback_data=f"adm_delete_review_confirm|{review_id}")])
+                 if primary_admin: item_buttons.append([InlineKeyboardButton(f"�Ÿ—‘️ Delete Review #{review_id}", callback_data=f"adm_delete_review_confirm|{review_id}")])
         keyboard.extend(item_buttons)
         nav_buttons = []
-        if offset > 0: nav_buttons.append(InlineKeyboardButton("â¬…ï¸ Prev", callback_data=f"adm_manage_reviews|{max(0, offset - reviews_per_page)}"))
-        if has_more: nav_buttons.append(InlineKeyboardButton("âž¡ï¸ Next", callback_data=f"adm_manage_reviews|{offset + reviews_per_page}"))
+        if offset > 0: nav_buttons.append(InlineKeyboardButton("✅️ Prev", callback_data=f"adm_manage_reviews|{max(0, offset - reviews_per_page)}"))
+        if has_more: nav_buttons.append(InlineKeyboardButton("�ž�️ Next", callback_data=f"adm_manage_reviews|{offset + reviews_per_page}"))
         if nav_buttons: keyboard.append(nav_buttons)
     back_callback = "admin_menu" if primary_admin else "viewer_admin_menu"
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data=back_callback)])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data=back_callback)])
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
@@ -2866,7 +2866,7 @@ async def handle_adm_manage_reviews(update: Update, context: ContextTypes.DEFAUL
             await query.answer() # Acknowledge if not modified
     except Exception as e:
         logger.error(f"Unexpected error in adm_manage_reviews: {e}", exc_info=True)
-        await query.edit_message_text("âŒ An unexpected error occurred while loading reviews.", parse_mode=None)
+        await query.edit_message_text("❌ An unexpected error occurred while loading reviews.", parse_mode=None)
 
 
 async def handle_adm_delete_review_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -2888,18 +2888,18 @@ async def handle_adm_delete_review_confirm(update: Update, context: ContextTypes
         if result: review_text_snippet = result['review_text'][:100]
         else:
             await query.answer("Review not found.", show_alert=True)
-            try: await query.edit_message_text("Error: Review not found.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back to Reviews", callback_data="adm_manage_reviews|0")]]), parse_mode=None)
+            try: await query.edit_message_text("Error: Review not found.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back to Reviews", callback_data="adm_manage_reviews|0")]]), parse_mode=None)
             except telegram_error.BadRequest: pass
             return
     except sqlite3.Error as e: logger.warning(f"Could not fetch review text for confirmation (ID {review_id}): {e}")
     finally:
         if conn: conn.close() # Close connection if opened
     context.user_data["confirm_action"] = f"delete_review|{review_id}"
-    msg = (f"âš ï¸ Confirm Deletion\n\nAre you sure you want to permanently delete review ID {review_id}?\n\n"
+    msg = (f"⚠️ Confirm Deletion\n\nAre you sure you want to permanently delete review ID {review_id}?\n\n"
            f"Preview: {review_text_snippet}{'...' if len(review_text_snippet) >= 100 else ''}\n\n"
-           f"ðŸš¨ This action is irreversible!")
-    keyboard = [[InlineKeyboardButton("âœ… Yes, Delete Review", callback_data="confirm_yes"),
-                 InlineKeyboardButton("âŒ No, Cancel", callback_data="adm_manage_reviews|0")]]
+           f"🚨 This action is irreversible!")
+    keyboard = [[InlineKeyboardButton("�œ… Yes, Delete Review", callback_data="confirm_yes"),
+                 InlineKeyboardButton("❌ No, Cancel", callback_data="adm_manage_reviews|0")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -2917,13 +2917,13 @@ async def handle_adm_broadcast_start(update: Update, context: ContextTypes.DEFAU
     context.user_data.pop('broadcast_target_type', None)
     context.user_data.pop('broadcast_target_value', None)
 
-    prompt_msg = lang_data.get("broadcast_select_target", "ðŸ“¢ Broadcast Message\n\nSelect the target audience:")
+    prompt_msg = lang_data.get("broadcast_select_target", "📦 Broadcast Message\n\nSelect the target audience:")
     keyboard = [
-        [InlineKeyboardButton(lang_data.get("broadcast_target_all", "ðŸ‘¥ All Users"), callback_data="adm_broadcast_target_type|all")],
-        [InlineKeyboardButton(lang_data.get("broadcast_target_city", "ðŸ™ï¸ By Last Purchased City"), callback_data="adm_broadcast_target_type|city")],
-        [InlineKeyboardButton(lang_data.get("broadcast_target_status", "ðŸ‘‘ By User Status"), callback_data="adm_broadcast_target_type|status")],
-        [InlineKeyboardButton(lang_data.get("broadcast_target_inactive", "â³ By Inactivity (Days)"), callback_data="adm_broadcast_target_type|inactive")],
-        [InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]
+        [InlineKeyboardButton(lang_data.get("broadcast_target_all", "�Ÿ‘� All Users"), callback_data="adm_broadcast_target_type|all")],
+        [InlineKeyboardButton(lang_data.get("broadcast_target_city", "🏳️ By Last Purchased City"), callback_data="adm_broadcast_target_type|city")],
+        [InlineKeyboardButton(lang_data.get("broadcast_target_status", "�Ÿ‘‘ By User Status"), callback_data="adm_broadcast_target_type|status")],
+        [InlineKeyboardButton(lang_data.get("broadcast_target_inactive", "⏳ By Inactivity (Days)"), callback_data="adm_broadcast_target_type|inactive")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]
     ]
     await query.edit_message_text(prompt_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer()
@@ -2941,41 +2941,41 @@ async def handle_adm_broadcast_target_type(update: Update, context: ContextTypes
 
     if target_type == 'all':
         context.user_data['state'] = 'awaiting_broadcast_message'
-        ask_msg_text = lang_data.get("broadcast_ask_message", "ðŸ“ Now send the message content (text, photo, video, or GIF with caption):")
-        keyboard = [[InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")]]
+        ask_msg_text = lang_data.get("broadcast_ask_message", "📦 Now send the message content (text, photo, video, or GIF with caption):")
+        keyboard = [[InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")]]
         await query.edit_message_text(ask_msg_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         await query.answer("Send the message content.")
 
     elif target_type == 'city':
         load_all_data()
         if not CITIES:
-             await query.edit_message_text("No cities configured. Cannot target by city.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_broadcast_start")]]), parse_mode=None)
+             await query.edit_message_text("No cities configured. Cannot target by city.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data="adm_broadcast_start")]]), parse_mode=None)
              return
         sorted_city_ids = sorted(CITIES.keys(), key=lambda city_id: CITIES.get(city_id, ''))
-        keyboard = [[InlineKeyboardButton(f"ðŸ™ï¸ {CITIES.get(c,'N/A')}", callback_data=f"adm_broadcast_target_city|{CITIES.get(c,'N/A')}")] for c in sorted_city_ids if CITIES.get(c)]
-        keyboard.append([InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")])
-        select_city_text = lang_data.get("broadcast_select_city_target", "ðŸ™ï¸ Select City to Target\n\nUsers whose last purchase was in:")
+        keyboard = [[InlineKeyboardButton(f"🏳️ {CITIES.get(c,'N/A')}", callback_data=f"adm_broadcast_target_city|{CITIES.get(c,'N/A')}")] for c in sorted_city_ids if CITIES.get(c)]
+        keyboard.append([InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")])
+        select_city_text = lang_data.get("broadcast_select_city_target", "🏳️ Select City to Target\n\nUsers whose last purchase was in:")
         await query.edit_message_text(select_city_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         await query.answer()
 
     elif target_type == 'status':
-        select_status_text = lang_data.get("broadcast_select_status_target", "ðŸ‘‘ Select Status to Target:")
-        vip_label = lang_data.get("broadcast_status_vip", "VIP ðŸ‘‘")
-        regular_label = lang_data.get("broadcast_status_regular", "Regular â­")
-        new_label = lang_data.get("broadcast_status_new", "New ðŸŒ±")
+        select_status_text = lang_data.get("broadcast_select_status_target", "�Ÿ‘‘ Select Status to Target:")
+        vip_label = lang_data.get("broadcast_status_vip", "VIP �Ÿ‘‘")
+        regular_label = lang_data.get("broadcast_status_regular", "Regular ⭐")
+        new_label = lang_data.get("broadcast_status_new", "New 🌐")
         keyboard = [
             [InlineKeyboardButton(vip_label, callback_data=f"adm_broadcast_target_status|{vip_label}")],
             [InlineKeyboardButton(regular_label, callback_data=f"adm_broadcast_target_status|{regular_label}")],
             [InlineKeyboardButton(new_label, callback_data=f"adm_broadcast_target_status|{new_label}")],
-            [InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")]
+            [InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")]
         ]
         await query.edit_message_text(select_status_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         await query.answer()
 
     elif target_type == 'inactive':
         context.user_data['state'] = 'awaiting_broadcast_inactive_days'
-        inactive_prompt = lang_data.get("broadcast_enter_inactive_days", "â³ Enter Inactivity Period\n\nPlease reply with the number of days since the user's last purchase (or since registration if no purchases). Users inactive for this many days or more will receive the message.")
-        keyboard = [[InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")]]
+        inactive_prompt = lang_data.get("broadcast_enter_inactive_days", "⏳ Enter Inactivity Period\n\nPlease reply with the number of days since the user's last purchase (or since registration if no purchases). Users inactive for this many days or more will receive the message.")
+        keyboard = [[InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")]]
         await query.edit_message_text(inactive_prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         await query.answer("Enter number of days.")
 
@@ -2995,8 +2995,8 @@ async def handle_adm_broadcast_target_city(update: Update, context: ContextTypes
     lang, lang_data = _get_lang_data(context) # Use helper
 
     context.user_data['state'] = 'awaiting_broadcast_message'
-    ask_msg_text = lang_data.get("broadcast_ask_message", "ðŸ“ Now send the message content (text, photo, video, or GIF with caption):")
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")]]
+    ask_msg_text = lang_data.get("broadcast_ask_message", "📦 Now send the message content (text, photo, video, or GIF with caption):")
+    keyboard = [[InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")]]
     await query.edit_message_text(f"Targeting users last purchased in: {city_name}\n\n{ask_msg_text}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Send the message content.")
 
@@ -3011,8 +3011,8 @@ async def handle_adm_broadcast_target_status(update: Update, context: ContextTyp
     lang, lang_data = _get_lang_data(context) # Use helper
 
     context.user_data['state'] = 'awaiting_broadcast_message'
-    ask_msg_text = lang_data.get("broadcast_ask_message", "ðŸ“ Now send the message content (text, photo, video, or GIF with caption):")
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")]]
+    ask_msg_text = lang_data.get("broadcast_ask_message", "📦 Now send the message content (text, photo, video, or GIF with caption):")
+    keyboard = [[InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")]]
     await query.edit_message_text(f"Targeting users with status: {status_value}\n\n{ask_msg_text}", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Send the message content.")
 
@@ -3025,7 +3025,7 @@ async def handle_confirm_broadcast(update: Update, context: ContextTypes.DEFAULT
     broadcast_content = context.user_data.get('broadcast_content')
     if not broadcast_content:
         logger.error("Broadcast content not found during confirmation.")
-        return await query.edit_message_text("âŒ Error: Broadcast content not found. Please start again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Broadcast content not found. Please start again.", parse_mode=None)
 
     text = broadcast_content.get('text')
     media_file_id = broadcast_content.get('media_file_id')
@@ -3035,7 +3035,7 @@ async def handle_confirm_broadcast(update: Update, context: ContextTypes.DEFAULT
     admin_chat_id = query.message.chat_id
 
     try:
-        await query.edit_message_text("â³ Broadcast initiated. Fetching users and sending messages...", parse_mode=None)
+        await query.edit_message_text("⏳ Broadcast initiated. Fetching users and sending messages...", parse_mode=None)
     except telegram_error.BadRequest: await query.answer()
 
     context.user_data.pop('broadcast_target_type', None)
@@ -3056,10 +3056,10 @@ async def handle_cancel_broadcast(update: Update, context: ContextTypes.DEFAULT_
     context.user_data.pop('broadcast_target_value', None)
 
     try:
-        await query.edit_message_text("âŒ Broadcast cancelled.", parse_mode=None)
+        await query.edit_message_text("❌ Broadcast cancelled.", parse_mode=None)
     except telegram_error.BadRequest: await query.answer()
 
-    keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]
+    keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]
     await send_message_with_retry(context.bot, query.message.chat_id, "Returning to Admin Menu.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 # --- Handler for Broadcast Message Content ---
@@ -3102,26 +3102,26 @@ async def handle_adm_broadcast_message(update: Update, context: ContextTypes.DEF
     context.user_data.pop('state', None)
     
     # Show confirmation with preview
-    preview_msg = "ðŸ“¢ Broadcast Preview\n\n"
-    preview_msg += f"ðŸŽ¯ Target: {target_type}"
+    preview_msg = "📦 Broadcast Preview\n\n"
+    preview_msg += f"�ŸŽ� Target: {target_type}"
     if target_value:
         preview_msg += f" = {target_value}"
     preview_msg += "\n\n"
     
     if media_type:
-        preview_msg += f"ðŸ“Ž Media: {media_type.upper()}\n"
+        preview_msg += f"�Ÿ“Ž Media: {media_type.upper()}\n"
     if text:
-        preview_msg += f"ðŸ“ Text: {text[:100]}"
+        preview_msg += f"📦 Text: {text[:100]}"
         if len(text) > 100:
             preview_msg += "..."
     else:
-        preview_msg += "ðŸ“ Text: (media only)"
+        preview_msg += "📦 Text: (media only)"
     
-    preview_msg += "\n\nâš ï¸ Are you sure you want to send this broadcast?"
+    preview_msg += "\n\n⚠️ Are you sure you want to send this broadcast?"
     
     keyboard = [
-        [InlineKeyboardButton("âœ… Yes, Send Broadcast", callback_data="confirm_broadcast")],
-        [InlineKeyboardButton("âŒ Cancel", callback_data="cancel_broadcast")]
+        [InlineKeyboardButton("�œ… Yes, Send Broadcast", callback_data="confirm_broadcast")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="cancel_broadcast")]
     ]
     
     await update.message.reply_text(
@@ -3147,8 +3147,8 @@ async def handle_adm_broadcast_inactive_days_message(update: Update, context: Co
         context.user_data['broadcast_target_value'] = days
         context.user_data['state'] = 'awaiting_broadcast_message'
         
-        ask_msg_text = lang_data.get("broadcast_ask_message", "ðŸ“ Now send the message content (text, photo, video, or GIF with caption):")
-        keyboard = [[InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")]]
+        ask_msg_text = lang_data.get("broadcast_ask_message", "📦 Now send the message content (text, photo, video, or GIF with caption):")
+        keyboard = [[InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")]]
         
         await update.message.reply_text(
             f"Targeting users inactive for {days}+ days\n\n{ask_msg_text}",
@@ -3157,8 +3157,8 @@ async def handle_adm_broadcast_inactive_days_message(update: Update, context: Co
         )
         
     except ValueError:
-        error_msg = lang_data.get("broadcast_invalid_days", "âŒ Please enter a valid number of days (positive integer).")
-        keyboard = [[InlineKeyboardButton("âŒ Cancel Broadcast", callback_data="cancel_broadcast")]]
+        error_msg = lang_data.get("broadcast_invalid_days", "❌ Please enter a valid number of days (positive integer).")
+        keyboard = [[InlineKeyboardButton("❌ Cancel Broadcast", callback_data="cancel_broadcast")]]
         await update.message.reply_text(
             error_msg,
             reply_markup=InlineKeyboardMarkup(keyboard),
@@ -3177,7 +3177,7 @@ async def send_broadcast(context: ContextTypes.DEFAULT_TYPE, text: str, media_fi
 
     if not user_ids:
         logger.warning(f"No users found for broadcast target: type={target_type}, value={target_value}")
-        no_users_msg = lang_data.get("broadcast_no_users_found_target", "âš ï¸ Broadcast Warning: No users found matching the target criteria.")
+        no_users_msg = lang_data.get("broadcast_no_users_found_target", "⚠️ Broadcast Warning: No users found matching the target criteria.")
         await send_message_with_retry(bot, admin_chat_id, no_users_msg, parse_mode=None)
         return
 
@@ -3194,7 +3194,7 @@ async def send_broadcast(context: ContextTypes.DEFAULT_TYPE, text: str, media_fi
     # Initialize status message
     status_message = None
     try:
-        status_message = await send_message_with_retry(bot, admin_chat_id, f"â³ Broadcasting... (0/{total_users})", parse_mode=None)
+        status_message = await send_message_with_retry(bot, admin_chat_id, f"⏳ Broadcasting... (0/{total_users})", parse_mode=None)
     except Exception as status_init_e:
         logger.error(f"Failed to initialize status message: {status_init_e}")
         # Continue without status message
@@ -3307,7 +3307,7 @@ async def send_broadcast(context: ContextTypes.DEFAULT_TYPE, text: str, media_fi
                     await context.bot.edit_message_text(
                         chat_id=admin_chat_id,
                         message_id=status_message.message_id,
-                        text=f"â³ Broadcasting... ({i+1}/{total_users} | âœ…{success_count} | âŒ{fail_count})",
+                        text=f"⏳ Broadcasting... ({i+1}/{total_users} | �œ…{success_count} | �Œ{fail_count})",
                         parse_mode=None
                     )
                 except telegram_error.BadRequest:
@@ -3322,11 +3322,11 @@ async def send_broadcast(context: ContextTypes.DEFAULT_TYPE, text: str, media_fi
 
     # Final summary
     success_rate = (success_count / total_users * 100) if total_users > 0 else 0
-    summary_msg = (f"âœ… Broadcast Complete\n\n"
-                  f"ðŸŽ¯ Target: {target_type} = {target_value or 'N/A'}\n"
-                  f"ðŸ“Š Results: {success_count}/{total_users} ({success_rate:.1f}%)\n"
-                  f"âŒ Failed: {fail_count}\n"
-                  f"ðŸš« Blocked/Deactivated: {block_count}")
+    summary_msg = (f"�œ… Broadcast Complete\n\n"
+                  f"�ŸŽ� Target: {target_type} = {target_value or 'N/A'}\n"
+                  f"�Ÿ“Š Results: {success_count}/{total_users} ({success_rate:.1f}%)\n"
+                  f"❌ Failed: {fail_count}\n"
+                  f"🚨 Blocked/Deactivated: {block_count}")
     
     try:
         if status_message:
@@ -3356,11 +3356,11 @@ async def handle_adm_clear_reservations_confirm(update: Update, context: Context
     if not is_primary_admin(query.from_user.id): return await query.answer("Access Denied.", show_alert=True)
 
     context.user_data["confirm_action"] = "clear_all_reservations"
-    msg = (f"âš ï¸ Confirm Action: Clear All Reservations\n\n"
+    msg = (f"⚠️ Confirm Action: Clear All Reservations\n\n"
            f"Are you sure you want to clear ALL product reservations and empty ALL user baskets?\n\n"
-           f"ðŸš¨ This action cannot be undone and will affect all users!")
-    keyboard = [[InlineKeyboardButton("âœ… Yes, Clear Reservations", callback_data="confirm_yes"),
-                 InlineKeyboardButton("âŒ No, Cancel", callback_data="admin_menu")]]
+           f"🚨 This action cannot be undone and will affect all users!")
+    keyboard = [[InlineKeyboardButton("�œ… Yes, Clear Reservations", callback_data="confirm_yes"),
+                 InlineKeyboardButton("❌ No, Cancel", callback_data="admin_menu")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 # --- Confirmation Handler ---
@@ -3378,7 +3378,7 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
     action = user_specific_data.pop("confirm_action", None)
 
     if not action:
-        try: await query.edit_message_text("âŒ Error: No action pending confirmation.", parse_mode=None)
+        try: await query.edit_message_text("❌ Error: No action pending confirmation.", parse_mode=None)
         except telegram_error.BadRequest: pass # Ignore if not modified
         return
     chat_id = query.message.chat_id
@@ -3386,7 +3386,7 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
     action_type = action_parts[0]
     action_params = action_parts[1:]
     logger.info(f"Admin {user_id} confirmed action: {action_type} with params: {action_params}")
-    success_msg, next_callback = "âœ… Action completed successfully!", "admin_menu"
+    success_msg, next_callback = "�œ… Action completed successfully!", "admin_menu"
     conn = None # Initialize conn
     try:
         conn = get_db_connection() # Use helper
@@ -3414,10 +3414,10 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                  delete_city_result = c.execute("DELETE FROM cities WHERE id = ?", (city_id_int,))
                  if delete_city_result.rowcount > 0:
                      conn.commit(); load_all_data()
-                     success_msg = f"âœ… City '{city_name}' and contents deleted!"
+                     success_msg = f"�œ… City '{city_name}' and contents deleted!"
                      next_callback = "adm_manage_cities"
-                 else: conn.rollback(); success_msg = f"âŒ Error: City '{city_name}' not found."
-             else: conn.rollback(); success_msg = "âŒ Error: City not found (already deleted?)."
+                 else: conn.rollback(); success_msg = f"❌ Error: City '{city_name}' not found."
+             else: conn.rollback(); success_msg = "❌ Error: City not found (already deleted?)."
         # --- Delete District Logic ---
         elif action_type == "remove_district":
              if len(action_params) < 2: raise ValueError("Missing city/dist_id")
@@ -3442,10 +3442,10 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                  delete_dist_result = c.execute("DELETE FROM districts WHERE id = ? AND city_id = ?", (dist_id_int, city_id_int))
                  if delete_dist_result.rowcount > 0:
                      conn.commit(); load_all_data()
-                     success_msg = f"âœ… District '{district_name}' removed from {city_name}!"
+                     success_msg = f"�œ… District '{district_name}' removed from {city_name}!"
                      next_callback = f"adm_manage_districts_city|{city_id_str}"
-                 else: conn.rollback(); success_msg = f"âŒ Error: District '{district_name}' not found."
-             else: conn.rollback(); success_msg = "âŒ Error: City or District not found."
+                 else: conn.rollback(); success_msg = f"❌ Error: District '{district_name}' not found."
+             else: conn.rollback(); success_msg = "❌ Error: City or District not found."
         # --- Delete Product Logic ---
         elif action_type == "confirm_remove_product":
              if not action_params: raise ValueError("Missing product_id")
@@ -3457,7 +3457,7 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
              delete_prod_result = c.execute("DELETE FROM products WHERE id = ?", (product_id,)) # Actual product deletion
              if delete_prod_result.rowcount > 0:
                   conn.commit()
-                  success_msg = f"âœ… Product ID {product_id} removed!"
+                  success_msg = f"�œ… Product ID {product_id} removed!"
                   media_dir_to_delete = os.path.join(MEDIA_DIR, str(product_id))
                   if await asyncio.to_thread(os.path.exists, media_dir_to_delete):
                        asyncio.create_task(asyncio.to_thread(shutil.rmtree, media_dir_to_delete, ignore_errors=True))
@@ -3465,7 +3465,7 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                   if back_details_tuple and all([back_details_tuple['city_id'], back_details_tuple['dist_id'], back_details_tuple['product_type']]):
                       next_callback = f"adm_manage_products_type|{back_details_tuple['city_id']}|{back_details_tuple['dist_id']}|{back_details_tuple['product_type']}" # Use column names
                   else: next_callback = "adm_manage_products"
-             else: conn.rollback(); success_msg = f"âŒ Error: Product ID {product_id} not found."
+             else: conn.rollback(); success_msg = f"❌ Error: Product ID {product_id} not found."
         # --- Safe Delete Product Type Logic ---
         elif action_type == "delete_type":
               if not action_params: raise ValueError("Missing type_name")
@@ -3478,16 +3478,16 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                   delete_type_result = c.execute("DELETE FROM product_types WHERE name = ?", (type_name,))
                   if delete_type_result.rowcount > 0:
                        conn.commit(); load_all_data()
-                       success_msg = f"âœ… Type '{type_name}' deleted!"
+                       success_msg = f"�œ… Type '{type_name}' deleted!"
                        next_callback = "adm_manage_types"
-                  else: conn.rollback(); success_msg = f"âŒ Error: Type '{type_name}' not found."
+                  else: conn.rollback(); success_msg = f"❌ Error: Type '{type_name}' not found."
               else:
                   conn.rollback();
                   error_msg_parts = []
                   if product_count > 0: error_msg_parts.append(f"{product_count} product(s)")
                   if reseller_discount_count > 0: error_msg_parts.append(f"{reseller_discount_count} reseller discount rule(s)")
                   usage_details = " and ".join(error_msg_parts)
-                  success_msg = f"âŒ Error: Cannot delete type '{type_name}' as it is used by {usage_details}."
+                  success_msg = f"❌ Error: Cannot delete type '{type_name}' as it is used by {usage_details}."
                   next_callback = "adm_manage_types"
         # --- Force Delete Product Type Logic (CASCADE) ---
         elif action_type == "force_delete_type_CASCADE":
@@ -3521,11 +3521,11 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                 log_admin_action(admin_id=user_id, action="PRODUCT_TYPE_FORCE_DELETE",
                                  reason=f"Type: '{type_name}'. Deleted {products_deleted_count} products, {discounts_deleted_count} discount rules.",
                                  old_value=type_name)
-                success_msg = (f"ðŸ’£ Type '{type_name}' and all associated data FORCE DELETED.\n"
+                success_msg = (f"👤 Type '{type_name}' and all associated data FORCE DELETED.\n"
                                f"Deleted: {products_deleted_count} products, {discounts_deleted_count} discount rules.")
             else:
                 conn.rollback()
-                success_msg = f"âŒ Error: Type '{type_name}' not found during final delete step. It might have been deleted already or partial changes occurred."
+                success_msg = f"❌ Error: Type '{type_name}' not found during final delete step. It might have been deleted already or partial changes occurred."
             next_callback = "adm_manage_types"
         # --- Product Type Reassignment Logic ---
         elif action_type == "confirm_reassign_type":
@@ -3534,10 +3534,10 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
             load_all_data()
 
             if old_type_name == new_type_name:
-                success_msg = "âŒ Error: Old and new type names cannot be the same."
+                success_msg = "❌ Error: Old and new type names cannot be the same."
                 next_callback = "adm_reassign_type_start"
             elif not (old_type_name in PRODUCT_TYPES and new_type_name in PRODUCT_TYPES):
-                success_msg = "âŒ Error: One or both product types not found. Ensure they exist."
+                success_msg = "❌ Error: One or both product types not found. Ensure they exist."
                 next_callback = "adm_reassign_type_start"
             else:
                 logger.info(f"Admin {user_id} confirmed reassignment from '{old_type_name}' to '{new_type_name}'.")
@@ -3561,11 +3561,11 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                     log_admin_action(admin_id=user_id, action=ACTION_PRODUCT_TYPE_REASSIGN,
                                      reason=f"From '{old_type_name}' to '{new_type_name}'. Reassigned {products_reassigned} products, affected {reseller_reassigned} discount entries.",
                                      old_value=old_type_name, new_value=new_type_name)
-                    success_msg = (f"âœ… Type '{old_type_name}' reassigned to '{new_type_name}' and deleted.\n"
+                    success_msg = (f"�œ… Type '{old_type_name}' reassigned to '{new_type_name}' and deleted.\n"
                                    f"Reassigned: {products_reassigned} products. Affected discount entries: {reseller_reassigned}.")
                 else:
                     conn.rollback()
-                    success_msg = f"âŒ Error: Could not delete old type '{old_type_name}'. No changes made."
+                    success_msg = f"❌ Error: Could not delete old type '{old_type_name}'. No changes made."
                 next_callback = "adm_manage_types"
         # --- Delete General Discount Code Logic ---
         elif action_type == "delete_discount":
@@ -3575,27 +3575,27 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
              code_res = c.fetchone(); code_text = code_res['code'] if code_res else f"ID {code_id}"
              delete_disc_result = c.execute("DELETE FROM discount_codes WHERE id = ?", (code_id,))
              if delete_disc_result.rowcount > 0:
-                 conn.commit(); success_msg = f"âœ… Discount code {code_text} deleted!"
+                 conn.commit(); success_msg = f"�œ… Discount code {code_text} deleted!"
                  next_callback = "adm_manage_discounts"
-             else: conn.rollback(); success_msg = f"âŒ Error: Discount code {code_text} not found."
+             else: conn.rollback(); success_msg = f"❌ Error: Discount code {code_text} not found."
         # --- Delete Review Logic ---
         elif action_type == "delete_review":
             if not action_params: raise ValueError("Missing review_id")
             review_id = int(action_params[0])
             delete_rev_result = c.execute("DELETE FROM reviews WHERE review_id = ?", (review_id,))
             if delete_rev_result.rowcount > 0:
-                conn.commit(); success_msg = f"âœ… Review ID {review_id} deleted!"
+                conn.commit(); success_msg = f"�œ… Review ID {review_id} deleted!"
                 next_callback = "adm_manage_reviews|0"
-            else: conn.rollback(); success_msg = f"âŒ Error: Review ID {review_id} not found."
+            else: conn.rollback(); success_msg = f"❌ Error: Review ID {review_id} not found."
        
         elif action_type == "delete_welcome_template":
             if not action_params: raise ValueError("Missing template_name")
             name_to_delete = action_params[0]
             delete_wm_result = c.execute("DELETE FROM welcome_messages WHERE name = ?", (name_to_delete,))
             if delete_wm_result.rowcount > 0:
-                 conn.commit(); success_msg = f"âœ… Welcome template '{name_to_delete}' deleted!"
+                 conn.commit(); success_msg = f"�œ… Welcome template '{name_to_delete}' deleted!"
                  next_callback = "adm_manage_welcome|0"
-            else: conn.rollback(); success_msg = f"âŒ Error: Welcome template '{name_to_delete}' not found."
+            else: conn.rollback(); success_msg = f"❌ Error: Welcome template '{name_to_delete}' not found."
        
         elif action_type == "reset_default_welcome":
             try:
@@ -3603,10 +3603,10 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                 c.execute("UPDATE welcome_messages SET template_text = ? WHERE name = ?", (built_in_text, "default"))
                 c.execute("INSERT OR REPLACE INTO bot_settings (setting_key, setting_value) VALUES (?, ?)",
                           ("active_welcome_message_name", "default"))
-                conn.commit(); success_msg = "âœ… 'default' welcome template reset and activated."
+                conn.commit(); success_msg = "�œ… 'default' welcome template reset and activated."
             except Exception as reset_e:
                  conn.rollback(); logger.error(f"Error resetting default welcome message: {reset_e}", exc_info=True)
-                 success_msg = "âŒ Error resetting default template."
+                 success_msg = "❌ Error resetting default template."
             next_callback = "adm_manage_welcome|0"
        
         elif action_type == "confirm_delete_reseller_discount":
@@ -3618,12 +3618,12 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
                 delete_res_result = c.execute("DELETE FROM reseller_discounts WHERE reseller_user_id = ? AND product_type = ?", (reseller_id, product_type))
                 if delete_res_result.rowcount > 0:
                     conn.commit(); log_admin_action(user_id, ACTION_RESELLER_DISCOUNT_DELETE, reseller_id, reason=f"Type: {product_type}", old_value=old_value)
-                    success_msg = f"âœ… Reseller discount rule deleted for {product_type}."
-                else: conn.rollback(); success_msg = f"âŒ Error: Reseller discount rule for {product_type} not found."
+                    success_msg = f"�œ… Reseller discount rule deleted for {product_type}."
+                else: conn.rollback(); success_msg = f"❌ Error: Reseller discount rule for {product_type} not found."
                 next_callback = f"reseller_manage_specific|{reseller_id}"
             except (ValueError, IndexError) as param_err:
                 conn.rollback(); logger.error(f"Invalid params for delete reseller discount: {action_params} - {param_err}")
-                success_msg = "âŒ Error processing request."; next_callback = "admin_menu"
+                success_msg = "❌ Error processing request."; next_callback = "admin_menu"
        
         elif action_type == "clear_all_reservations":
             logger.warning(f"ADMIN ACTION: Admin {user_id} is clearing ALL reservations and baskets.")
@@ -3633,24 +3633,24 @@ async def handle_confirm_yes(update: Update, context: ContextTypes.DEFAULT_TYPE,
             baskets_cleared = update_users_res.rowcount if update_users_res else 0
             conn.commit()
             log_admin_action(admin_id=user_id, action="CLEAR_ALL_RESERVATIONS", reason=f"Cleared {products_cleared} reservations and {baskets_cleared} user baskets.")
-            success_msg = f"âœ… Cleared {products_cleared} product reservations and emptied {baskets_cleared} user baskets."
+            success_msg = f"�œ… Cleared {products_cleared} product reservations and emptied {baskets_cleared} user baskets."
             next_callback = "admin_menu"
         else:
             logger.error(f"Unknown confirmation action type: {action_type}")
-            conn.rollback(); success_msg = "âŒ Unknown action confirmed."
+            conn.rollback(); success_msg = "❌ Unknown action confirmed."
             next_callback = "admin_menu"
 
         try: await query.edit_message_text(success_msg, parse_mode=None)
         except telegram_error.BadRequest: pass
 
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back", callback_data=next_callback)]]
+        keyboard = [[InlineKeyboardButton("✅️ Back", callback_data=next_callback)]]
         await send_message_with_retry(context.bot, chat_id, "Action complete. What next?", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
     except (sqlite3.Error, ValueError, OSError, Exception) as e:
         logger.error(f"Error executing confirmed action '{action}': {e}", exc_info=True)
         if conn and conn.in_transaction: conn.rollback()
         error_text = str(e)
-        try: await query.edit_message_text(f"âŒ An error occurred: {error_text}", parse_mode=None)
+        try: await query.edit_message_text(f"❌ An error occurred: {error_text}", parse_mode=None)
         except Exception as edit_err: logger.error(f"Failed to edit message with error: {edit_err}")
     finally:
         if conn: conn.close()
@@ -3699,7 +3699,7 @@ async def handle_adm_edit_welcome_text(update: Update, context: ContextTypes.DEF
     if len(prompt) > 4000: prompt = prompt[:4000] + "\n[... Current text truncated ...]"
 
     # Go back to the specific template's edit menu
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
     try:
         await query.edit_message_text(prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
@@ -3735,7 +3735,7 @@ async def handle_adm_edit_welcome_desc(update: Update, context: ContextTypes.DEF
     prompt_template = lang_data.get("welcome_edit_description_prompt", "Editing description for '{name}'. Current: '{current_desc}'.\n\nEnter new description or send '-' to skip.")
     prompt = prompt_template.format(name=template_name, current_desc=current_desc or "Not set")
 
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
     await query.edit_message_text(prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter new description.")
 
@@ -3768,18 +3768,18 @@ async def handle_adm_delete_welcome_confirm(update: Update, context: ContextType
 
    
     if template_name == active_template_name:
-        cannot_delete_msg = lang_data.get("welcome_cannot_delete_active", "âŒ Cannot delete the active template. Activate another first.")
+        cannot_delete_msg = lang_data.get("welcome_cannot_delete_active", "❌ Cannot delete the active template. Activate another first.")
         await query.answer(cannot_delete_msg, show_alert=True)
         return await handle_adm_manage_welcome(update, context, params=[str(offset)]) # Refresh list
 
     context.user_data["confirm_action"] = f"delete_welcome_template|{template_name}"
-    title = lang_data.get("welcome_delete_confirm_title", "âš ï¸ Confirm Deletion")
+    title = lang_data.get("welcome_delete_confirm_title", "⚠️ Confirm Deletion")
     text_template = lang_data.get("welcome_delete_confirm_text", "Are you sure you want to delete the welcome message template named '{name}'?")
     msg = f"{title}\n\n{text_template.format(name=template_name)}"
 
     keyboard = [
-        [InlineKeyboardButton(lang_data.get("welcome_delete_button_yes", "âœ… Yes, Delete Template"), callback_data="confirm_yes")],
-        [InlineKeyboardButton("âŒ No, Cancel", callback_data=f"adm_manage_welcome|{offset}")]
+        [InlineKeyboardButton(lang_data.get("welcome_delete_button_yes", "�œ… Yes, Delete Template"), callback_data="confirm_yes")],
+        [InlineKeyboardButton("❌ No, Cancel", callback_data=f"adm_manage_welcome|{offset}")]
     ]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -3791,13 +3791,13 @@ async def handle_reset_default_welcome(update: Update, context: ContextTypes.DEF
     lang, lang_data = _get_lang_data(context)
 
     context.user_data["confirm_action"] = "reset_default_welcome"
-    title = lang_data.get("welcome_reset_confirm_title", "âš ï¸ Confirm Reset")
+    title = lang_data.get("welcome_reset_confirm_title", "⚠️ Confirm Reset")
     text = lang_data.get("welcome_reset_confirm_text", "Are you sure you want to reset the text of the 'default' template to the built-in version and activate it?")
     msg = f"{title}\n\n{text}"
 
     keyboard = [
-        [InlineKeyboardButton(lang_data.get("welcome_reset_button_yes", "âœ… Yes, Reset & Activate"), callback_data="confirm_yes")],
-        [InlineKeyboardButton("âŒ No, Cancel", callback_data="adm_manage_welcome|0")]
+        [InlineKeyboardButton(lang_data.get("welcome_reset_button_yes", "�œ… Yes, Reset & Activate"), callback_data="confirm_yes")],
+        [InlineKeyboardButton("❌ No, Cancel", callback_data="adm_manage_welcome|0")]
     ]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -3830,12 +3830,12 @@ async def handle_adm_welcome_template_name_message(update: Update, context: Cont
         c.execute("SELECT 1 FROM welcome_messages WHERE name = ?", (template_name,))
         if c.fetchone():
             lang, lang_data = _get_lang_data(context)
-            error_msg = lang_data.get("welcome_add_name_exists", "âŒ Error: A template with the name '{name}' already exists.")
+            error_msg = lang_data.get("welcome_add_name_exists", "❌ Error: A template with the name '{name}' already exists.")
             await send_message_with_retry(context.bot, chat_id, error_msg.format(name=template_name), parse_mode=None)
             return
     except sqlite3.Error as e:
         logger.error(f"DB error checking template name '{template_name}': {e}")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Database error checking template name.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Database error checking template name.", parse_mode=None)
         return
     finally:
         if conn: conn.close()
@@ -3853,7 +3853,7 @@ async def handle_adm_welcome_template_name_message(update: Update, context: Cont
     prompt_template = lang_data.get("welcome_add_text_prompt", "Template Name: {name}\n\nPlease reply with the full welcome message text. Available placeholders:\n`{placeholders}`")
     prompt = prompt_template.format(name=template_name, placeholders=placeholders)
     
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_welcome|0")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_welcome|0")]]
     await send_message_with_retry(context.bot, chat_id, prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_welcome_template_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -3875,7 +3875,7 @@ async def handle_adm_welcome_template_text_message(update: Update, context: Cont
         # Adding new template - get data from pending template
         pending_template = context.user_data.get("pending_welcome_template")
         if not pending_template or not pending_template.get("name"):
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Template data lost. Please start again.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Template data lost. Please start again.", parse_mode=None)
             context.user_data.pop("state", None)
             return
 
@@ -3885,7 +3885,7 @@ async def handle_adm_welcome_template_text_message(update: Update, context: Cont
         
         lang, lang_data = _get_lang_data(context)
         prompt = lang_data.get("welcome_add_description_prompt", "Optional: Enter a short description for this template (admin view only). Send '-' to skip.")
-        keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_welcome|0")]]
+        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_welcome|0")]]
         await send_message_with_retry(context.bot, chat_id, prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
     elif state == "awaiting_welcome_template_edit":
@@ -3894,7 +3894,7 @@ async def handle_adm_welcome_template_text_message(update: Update, context: Cont
         offset = context.user_data.get('editing_welcome_offset', 0)
         
         if not template_name:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Template name lost. Please start again.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Template name lost. Please start again.", parse_mode=None)
             context.user_data.pop("state", None)
             return
 
@@ -3943,7 +3943,7 @@ async def handle_adm_welcome_description_message(update: Update, context: Contex
         # Adding new template - finalize and show preview
         pending_template = context.user_data.get("pending_welcome_template")
         if not pending_template or not pending_template.get("name") or not pending_template.get("text"):
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Template data lost. Please start again.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Template data lost. Please start again.", parse_mode=None)
             context.user_data.pop("state", None)
             return
 
@@ -3956,7 +3956,7 @@ async def handle_adm_welcome_description_message(update: Update, context: Contex
         offset = context.user_data.get('editing_welcome_offset', 0)
         
         if not template_name:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Template name lost. Please start again.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Template name lost. Please start again.", parse_mode=None)
             context.user_data.pop("state", None)
             return
 
@@ -3976,7 +3976,7 @@ async def handle_adm_welcome_description_message(update: Update, context: Contex
             if conn: conn.close()
 
         if not current_text:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Could not load current template text.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Could not load current template text.", parse_mode=None)
             context.user_data.pop("state", None)
             return
 
@@ -4007,7 +4007,7 @@ async def _show_welcome_preview(update: Update, context: ContextTypes.DEFAULT_TY
     pending_template = context.user_data.get("pending_welcome_template")
     if not pending_template or not pending_template.get("name"): # Need at least name
         logger.error("Attempted to show welcome preview, but pending data missing.")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Preview data lost.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Preview data lost.", parse_mode=None)
         context.user_data.pop("state", None)
         context.user_data.pop("pending_welcome_template", None)
         # Attempt to go back to the management menu
@@ -4023,7 +4023,7 @@ async def _show_welcome_preview(update: Update, context: ContextTypes.DEFAULT_TY
 
     # Dummy data for formatting
     dummy_username = update.effective_user.first_name or "Admin"
-    dummy_status = "VIP ðŸ‘‘"
+    dummy_status = "VIP �Ÿ‘‘"
     dummy_progress = get_progress_bar(10)
     dummy_balance = format_currency(123.45)
     dummy_purchases = 15
@@ -4043,11 +4043,11 @@ async def _show_welcome_preview(update: Update, context: ContextTypes.DEFAULT_TY
 
     except KeyError as e:
         logger.warning(f"KeyError formatting welcome preview for '{template_name}': {e}")
-        err_msg_template = lang_data.get("welcome_invalid_placeholder", "âš ï¸ Formatting Error! Missing placeholder: `{key}`\n\nRaw Text:\n{text}")
+        err_msg_template = lang_data.get("welcome_invalid_placeholder", "⚠️ Formatting Error! Missing placeholder: `{key}`\n\nRaw Text:\n{text}")
         preview_text_raw = err_msg_template.format(key=e, text=template_text[:500]) # Show raw text in case of error
     except Exception as format_e:
         logger.error(f"Unexpected error formatting preview: {format_e}")
-        err_msg_template = lang_data.get("welcome_formatting_error", "âš ï¸ Unexpected Formatting Error!\n\nRaw Text:\n{text}")
+        err_msg_template = lang_data.get("welcome_formatting_error", "⚠️ Unexpected Formatting Error!\n\nRaw Text:\n{text}")
         preview_text_raw = err_msg_template.format(text=template_text[:500])
 
     # Prepare display message (plain text)
@@ -4071,8 +4071,8 @@ async def _show_welcome_preview(update: Update, context: ContextTypes.DEFAULT_TY
     cancel_callback = f"adm_edit_welcome|{template_name}|{offset}" if is_editing else f"adm_manage_welcome|{offset}"
 
     keyboard = [
-        [InlineKeyboardButton(lang_data.get("welcome_button_save", "ðŸ’¾ Save Template"), callback_data=f"confirm_save_welcome")],
-        [InlineKeyboardButton("âŒ Cancel", callback_data=cancel_callback)]
+        [InlineKeyboardButton(lang_data.get("welcome_button_save", "👤 Save Template"), callback_data=f"confirm_save_welcome")],
+        [InlineKeyboardButton("❌ Cancel", callback_data=cancel_callback)]
     ]
 
     # Send or edit the message (using plain text)
@@ -4106,7 +4106,7 @@ async def handle_confirm_save_welcome(update: Update, context: ContextTypes.DEFA
     pending_template = context.user_data.get("pending_welcome_template")
     if not pending_template or not pending_template.get("name") or pending_template.get("text") is None: # Text can be empty, but key must exist
         logger.error("Attempted to save welcome template, but pending data missing.")
-        await query.edit_message_text("âŒ Error: Save data lost. Please start again.", parse_mode=None)
+        await query.edit_message_text("❌ Error: Save data lost. Please start again.", parse_mode=None)
         context.user_data.pop("state", None)
         context.user_data.pop("pending_welcome_template", None)
         return
@@ -4122,10 +4122,10 @@ async def handle_confirm_save_welcome(update: Update, context: ContextTypes.DEFA
     success = False
     if is_editing:
         success = update_welcome_message_template(template_name, template_text, template_description)
-        msg_template = lang_data.get("welcome_edit_success", "âœ… Template '{name}' updated.") if success else lang_data.get("welcome_edit_fail", "âŒ Failed to update template '{name}'.")
+        msg_template = lang_data.get("welcome_edit_success", "�œ… Template '{name}' updated.") if success else lang_data.get("welcome_edit_fail", "❌ Failed to update template '{name}'.")
     else:
         success = add_welcome_message_template(template_name, template_text, template_description)
-        msg_template = lang_data.get("welcome_add_success", "âœ… Welcome message template '{name}' added.") if success else lang_data.get("welcome_add_fail", "âŒ Failed to add welcome message template.")
+        msg_template = lang_data.get("welcome_add_success", "�œ… Welcome message template '{name}' added.") if success else lang_data.get("welcome_add_fail", "❌ Failed to add welcome message template.")
 
     # Clean up context
     context.user_data.pop("state", None)
@@ -4165,15 +4165,15 @@ async def handle_adm_add_city_message(update: Update, context: ContextTypes.DEFA
         conn.commit()
         load_all_data() # Reload global data
         context.user_data.pop("state", None)
-        success_text = f"âœ… City '{text}' added successfully!"
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Manage Cities", callback_data="adm_manage_cities")]]
+        success_text = f"�œ… City '{text}' added successfully!"
+        keyboard = [[InlineKeyboardButton("✅️ Manage Cities", callback_data="adm_manage_cities")]]
         await send_message_with_retry(context.bot, chat_id, success_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except sqlite3.IntegrityError:
-        await send_message_with_retry(context.bot, chat_id, f"âŒ Error: City '{text}' already exists.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, f"❌ Error: City '{text}' already exists.", parse_mode=None)
     except sqlite3.Error as e:
         logger.error(f"DB error adding city '{text}': {e}", exc_info=True)
         if conn and conn.in_transaction: conn.rollback()
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Failed to add city.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Failed to add city.", parse_mode=None)
         context.user_data.pop("state", None)
     finally:
         if conn: conn.close() # Close connection if opened
@@ -4189,7 +4189,7 @@ async def handle_adm_add_district_message(update: Update, context: ContextTypes.
     city_id_str = context.user_data.get("admin_add_district_city_id")
     city_name = CITIES.get(city_id_str)
     if not city_id_str or not city_name:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Could not determine city.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Could not determine city.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("admin_add_district_city_id", None)
         return
     if not text: return await send_message_with_retry(context.bot, chat_id, "District name cannot be empty.", parse_mode=None)
@@ -4202,15 +4202,15 @@ async def handle_adm_add_district_message(update: Update, context: ContextTypes.
         conn.commit()
         load_all_data() # Reload global data
         context.user_data.pop("state", None); context.user_data.pop("admin_add_district_city_id", None)
-        success_text = f"âœ… District '{text}' added to {city_name}!"
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Manage Districts", callback_data=f"adm_manage_districts_city|{city_id_str}")]]
+        success_text = f"�œ… District '{text}' added to {city_name}!"
+        keyboard = [[InlineKeyboardButton("✅️ Manage Districts", callback_data=f"adm_manage_districts_city|{city_id_str}")]]
         await send_message_with_retry(context.bot, chat_id, success_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except sqlite3.IntegrityError:
-        await send_message_with_retry(context.bot, chat_id, f"âŒ Error: District '{text}' already exists in {city_name}.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, f"❌ Error: District '{text}' already exists in {city_name}.", parse_mode=None)
     except (sqlite3.Error, ValueError) as e:
         logger.error(f"DB/Value error adding district '{text}' to city {city_id_str}: {e}", exc_info=True)
         if conn and conn.in_transaction: conn.rollback()
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Failed to add district.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Failed to add district.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("admin_add_district_city_id", None)
     finally:
         if conn: conn.close() # Close connection if opened
@@ -4238,14 +4238,14 @@ async def handle_adm_edit_district_message(update: Update, context: ContextTypes
     finally:
         if conn: conn.close() # Close connection if opened
     if not city_id_str or not dist_id_str or not city_name or old_district_name is None:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Could not find district/city.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Could not find district/city.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None); context.user_data.pop("edit_district_id", None)
         return
     if not new_name: return await send_message_with_retry(context.bot, chat_id, "New district name cannot be empty.", parse_mode=None)
     if new_name == old_district_name:
         await send_message_with_retry(context.bot, chat_id, "New name is the same. No changes.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None); context.user_data.pop("edit_district_id", None)
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Manage Districts", callback_data=f"adm_manage_districts_city|{city_id_str}")]]
+        keyboard = [[InlineKeyboardButton("✅️ Manage Districts", callback_data=f"adm_manage_districts_city|{city_id_str}")]]
         return await send_message_with_retry(context.bot, chat_id, "No changes detected.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     conn = None # Re-initialize for update transaction
     try:
@@ -4259,15 +4259,15 @@ async def handle_adm_edit_district_message(update: Update, context: ContextTypes
         conn.commit()
         load_all_data() # Reload global data
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None); context.user_data.pop("edit_district_id", None)
-        success_text = f"âœ… District updated to '{new_name}' successfully!"
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Manage Districts", callback_data=f"adm_manage_districts_city|{city_id_str}")]]
+        success_text = f"�œ… District updated to '{new_name}' successfully!"
+        keyboard = [[InlineKeyboardButton("✅️ Manage Districts", callback_data=f"adm_manage_districts_city|{city_id_str}")]]
         await send_message_with_retry(context.bot, chat_id, success_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except sqlite3.IntegrityError:
-        await send_message_with_retry(context.bot, chat_id, f"âŒ Error: District '{new_name}' already exists.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, f"❌ Error: District '{new_name}' already exists.", parse_mode=None)
     except (sqlite3.Error, ValueError) as e:
         logger.error(f"DB/Value error updating district {dist_id_str}: {e}", exc_info=True)
         if conn and conn.in_transaction: conn.rollback()
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Failed to update district.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Failed to update district.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None); context.user_data.pop("edit_district_id", None)
     finally:
          if conn: conn.close() # Close connection if opened
@@ -4294,14 +4294,14 @@ async def handle_adm_edit_city_message(update: Update, context: ContextTypes.DEF
     finally:
         if conn: conn.close() # Close connection if opened
     if not city_id_str or old_name is None:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Could not find city.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Could not find city.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None)
         return
     if not new_name: return await send_message_with_retry(context.bot, chat_id, "New city name cannot be empty.", parse_mode=None)
     if new_name == old_name:
         await send_message_with_retry(context.bot, chat_id, "New name is the same. No changes.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None)
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Manage Cities", callback_data="adm_manage_cities")]]
+        keyboard = [[InlineKeyboardButton("✅️ Manage Cities", callback_data="adm_manage_cities")]]
         return await send_message_with_retry(context.bot, chat_id, "No changes detected.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     conn = None # Re-initialize for update transaction
     try:
@@ -4315,15 +4315,15 @@ async def handle_adm_edit_city_message(update: Update, context: ContextTypes.DEF
         conn.commit()
         load_all_data() # Reload global data
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None)
-        success_text = f"âœ… City updated to '{new_name}' successfully!"
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Manage Cities", callback_data="adm_manage_cities")]]
+        success_text = f"�œ… City updated to '{new_name}' successfully!"
+        keyboard = [[InlineKeyboardButton("✅️ Manage Cities", callback_data="adm_manage_cities")]]
         await send_message_with_retry(context.bot, chat_id, success_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except sqlite3.IntegrityError:
-        await send_message_with_retry(context.bot, chat_id, f"âŒ Error: City '{new_name}' already exists.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, f"❌ Error: City '{new_name}' already exists.", parse_mode=None)
     except (sqlite3.Error, ValueError) as e:
         logger.error(f"DB/Value error updating city {city_id_str}: {e}", exc_info=True)
         if conn and conn.in_transaction: conn.rollback()
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Failed to update city.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Failed to update city.", parse_mode=None)
         context.user_data.pop("state", None); context.user_data.pop("edit_city_id", None)
     finally:
          if conn: conn.close() # Close connection if opened
@@ -4340,12 +4340,12 @@ async def handle_adm_custom_size_message(update: Update, context: ContextTypes.D
     if not custom_size: return await send_message_with_retry(context.bot, chat_id, "Custom size cannot be empty.", parse_mode=None)
     if len(custom_size) > 50: return await send_message_with_retry(context.bot, chat_id, "Custom size too long (max 50 chars).", parse_mode=None)
     if not all(k in context.user_data for k in ["admin_city", "admin_district", "admin_product_type"]):
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost.", parse_mode=None)
         context.user_data.pop("state", None)
         return
     context.user_data["pending_drop_size"] = custom_size
     context.user_data["state"] = "awaiting_price"
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Add", callback_data="cancel_add")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel Add", callback_data="cancel_add")]]
     await send_message_with_retry(context.bot, chat_id, f"Custom size set to '{custom_size}'. Reply with the price (e.g., 12.50):",
                                   reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -4372,7 +4372,7 @@ async def handle_adm_price_message(update: Update, context: ContextTypes.DEFAULT
     
     # Check required context
     if not all(k in context.user_data for k in ["admin_city", "admin_district", "admin_product_type", "pending_drop_size"]):
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost.", parse_mode=None)
         context.user_data.pop("state", None)
         return
     
@@ -4380,8 +4380,8 @@ async def handle_adm_price_message(update: Update, context: ContextTypes.DEFAULT
     context.user_data["state"] = "awaiting_drop_details"
     
     await send_message_with_retry(context.bot, chat_id, 
-        f"ðŸ’° Price set to: {price:.2f}â‚¬\n\n"
-        "ðŸ“ Now please send the product details (description/name) and any media (photos/videos/GIFs).\n\n"
+        f"👤 Price set to: {price:.2f}�‚�\n\n"
+        "📦 Now please send the product details (description/name) and any media (photos/videos/GIFs).\n\n"
         "You can send text, images, videos, GIFs, or a combination.\n"
         "When finished, send any message with the text 'done' to confirm.", 
         parse_mode=None)
@@ -4421,36 +4421,36 @@ async def display_user_search_results(bot, chat_id: int, user_info: dict):
         
     except sqlite3.Error as e:
         logger.error(f"DB error fetching user overview for {user_id}: {e}", exc_info=True)
-        await send_message_with_retry(bot, chat_id, "âŒ Error fetching user details.", parse_mode=None)
+        await send_message_with_retry(bot, chat_id, "❌ Error fetching user details.", parse_mode=None)
         return
     finally:
         if conn: 
             conn.close()
     
     # Build overview message
-    banned_str = "Yes ðŸš«" if is_banned else "No âœ…"
-    reseller_str = "Yes ðŸ‘‘" if is_reseller else "No"
+    banned_str = "Yes ⚠" if is_banned else "No �œ…"
+    reseller_str = "Yes �Ÿ‘‘" if is_reseller else "No"
     balance_str = format_currency(balance)
     total_spent_str = format_currency(total_spent)
     
-    msg = f"ðŸ” User Overview\n\n"
-    msg += f"ðŸ‘¤ User: @{username} (ID: {user_id})\n"
-    msg += f"ðŸ“Š Status: {status} {progress_bar}\n"
-    msg += f"ðŸ’° Balance: {balance_str} EUR\n"
-    msg += f"ðŸ’¸ Total Spent: {total_spent_str} EUR\n"
-    msg += f"ðŸ“¦ Total Purchases: {total_purchases_count}\n"
-    msg += f"ðŸš« Banned: {banned_str}\n"
-    msg += f"ðŸ‘‘ Reseller: {reseller_str}\n\n"
+    msg = f"🔧 User Overview\n\n"
+    msg += f"�Ÿ‘� User: @{username} (ID: {user_id})\n"
+    msg += f"�Ÿ“Š Status: {status} {progress_bar}\n"
+    msg += f"👤 Balance: {balance_str} EUR\n"
+    msg += f"👤 Total Spent: {total_spent_str} EUR\n"
+    msg += f"📦 Total Purchases: {total_purchases_count}\n"
+    msg += f"🚨 Banned: {banned_str}\n"
+    msg += f"�Ÿ‘‘ Reseller: {reseller_str}\n\n"
     
-    msg += f"ðŸ“‹ Available Details:\n"
+    msg += f"�Ÿ“‹ Available Details:\n"
     if pending_deposits_count > 0:
-        msg += f"â³ Pending Deposits: {pending_deposits_count}\n"
+        msg += f"⏳ Pending Deposits: {pending_deposits_count}\n"
     if total_purchases_count > 0:
-        msg += f"ðŸ“œ Purchase History: {total_purchases_count}\n"
+        msg += f"�Ÿ“œ Purchase History: {total_purchases_count}\n"
     if admin_actions_count > 0:
-        msg += f"ðŸ”§ Admin Actions: {admin_actions_count}\n"
+        msg += f"🔧 Admin Actions: {admin_actions_count}\n"
     if is_reseller:
-        msg += f"ðŸ·ï¸ Reseller Discounts\n"
+        msg += f"💥️ Reseller Discounts\n"
     
     msg += f"\nSelect a section to view detailed information:"
     
@@ -4459,34 +4459,34 @@ async def display_user_search_results(bot, chat_id: int, user_info: dict):
     
     # First row - Quick actions
     keyboard.append([
-        InlineKeyboardButton("ðŸ’° Adjust Balance", callback_data=f"adm_adjust_balance_start|{user_id}|0"),
-        InlineKeyboardButton("ðŸš« Ban/Unban", callback_data=f"adm_toggle_ban|{user_id}|0")
+        InlineKeyboardButton("👤 Adjust Balance", callback_data=f"adm_adjust_balance_start|{user_id}|0"),
+        InlineKeyboardButton("🚨 Ban/Unban", callback_data=f"adm_toggle_ban|{user_id}|0")
     ])
     
     # Detail sections
     detail_buttons = []
     if pending_deposits_count > 0:
-        detail_buttons.append(InlineKeyboardButton(f"â³ Deposits ({pending_deposits_count})", callback_data=f"adm_user_deposits|{user_id}"))
+        detail_buttons.append(InlineKeyboardButton(f"⏳ Deposits ({pending_deposits_count})", callback_data=f"adm_user_deposits|{user_id}"))
     if total_purchases_count > 0:
-        detail_buttons.append(InlineKeyboardButton(f"ðŸ“œ Purchases ({total_purchases_count})", callback_data=f"adm_user_purchases|{user_id}|0"))
+        detail_buttons.append(InlineKeyboardButton(f"�Ÿ“œ Purchases ({total_purchases_count})", callback_data=f"adm_user_purchases|{user_id}|0"))
     
     # Split detail buttons into rows of 2
     for i in range(0, len(detail_buttons), 2):
         keyboard.append(detail_buttons[i:i+2])
     
     if admin_actions_count > 0:
-        keyboard.append([InlineKeyboardButton(f"ðŸ”§ Admin Actions ({admin_actions_count})", callback_data=f"adm_user_actions|{user_id}|0")])
+        keyboard.append([InlineKeyboardButton(f"🔧 Admin Actions ({admin_actions_count})", callback_data=f"adm_user_actions|{user_id}|0")])
     
     if is_reseller:
-        keyboard.append([InlineKeyboardButton("ðŸ·ï¸ Reseller Discounts", callback_data=f"adm_user_discounts|{user_id}"),
-                        InlineKeyboardButton("ðŸ” Debug Reseller", callback_data=f"adm_debug_reseller_discount|{user_id}")])
+        keyboard.append([InlineKeyboardButton("💥️ Reseller Discounts", callback_data=f"adm_user_discounts|{user_id}"),
+                        InlineKeyboardButton("🔧 Debug Reseller", callback_data=f"adm_debug_reseller_discount|{user_id}")])
     
     # Navigation buttons
     keyboard.append([
-        InlineKeyboardButton("ðŸ” Search Another", callback_data="adm_search_user_start"),
-        InlineKeyboardButton("ðŸ‘¥ Browse All", callback_data="adm_manage_users|0")
+        InlineKeyboardButton("🔧 Search Another", callback_data="adm_search_user_start"),
+        InlineKeyboardButton("�Ÿ‘� Browse All", callback_data="adm_manage_users|0")
     ])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Admin Menu", callback_data="admin_menu")])
+    keyboard.append([InlineKeyboardButton("✅️ Admin Menu", callback_data="admin_menu")])
     
     await send_message_with_retry(bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -4517,9 +4517,9 @@ async def handle_adm_bulk_execute_messages(update: Update, context: ContextTypes
     price = context.user_data.get("bulk_pending_drop_price", 0)
     
     if not bulk_messages or not all([city, district, p_type, size, price]):
-        return await query.edit_message_text("âŒ Error: Missing data. Please start again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Missing data. Please start again.", parse_mode=None)
     
-    await query.edit_message_text("â³ Creating bulk products...", parse_mode=None)
+    await query.edit_message_text("⏳ Creating bulk products...", parse_mode=None)
     
     created_count = 0
     failed_messages = []  # Track failed messages with details
@@ -4673,34 +4673,34 @@ async def handle_adm_bulk_execute_messages(update: Update, context: ContextTypes
     failed_count = len(failed_messages)
     
     # Main result message
-    result_msg = f"ðŸ“¦ Bulk Operation Complete!\n\n"
-    result_msg += f"ðŸ“ Location: {city} / {district}\n"
+    result_msg = f"📦 Bulk Operation Complete!\n\n"
+    result_msg += f"📦 Location: {city} / {district}\n"
     result_msg += f"{type_emoji} Product: {p_type} {size}\n"
-    result_msg += f"ðŸ’° Price: {format_currency(price)}â‚¬\n\n"
-    result_msg += f"ðŸ“Š Summary:\n"
-    result_msg += f"ðŸ“ Total Messages: {total_messages}\n"
-    result_msg += f"âœ… Successfully Created: {created_count} products\n"
+    result_msg += f"👤 Price: {format_currency(price)}�‚�\n\n"
+    result_msg += f"�Ÿ“Š Summary:\n"
+    result_msg += f"📦 Total Messages: {total_messages}\n"
+    result_msg += f"�œ… Successfully Created: {created_count} products\n"
     
     if failed_count > 0:
-        result_msg += f"âŒ Failed: {failed_count}\n\n"
-        result_msg += f"ðŸ” Failed Messages Details:\n"
+        result_msg += f"❌ Failed: {failed_count}\n\n"
+        result_msg += f"🔧 Failed Messages Details:\n"
         
         for failure in failed_messages:
-            result_msg += f"â€¢ Message #{failure['message_number']}: {failure['text_preview']}\n"
+            result_msg += f"�€� Message #{failure['message_number']}: {failure['text_preview']}\n"
             result_msg += f"  Error: {failure['error_type']}\n"
             if failure['media_count'] > 0:
                 result_msg += f"  Media: {failure['media_count']} files\n"
             result_msg += f"  Reason: {failure['error_reason'][:50]}...\n\n"
         
-        result_msg += f"ðŸ’¡ You can retry the failed messages by:\n"
+        result_msg += f"👤 You can retry the failed messages by:\n"
         result_msg += f"1. Starting a new bulk operation\n"
         result_msg += f"2. Re-forwarding only the failed messages\n"
         result_msg += f"3. Using the same settings ({city}/{district}, {p_type}, {size})\n\n"
     else:
-        result_msg += f"\nðŸŽ‰ All messages processed successfully!\n\n"
+        result_msg += f"\n�ŸŽ‰ All messages processed successfully!\n\n"
     
     if successful_products:
-        result_msg += f"âœ… Created Product IDs: "
+        result_msg += f"�œ… Created Product IDs: "
         product_ids = [str(p['product_id']) for p in successful_products[:5]]  # Show first 5
         result_msg += ", ".join(product_ids)
         if len(successful_products) > 5:
@@ -4708,9 +4708,9 @@ async def handle_adm_bulk_execute_messages(update: Update, context: ContextTypes
         result_msg += "\n"
     
     keyboard = [
-        [InlineKeyboardButton("ðŸ“¦ Add More Bulk Products", callback_data="adm_bulk_city")],
-        [InlineKeyboardButton("ðŸ”§ Admin Menu", callback_data="admin_menu"), 
-         InlineKeyboardButton("ðŸ  User Home", callback_data="back_start")]
+        [InlineKeyboardButton("📦 Add More Bulk Products", callback_data="adm_bulk_city")],
+        [InlineKeyboardButton("🔧 Admin Menu", callback_data="admin_menu"), 
+         InlineKeyboardButton("💥 User Home", callback_data="back_start")]
     ]
     
     # Send the main result message
@@ -4718,16 +4718,16 @@ async def handle_adm_bulk_execute_messages(update: Update, context: ContextTypes
     
     # If there are failures, send a separate detailed failure message for better readability
     if failed_count > 0:
-        failure_detail_msg = f"ðŸš¨ Detailed Failure Report:\n\n"
+        failure_detail_msg = f"🚨 Detailed Failure Report:\n\n"
         for failure in failed_messages:
-            failure_detail_msg += f"ðŸ“ Message #{failure['message_number']}:\n"
+            failure_detail_msg += f"📦 Message #{failure['message_number']}:\n"
             failure_detail_msg += f"   Text: {failure['text_preview']}\n"
             failure_detail_msg += f"   Media Files: {failure['media_count']}\n"
             failure_detail_msg += f"   Error Type: {failure['error_type']}\n"
             failure_detail_msg += f"   Full Error: {failure['error_reason']}\n"
-            failure_detail_msg += f"   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\n"
+            failure_detail_msg += f"   🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\n"
         
-        failure_detail_msg += f"\nðŸ“‹ To retry failed messages:\n"
+        failure_detail_msg += f"\n�Ÿ“‹ To retry failed messages:\n"
         failure_detail_msg += f"1. Copy the message numbers that failed\n"
         failure_detail_msg += f"2. Start new bulk operation with same settings\n"
         failure_detail_msg += f"3. Forward only those specific messages\n"
@@ -4743,24 +4743,24 @@ async def handle_adm_new_type_name_message(update: Update, context: ContextTypes
     type_name = update.message.text.strip()
     if not type_name:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Please enter a valid type name.", parse_mode=None)
+            "❌ Please enter a valid type name.", parse_mode=None)
         return
     
     # Check if type already exists
     load_all_data()
     if type_name in PRODUCT_TYPES:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            f"âŒ Product type '{type_name}' already exists. Please choose a different name.", parse_mode=None)
+            f"❌ Product type '{type_name}' already exists. Please choose a different name.", parse_mode=None)
         return
     
     # Store the type name and ask for emoji
     context.user_data["new_type_name"] = type_name
     context.user_data["state"] = "awaiting_new_type_emoji"
     
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_types")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_types")]]
     await send_message_with_retry(context.bot, update.effective_chat.id, 
-        f"ðŸ§© Product Type: {type_name}\n\n"
-        "âœï¸ Please reply with a single emoji for this product type:", 
+        f"💥 Product Type: {type_name}\n\n"
+        "✅️ Please reply with a single emoji for this product type:", 
         reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_new_type_emoji_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -4771,13 +4771,13 @@ async def handle_adm_new_type_emoji_message(update: Update, context: ContextType
     emoji = update.message.text.strip()
     if not emoji:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Please enter a valid emoji.", parse_mode=None)
+            "❌ Please enter a valid emoji.", parse_mode=None)
         return
     
     # Basic emoji validation (check if it's a single character or emoji)
     if len(emoji) > 4:  # Allow for multi-byte emojis
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Please enter only a single emoji.", parse_mode=None)
+            "❌ Please enter only a single emoji.", parse_mode=None)
         return
     
     # Store the emoji and ask for description
@@ -4785,10 +4785,10 @@ async def handle_adm_new_type_emoji_message(update: Update, context: ContextType
     context.user_data["state"] = "awaiting_new_type_description"
     
     type_name = context.user_data.get("new_type_name", "Unknown")
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_types")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_types")]]
     await send_message_with_retry(context.bot, update.effective_chat.id, 
-        f"ðŸ§© Product Type: {emoji} {type_name}\n\n"
-        "ðŸ“ Please reply with a description for this product type (or send 'skip' to leave empty):", 
+        f"💥 Product Type: {emoji} {type_name}\n\n"
+        "📦 Please reply with a description for this product type (or send 'skip' to leave empty):", 
         reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 async def handle_adm_new_type_description_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -4801,7 +4801,7 @@ async def handle_adm_new_type_description_message(update: Update, context: Conte
         description = None
     elif not description:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Please enter a description or send 'skip' to leave empty.", parse_mode=None)
+            "❌ Please enter a description or send 'skip' to leave empty.", parse_mode=None)
         return
     
     type_name = context.user_data.get("new_type_name")
@@ -4809,7 +4809,7 @@ async def handle_adm_new_type_description_message(update: Update, context: Conte
     
     if not type_name or not emoji:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Error: Missing type name or emoji. Please start over.", parse_mode=None)
+            "❌ Error: Missing type name or emoji. Please start over.", parse_mode=None)
         context.user_data.pop("state", None)
         return
     
@@ -4836,17 +4836,17 @@ async def handle_adm_new_type_description_message(update: Update, context: Conte
         for existing_type_name, existing_emoji in sorted(PRODUCT_TYPES.items()):
             keyboard.append([
                 InlineKeyboardButton(f"{existing_emoji} {existing_type_name}", callback_data=f"adm_edit_type_menu|{existing_type_name}"),
-                InlineKeyboardButton(f"ðŸ—‘ï¸ Delete", callback_data=f"adm_delete_type|{existing_type_name}")
+                InlineKeyboardButton(f"�Ÿ—‘️ Delete", callback_data=f"adm_delete_type|{existing_type_name}")
             ])
         keyboard.extend([
-            [InlineKeyboardButton("âž• Add New Type", callback_data="adm_add_type")],
-            [InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]
+            [InlineKeyboardButton("�ž• Add New Type", callback_data="adm_add_type")],
+            [InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]
         ])
         
-        success_msg = f"âœ… Product type '{emoji} {type_name}' created successfully!"
+        success_msg = f"�œ… Product type '{emoji} {type_name}' created successfully!"
         if description:
             success_msg += f"\nDescription: {description}"
-        success_msg += "\n\nðŸ§© Manage Product Types\n\nSelect a type to edit or delete:"
+        success_msg += "\n\n💥 Manage Product Types\n\nSelect a type to edit or delete:"
         
         await send_message_with_retry(context.bot, update.effective_chat.id, 
             success_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -4854,7 +4854,7 @@ async def handle_adm_new_type_description_message(update: Update, context: Conte
     except sqlite3.Error as e:
         logger.error(f"DB error creating product type '{type_name}': {e}", exc_info=True)
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Database error creating product type. Please try again.", parse_mode=None)
+            "❌ Database error creating product type. Please try again.", parse_mode=None)
         context.user_data.pop("state", None)
     finally:
         if conn: conn.close()
@@ -4867,19 +4867,19 @@ async def handle_adm_edit_type_emoji_message(update: Update, context: ContextTyp
     emoji = update.message.text.strip()
     if not emoji:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Please enter a valid emoji.", parse_mode=None)
+            "❌ Please enter a valid emoji.", parse_mode=None)
         return
     
     # Basic emoji validation
     if len(emoji) > 4:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Please enter only a single emoji.", parse_mode=None)
+            "❌ Please enter only a single emoji.", parse_mode=None)
         return
     
     type_name = context.user_data.get("edit_type_name")
     if not type_name:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Error: Type name not found. Please start over.", parse_mode=None)
+            "❌ Error: Type name not found. Please start over.", parse_mode=None)
         context.user_data.pop("state", None)
         return
     
@@ -4908,27 +4908,27 @@ async def handle_adm_edit_type_emoji_message(update: Update, context: ContextTyp
             if res: current_description = res['description'] or "(Description not set)"
             
             keyboard = [
-                [InlineKeyboardButton("âœï¸ Change Emoji", callback_data=f"adm_change_type_emoji|{type_name}")],
-                [InlineKeyboardButton("ðŸ“ Change Name", callback_data=f"adm_change_type_name|{type_name}")],
-                [InlineKeyboardButton("ðŸ—‘ï¸ Delete Type", callback_data=f"adm_delete_type|{type_name}")],
-                [InlineKeyboardButton("â¬…ï¸ Back to Manage Types", callback_data="adm_manage_types")]
+                [InlineKeyboardButton("✅️ Change Emoji", callback_data=f"adm_change_type_emoji|{type_name}")],
+                [InlineKeyboardButton("📦 Change Name", callback_data=f"adm_change_type_name|{type_name}")],
+                [InlineKeyboardButton("�Ÿ—‘️ Delete Type", callback_data=f"adm_delete_type|{type_name}")],
+                [InlineKeyboardButton("✅️ Back to Manage Types", callback_data="adm_manage_types")]
             ]
             
             await send_message_with_retry(context.bot, update.effective_chat.id, 
-                f"âœ… Emoji updated successfully!\n\n"
-                f"ðŸ§© Editing Type: {type_name}\n\n"
+                f"�œ… Emoji updated successfully!\n\n"
+                f"💥 Editing Type: {type_name}\n\n"
                 f"Current Emoji: {emoji}\n"
                 f"Description: {current_description}\n\n"
                 f"What would you like to do?", 
                 reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         else:
             await send_message_with_retry(context.bot, update.effective_chat.id, 
-                f"âŒ Error: Product type '{type_name}' not found.", parse_mode=None)
+                f"❌ Error: Product type '{type_name}' not found.", parse_mode=None)
             context.user_data.pop("state", None)
     except sqlite3.Error as e:
         logger.error(f"DB error updating emoji for type '{type_name}': {e}", exc_info=True)
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Database error updating emoji. Please try again.", parse_mode=None)
+            "❌ Database error updating emoji. Please try again.", parse_mode=None)
         context.user_data.pop("state", None)
     finally:
         if conn: conn.close()
@@ -4943,14 +4943,14 @@ async def handle_adm_search_user_start(update: Update, context: ContextTypes.DEF
     context.user_data['state'] = 'awaiting_search_username'
     
     prompt_msg = (
-        "ðŸ” Search User by Username or ID\n\n"
+        "🔧 Search User by Username or ID\n\n"
         "Please reply with the Telegram username (with or without @) or User ID of the person you want to search for.\n\n"
         "Examples:\n"
-        "â€¢ @username123 or username123\n"
-        "â€¢ 123456789 (User ID)"
+        "�€� @username123 or username123\n"
+        "�€� 123456789 (User ID)"
     )
     
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]]
     
     await query.edit_message_text(prompt_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter username or User ID in chat.")
@@ -5003,7 +5003,7 @@ async def handle_adm_search_username_message(update: Update, context: ContextTyp
         
     except sqlite3.Error as e:
         logger.error(f"DB error searching for user '{search_term}': {e}")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Database error during search.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Database error during search.", parse_mode=None)
         return
     finally:
         if conn: 
@@ -5013,15 +5013,15 @@ async def handle_adm_search_username_message(update: Update, context: ContextTyp
         search_type = "User ID" if search_by_id else "username"
         await send_message_with_retry(
             context.bot, chat_id, 
-            f"âŒ No user found with {search_type}: {search_term}\n\nPlease check the spelling or try a different search term.",
+            f"❌ No user found with {search_type}: {search_term}\n\nPlease check the spelling or try a different search term.",
             parse_mode=None
         )
         
         # Offer to search again
         keyboard = [
-            [InlineKeyboardButton("ðŸ” Search Again", callback_data="adm_search_user_start")],
-            [InlineKeyboardButton("ðŸ‘¥ Browse All Users", callback_data="adm_manage_users|0")],
-            [InlineKeyboardButton("â¬…ï¸ Admin Menu", callback_data="admin_menu")]
+            [InlineKeyboardButton("🔧 Search Again", callback_data="adm_search_user_start")],
+            [InlineKeyboardButton("�Ÿ‘� Browse All Users", callback_data="adm_manage_users|0")],
+            [InlineKeyboardButton("✅️ Admin Menu", callback_data="admin_menu")]
         ]
         await send_message_with_retry(
             context.bot, chat_id, 
@@ -5076,7 +5076,7 @@ async def handle_adm_user_deposits(update: Update, context: ContextTypes.DEFAULT
         if conn: 
             conn.close()
     
-    msg = f"â³ Pending Deposits - @{username}\n\n"
+    msg = f"⏳ Pending Deposits - @{username}\n\n"
     
     if not deposits:
         msg += "No pending deposits found."
@@ -5096,14 +5096,14 @@ async def handle_adm_user_deposits(update: Update, context: ContextTypes.DEFAULT
             except (ValueError, TypeError): 
                 date_str = "Unknown date"
             
-            msg += f"{i}. {deposit_type} - {amount}â‚¬\n"
-            msg += f"   ðŸ’° Expected: {expected_crypto} {currency}\n"
-            msg += f"   ðŸ“… Created: {date_str}\n"
-            msg += f"   ðŸ†” Payment: {payment_id}\n\n"
+            msg += f"{i}. {deposit_type} - {amount}�‚�\n"
+            msg += f"   👤 Expected: {expected_crypto} {currency}\n"
+            msg += f"   �Ÿ“… Created: {date_str}\n"
+            msg += f"   �Ÿ†” Payment: {payment_id}\n\n"
     
     keyboard = [
-        [InlineKeyboardButton("â¬…ï¸ Back to User", callback_data=f"adm_user_overview|{user_id}")],
-        [InlineKeyboardButton("ðŸ” Search Another", callback_data="adm_search_user_start")]
+        [InlineKeyboardButton("✅️ Back to User", callback_data=f"adm_user_overview|{user_id}")],
+        [InlineKeyboardButton("🔧 Search Another", callback_data="adm_search_user_start")]
     ]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -5159,7 +5159,7 @@ async def handle_adm_user_purchases(update: Update, context: ContextTypes.DEFAUL
     current_page = (offset // limit) + 1
     total_pages = math.ceil(total_count / limit) if total_count > 0 else 1
     
-    msg = f"ðŸ“œ Purchase History - @{username}\n"
+    msg = f"�Ÿ“œ Purchase History - @{username}\n"
     msg += f"Page {current_page}/{total_pages} ({total_count} total)\n\n"
     
     if not purchases:
@@ -5181,24 +5181,24 @@ async def handle_adm_user_purchases(update: Update, context: ContextTypes.DEFAUL
             p_city = purchase['city'] or 'N/A'
             p_district = purchase['district'] or 'N/A'
             
-            msg += f"{i}. {p_emoji} {p_type} {p_size} - {p_price}â‚¬\n"
-            msg += f"   ðŸ“ {p_city}/{p_district}\n"
-            msg += f"   ðŸ“… {date_str}\n\n"
+            msg += f"{i}. {p_emoji} {p_type} {p_size} - {p_price}�‚�\n"
+            msg += f"   📦 {p_city}/{p_district}\n"
+            msg += f"   �Ÿ“… {date_str}\n\n"
     
     # Pagination buttons
     keyboard = []
     nav_buttons = []
     
     if current_page > 1:
-        nav_buttons.append(InlineKeyboardButton("â¬…ï¸ Previous", callback_data=f"adm_user_purchases|{user_id}|{max(0, offset - limit)}"))
+        nav_buttons.append(InlineKeyboardButton("✅️ Previous", callback_data=f"adm_user_purchases|{user_id}|{max(0, offset - limit)}"))
     if current_page < total_pages:
-        nav_buttons.append(InlineKeyboardButton("Next âž¡ï¸", callback_data=f"adm_user_purchases|{user_id}|{offset + limit}"))
+        nav_buttons.append(InlineKeyboardButton("Next �ž�️", callback_data=f"adm_user_purchases|{user_id}|{offset + limit}"))
     
     if nav_buttons:
         keyboard.append(nav_buttons)
     
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to User", callback_data=f"adm_user_overview|{user_id}")])
-    keyboard.append([InlineKeyboardButton("ðŸ” Search Another", callback_data="adm_search_user_start")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to User", callback_data=f"adm_user_overview|{user_id}")])
+    keyboard.append([InlineKeyboardButton("🔧 Search Another", callback_data="adm_search_user_start")])
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -5253,7 +5253,7 @@ async def handle_adm_user_actions(update: Update, context: ContextTypes.DEFAULT_
     current_page = (offset // limit) + 1
     total_pages = math.ceil(total_count / limit) if total_count > 0 else 1
     
-    msg = f"ðŸ”§ Admin Actions - @{username}\n"
+    msg = f"🔧 Admin Actions - @{username}\n"
     msg += f"Page {current_page}/{total_pages} ({total_count} total)\n\n"
     
     if not actions:
@@ -5273,25 +5273,25 @@ async def handle_adm_user_actions(update: Update, context: ContextTypes.DEFAULT_
             amount_change = action['amount_change']
             
             msg += f"{i}. {action_name}\n"
-            msg += f"   ðŸ“… {date_str}\n"
+            msg += f"   �Ÿ“… {date_str}\n"
             if amount_change:
-                msg += f"   ðŸ’° Amount: {format_currency(amount_change)}â‚¬\n"
-            msg += f"   ðŸ“ Reason: {reason}\n\n"
+                msg += f"   👤 Amount: {format_currency(amount_change)}�‚�\n"
+            msg += f"   📦 Reason: {reason}\n\n"
     
     # Pagination buttons
     keyboard = []
     nav_buttons = []
     
     if current_page > 1:
-        nav_buttons.append(InlineKeyboardButton("â¬…ï¸ Previous", callback_data=f"adm_user_actions|{user_id}|{max(0, offset - limit)}"))
+        nav_buttons.append(InlineKeyboardButton("✅️ Previous", callback_data=f"adm_user_actions|{user_id}|{max(0, offset - limit)}"))
     if current_page < total_pages:
-        nav_buttons.append(InlineKeyboardButton("Next âž¡ï¸", callback_data=f"adm_user_actions|{user_id}|{offset + limit}"))
+        nav_buttons.append(InlineKeyboardButton("Next �ž�️", callback_data=f"adm_user_actions|{user_id}|{offset + limit}"))
     
     if nav_buttons:
         keyboard.append(nav_buttons)
     
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to User", callback_data=f"adm_user_overview|{user_id}")])
-    keyboard.append([InlineKeyboardButton("ðŸ” Search Another", callback_data="adm_search_user_start")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to User", callback_data=f"adm_user_overview|{user_id}")])
+    keyboard.append([InlineKeyboardButton("🔧 Search Another", callback_data="adm_search_user_start")])
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -5340,7 +5340,7 @@ async def handle_adm_user_discounts(update: Update, context: ContextTypes.DEFAUL
         if conn:
             conn.close()
         
-    msg = f"ðŸ·ï¸ Reseller Discounts - @{username}\n\n"
+    msg = f"💥️ Reseller Discounts - @{username}\n\n"
     
     if not discounts:
         msg += "No reseller discounts configured."
@@ -5352,8 +5352,8 @@ async def handle_adm_user_discounts(update: Update, context: ContextTypes.DEFAUL
             msg += f"{emoji} {product_type}: {percentage}%\n"
     
     keyboard = [
-        [InlineKeyboardButton("â¬…ï¸ Back to User", callback_data=f"adm_user_overview|{user_id}")],
-        [InlineKeyboardButton("ðŸ” Search Another", callback_data="adm_search_user_start")]
+        [InlineKeyboardButton("✅️ Back to User", callback_data=f"adm_user_overview|{user_id}")],
+        [InlineKeyboardButton("🔧 Search Another", callback_data="adm_search_user_start")]
     ]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -5424,7 +5424,7 @@ async def handle_adm_manage_welcome(update: Update, context: ContextTypes.DEFAUL
         if conn: conn.close()
 
     # Build message and keyboard
-    title = lang_data.get("manage_welcome_title", "âš™ï¸ Manage Welcome Messages")
+    title = lang_data.get("manage_welcome_title", "�š™️ Manage Welcome Messages")
     prompt = lang_data.get("manage_welcome_prompt", "Select a template to manage or activate:")
     msg_parts = [f"{title}\n\n{prompt}\n"] # Use list to build message
     keyboard = []
@@ -5437,36 +5437,36 @@ async def handle_adm_manage_welcome(update: Update, context: ContextTypes.DEFAUL
             desc = template['description'] or "No description"
 
             is_active = (name == active_template_name)
-            active_indicator = " (Active âœ…)" if is_active else ""
+            active_indicator = " (Active �œ…)" if is_active else ""
 
             # Display Name, Description, and Active Status
-            msg_parts.append(f"\nðŸ“„ {name}{active_indicator}\n{desc}\n")
+            msg_parts.append(f"\n�Ÿ“„ {name}{active_indicator}\n{desc}\n")
 
             # Buttons: Edit | Activate (if not active) | Delete (if not default and not active)
-            row = [InlineKeyboardButton("âœï¸ Edit", callback_data=f"adm_edit_welcome|{name}|{offset}")]
+            row = [InlineKeyboardButton("✅️ Edit", callback_data=f"adm_edit_welcome|{name}|{offset}")]
             if not is_active:
-                 row.append(InlineKeyboardButton("âœ… Activate", callback_data=f"adm_activate_welcome|{name}|{offset}"))
+                 row.append(InlineKeyboardButton("�œ… Activate", callback_data=f"adm_activate_welcome|{name}|{offset}"))
 
             can_delete = not (name == "default") and not is_active # Cannot delete default or active
             if can_delete:
-                 row.append(InlineKeyboardButton("ðŸ—‘ï¸ Delete", callback_data=f"adm_delete_welcome_confirm|{name}|{offset}"))
+                 row.append(InlineKeyboardButton("�Ÿ—‘️ Delete", callback_data=f"adm_delete_welcome_confirm|{name}|{offset}"))
             keyboard.append(row)
 
         # Pagination
         total_pages = math.ceil(total_templates / TEMPLATES_PER_PAGE)
         current_page = (offset // TEMPLATES_PER_PAGE) + 1
         nav_buttons = []
-        if current_page > 1: nav_buttons.append(InlineKeyboardButton("â¬…ï¸ Prev", callback_data=f"adm_manage_welcome|{max(0, offset - TEMPLATES_PER_PAGE)}"))
-        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton("âž¡ï¸ Next", callback_data=f"adm_manage_welcome|{offset + TEMPLATES_PER_PAGE}"))
+        if current_page > 1: nav_buttons.append(InlineKeyboardButton("✅️ Prev", callback_data=f"adm_manage_welcome|{max(0, offset - TEMPLATES_PER_PAGE)}"))
+        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton("�ž�️ Next", callback_data=f"adm_manage_welcome|{offset + TEMPLATES_PER_PAGE}"))
         if nav_buttons: keyboard.append(nav_buttons)
         if total_pages > 1:
             page_indicator = f"Page {current_page}/{total_pages}"
             msg_parts.append(f"\n{page_indicator}")
 
     # Add "Add New" and "Reset Default" buttons
-    keyboard.append([InlineKeyboardButton("âž• Add New Template", callback_data="adm_add_welcome_start")])
-    keyboard.append([InlineKeyboardButton("ðŸ”„ Reset to Built-in Default", callback_data="adm_reset_default_confirm")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
+    keyboard.append([InlineKeyboardButton("�ž• Add New Template", callback_data="adm_add_welcome_start")])
+    keyboard.append([InlineKeyboardButton("�Ÿ”„ Reset to Built-in Default", callback_data="adm_reset_default_confirm")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
 
     final_msg = "".join(msg_parts)
 
@@ -5496,11 +5496,11 @@ async def handle_adm_activate_welcome(update: Update, context: ContextTypes.DEFA
 
     success = set_active_welcome_message(template_name) # Use helper from utils
     if success:
-        msg_template = lang_data.get("welcome_activate_success", "âœ… Template '{name}' activated.")
+        msg_template = lang_data.get("welcome_activate_success", "�œ… Template '{name}' activated.")
         await query.answer(msg_template.format(name=template_name))
         await handle_adm_manage_welcome(update, context, params=[str(offset)]) # Refresh menu at same page
     else:
-        msg_template = lang_data.get("welcome_activate_fail", "âŒ Failed to activate template '{name}'.")
+        msg_template = lang_data.get("welcome_activate_fail", "❌ Failed to activate template '{name}'.")
         await query.answer(msg_template.format(name=template_name), show_alert=True)
 
 async def handle_adm_add_welcome_start(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -5511,7 +5511,7 @@ async def handle_adm_add_welcome_start(update: Update, context: ContextTypes.DEF
 
     context.user_data['state'] = 'awaiting_welcome_template_name'
     prompt = lang_data.get("welcome_add_name_prompt", "Enter a unique short name for the new template (e.g., 'default', 'promo_weekend'):")
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="adm_manage_welcome|0")]] # Go back to first page
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="adm_manage_welcome|0")]] # Go back to first page
     await query.edit_message_text(prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter template name in chat.")
 
@@ -5555,14 +5555,14 @@ async def handle_adm_edit_welcome(update: Update, context: ContextTypes.DEFAULT_
     safe_name = template_name
     safe_desc = current_description or 'Not set'
 
-    msg = f"âœï¸ Editing Template: {safe_name}\n\n"
-    msg += f"ðŸ“ Description: {safe_desc}\n\n"
+    msg = f"✅️ Editing Template: {safe_name}\n\n"
+    msg += f"📦 Description: {safe_desc}\n\n"
     msg += "Choose what to edit:"
 
     keyboard = [
         [InlineKeyboardButton("Edit Text", callback_data=f"adm_edit_welcome_text|{template_name}")],
         [InlineKeyboardButton("Edit Description", callback_data=f"adm_edit_welcome_desc|{template_name}")],
-        [InlineKeyboardButton("â¬…ï¸ Back", callback_data=f"adm_manage_welcome|{offset}")]
+        [InlineKeyboardButton("✅️ Back", callback_data=f"adm_manage_welcome|{offset}")]
     ]
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -5611,7 +5611,7 @@ async def handle_adm_edit_welcome_text(update: Update, context: ContextTypes.DEF
     if len(prompt) > 4000: prompt = prompt[:4000] + "\n[... Current text truncated ...]"
 
     # Go back to the specific template's edit menu
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
     try:
         await query.edit_message_text(prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
@@ -5647,7 +5647,7 @@ async def handle_adm_edit_welcome_desc(update: Update, context: ContextTypes.DEF
     prompt_template = lang_data.get("welcome_edit_description_prompt", "Editing description for '{name}'. Current: '{current_desc}'.\n\nEnter new description or send '-' to skip.")
     prompt = prompt_template.format(name=template_name, current_desc=current_desc or "Not set")
 
-    keyboard = [[InlineKeyboardButton("âŒ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel Edit", callback_data=f"adm_edit_welcome|{template_name}|{offset}")]]
     await query.edit_message_text(prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter new description.")
 
@@ -5680,18 +5680,18 @@ async def handle_adm_delete_welcome_confirm(update: Update, context: ContextType
 
     # Prevent deleting the active template
     if template_name == active_template_name:
-        cannot_delete_msg = lang_data.get("welcome_cannot_delete_active", "âŒ Cannot delete the active template. Activate another first.")
+        cannot_delete_msg = lang_data.get("welcome_cannot_delete_active", "❌ Cannot delete the active template. Activate another first.")
         await query.answer(cannot_delete_msg, show_alert=True)
         return await handle_adm_manage_welcome(update, context, params=[str(offset)]) # Refresh list
 
     context.user_data["confirm_action"] = f"delete_welcome_template|{template_name}"
-    title = lang_data.get("welcome_delete_confirm_title", "âš ï¸ Confirm Deletion")
+    title = lang_data.get("welcome_delete_confirm_title", "⚠️ Confirm Deletion")
     text_template = lang_data.get("welcome_delete_confirm_text", "Are you sure you want to delete the welcome message template named '{name}'?")
     msg = f"{title}\n\n{text_template.format(name=template_name)}"
 
     keyboard = [
-        [InlineKeyboardButton("âœ… Yes, Delete Template", callback_data="confirm_yes")],
-        [InlineKeyboardButton("âŒ No, Cancel", callback_data=f"adm_manage_welcome|{offset}")]
+        [InlineKeyboardButton("�œ… Yes, Delete Template", callback_data="confirm_yes")],
+        [InlineKeyboardButton("❌ No, Cancel", callback_data=f"adm_manage_welcome|{offset}")]
     ]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -5702,13 +5702,13 @@ async def handle_reset_default_welcome(update: Update, context: ContextTypes.DEF
     lang, lang_data = _get_lang_data(context)
 
     context.user_data["confirm_action"] = "reset_default_welcome"
-    title = lang_data.get("welcome_reset_confirm_title", "âš ï¸ Confirm Reset")
+    title = lang_data.get("welcome_reset_confirm_title", "⚠️ Confirm Reset")
     text = lang_data.get("welcome_reset_confirm_text", "Are you sure you want to reset the text of the 'default' template to the built-in version and activate it?")
     msg = f"{title}\n\n{text}"
 
     keyboard = [
-        [InlineKeyboardButton("âœ… Yes, Reset & Activate", callback_data="confirm_yes")],
-        [InlineKeyboardButton("âŒ No, Cancel", callback_data="adm_manage_welcome|0")]
+        [InlineKeyboardButton("�œ… Yes, Reset & Activate", callback_data="confirm_yes")],
+        [InlineKeyboardButton("❌ No, Cancel", callback_data="adm_manage_welcome|0")]
     ]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
@@ -5724,7 +5724,7 @@ async def handle_confirm_save_welcome(update: Update, context: ContextTypes.DEFA
     pending_template = context.user_data.get("pending_welcome_template")
     if not pending_template or not pending_template.get("name") or pending_template.get("text") is None: # Text can be empty, but key must exist
         logger.error("Attempted to save welcome template, but pending data missing.")
-        await query.edit_message_text("âŒ Error: Save data lost. Please start again.", parse_mode=None)
+        await query.edit_message_text("❌ Error: Save data lost. Please start again.", parse_mode=None)
         context.user_data.pop("state", None)
         context.user_data.pop("pending_welcome_template", None)
         return
@@ -5740,10 +5740,10 @@ async def handle_confirm_save_welcome(update: Update, context: ContextTypes.DEFA
     success = False
     if is_editing:
         success = update_welcome_message_template(template_name, template_text, template_description)
-        msg_template = lang_data.get("welcome_edit_success", "âœ… Template '{name}' updated.") if success else lang_data.get("welcome_edit_fail", "âŒ Failed to update template '{name}'.")
+        msg_template = lang_data.get("welcome_edit_success", "�œ… Template '{name}' updated.") if success else lang_data.get("welcome_edit_fail", "❌ Failed to update template '{name}'.")
     else:
         success = add_welcome_message_template(template_name, template_text, template_description)
-        msg_template = lang_data.get("welcome_add_success", "âœ… Welcome message template '{name}' added.") if success else lang_data.get("welcome_add_fail", "âŒ Failed to add welcome message template.")
+        msg_template = lang_data.get("welcome_add_success", "�œ… Welcome message template '{name}' added.") if success else lang_data.get("welcome_add_fail", "❌ Failed to add welcome message template.")
 
     # Clean up context
     context.user_data.pop("state", None)
@@ -5876,8 +5876,8 @@ async def handle_adm_debug_reseller_discount(update: Update, context: ContextTyp
         # Get all product types for testing
         from utils import PRODUCT_TYPES
         
-        msg = f"ðŸ” Reseller Discount Debug - @{username}\n\n"
-        msg += f"Reseller Status: {'âœ… Yes' if is_reseller == 1 else 'âŒ No'} (DB value: {is_reseller})\n\n"
+        msg = f"🔧 Reseller Discount Debug - @{username}\n\n"
+        msg += f"Reseller Status: {'�œ… Yes' if is_reseller == 1 else '❌ No'} (DB value: {is_reseller})\n\n"
         
         if is_reseller == 1:
             # Get all discount records
@@ -5887,20 +5887,20 @@ async def handle_adm_debug_reseller_discount(update: Update, context: ContextTyp
             msg += f"Discount Records ({len(discount_records)}):\n"
             if discount_records:
                 for record in discount_records:
-                    emoji = PRODUCT_TYPES.get(record['product_type'], 'ðŸ“¦')
-                    msg += f"â€¢ {emoji} {record['product_type']}: {record['discount_percentage']}%\n"
+                    emoji = PRODUCT_TYPES.get(record['product_type'], '📦')
+                    msg += f"�€� {emoji} {record['product_type']}: {record['discount_percentage']}%\n"
             else:
-                msg += "â€¢ No discount records found\n"
+                msg += "�€� No discount records found\n"
             
             msg += "\nLive Discount Check:\n"
             # Test discount lookup for each product type
             for product_type in PRODUCT_TYPES.keys():
                 discount = get_reseller_discount(user_id, product_type)
-                emoji = PRODUCT_TYPES.get(product_type, 'ðŸ“¦')
-                msg += f"â€¢ {emoji} {product_type}: {discount}%\n"
+                emoji = PRODUCT_TYPES.get(product_type, '📦')
+                msg += f"�€� {emoji} {product_type}: {discount}%\n"
         else:
             msg += "User is not marked as reseller in database.\n"
-            msg += "To enable: Admin Menu â†’ Manage Resellers â†’ Enter User ID â†’ Enable Reseller Status"
+            msg += "To enable: Admin Menu �†’ Manage Resellers �†’ Enter User ID �†’ Enable Reseller Status"
         
     except Exception as e:
         logger.error(f"Error in reseller debug for user {user_id}: {e}", exc_info=True)
@@ -5911,8 +5911,8 @@ async def handle_adm_debug_reseller_discount(update: Update, context: ContextTyp
             conn.close()
     
     keyboard = [
-        [InlineKeyboardButton("â¬…ï¸ Back to User", callback_data=f"adm_user_overview|{user_id}")],
-        [InlineKeyboardButton("ðŸ” Search Another", callback_data="adm_search_user_start")]
+        [InlineKeyboardButton("✅️ Back to User", callback_data=f"adm_user_overview|{user_id}")],
+        [InlineKeyboardButton("🔧 Search Another", callback_data="adm_search_user_start")]
     ]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -5964,16 +5964,16 @@ async def handle_adm_recent_purchases(update: Update, context: ContextTypes.DEFA
         
     except sqlite3.Error as e:
         logger.error(f"DB error fetching recent purchases: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Database error fetching purchases.", parse_mode=None)
+        await query.edit_message_text("❌ Database error fetching purchases.", parse_mode=None)
         return
     finally:
         if conn:
             conn.close()
     
     # Build the message
-    msg = f"ðŸ“Š Real-Time Purchase Monitor\n\n"
-    msg += f"ðŸ“ˆ Total Purchases: {total_purchases:,}\n"
-    msg += f"ðŸ“‹ Showing {len(recent_purchases)} recent purchases:\n\n"
+    msg = f"�Ÿ“Š Real-Time Purchase Monitor\n\n"
+    msg += f"�Ÿ“ˆ Total Purchases: {total_purchases:,}\n"
+    msg += f"�Ÿ“‹ Showing {len(recent_purchases)} recent purchases:\n\n"
     
     if not recent_purchases:
         msg += "No purchases found."
@@ -5993,7 +5993,7 @@ async def handle_adm_recent_purchases(update: Update, context: ContextTypes.DEFA
             
             # Get product emoji
             product_type = purchase['product_type'] or "Unknown"
-            product_emoji = PRODUCT_TYPES.get(product_type, 'ðŸ“¦')
+            product_emoji = PRODUCT_TYPES.get(product_type, '📦')
             
             # Format buyer info
             username = purchase['username'] or f"ID_{purchase['user_id']}"
@@ -6009,10 +6009,10 @@ async def handle_adm_recent_purchases(update: Update, context: ContextTypes.DEFA
             # Format size
             size = purchase['product_size'] or "N/A"
             
-            msg += f"ðŸ• {time_str} | {product_emoji} {product_type} {size}\n"
-            msg += f"ðŸ“ {city} / {district} | ðŸ’° {price_str}â‚¬\n"
-            msg += f"ðŸ‘¤ @{username}\n"
-            msg += f"â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\n"
+            msg += f"�Ÿ•� {time_str} | {product_emoji} {product_type} {size}\n"
+            msg += f"📦 {city} / {district} | 👤 {price_str}�‚�\n"
+            msg += f"�Ÿ‘� @{username}\n"
+            msg += f"🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\n"
     
     # Add pagination
     keyboard = []
@@ -6024,11 +6024,11 @@ async def handle_adm_recent_purchases(update: Update, context: ContextTypes.DEFA
     nav_buttons = []
     if current_page > 1:
         prev_offset = max(0, offset - purchases_per_page)
-        nav_buttons.append(InlineKeyboardButton("â¬…ï¸ Newer", callback_data=f"adm_recent_purchases|{prev_offset}"))
+        nav_buttons.append(InlineKeyboardButton("✅️ Newer", callback_data=f"adm_recent_purchases|{prev_offset}"))
     
     if current_page < total_pages:
         next_offset = offset + purchases_per_page
-        nav_buttons.append(InlineKeyboardButton("Older âž¡ï¸", callback_data=f"adm_recent_purchases|{next_offset}"))
+        nav_buttons.append(InlineKeyboardButton("Older �ž�️", callback_data=f"adm_recent_purchases|{next_offset}"))
     
     if nav_buttons:
         keyboard.append(nav_buttons)
@@ -6037,8 +6037,8 @@ async def handle_adm_recent_purchases(update: Update, context: ContextTypes.DEFA
     if total_pages > 1:
         msg += f"\nPage {current_page}/{total_pages}"
     
-    keyboard.append([InlineKeyboardButton("ðŸ”„ Refresh", callback_data="adm_recent_purchases|0")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Admin Menu", callback_data="admin_menu")])
+    keyboard.append([InlineKeyboardButton("�Ÿ”„ Refresh", callback_data="adm_recent_purchases|0")])
+    keyboard.append([InlineKeyboardButton("✅️ Admin Menu", callback_data="admin_menu")])
     
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -6050,7 +6050,7 @@ async def handle_adm_recent_purchases(update: Update, context: ContextTypes.DEFA
             await query.answer("Refreshed!")
     except Exception as e:
         logger.error(f"Error in recent purchases display: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error displaying purchases.", parse_mode=None)
+        await query.edit_message_text("❌ Error displaying purchases.", parse_mode=None)
 
 # --- Manual Payment Recovery System ---
 async def handle_manual_payment_recovery(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -6065,10 +6065,10 @@ async def handle_manual_payment_recovery(update: Update, context: ContextTypes.D
     # Set state to expect payment ID
     context.user_data['state'] = 'awaiting_payment_recovery_id'
     
-    msg = ("ðŸ”§ Manual Payment Recovery\n\n"
+    msg = ("🔧 Manual Payment Recovery\n\n"
            "Enter the payment ID that failed to process:")
     
-    keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]
+    keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter Payment ID in chat.")
@@ -6099,7 +6099,7 @@ async def handle_payment_recovery_id_message(update: Update, context: ContextTyp
         pending_info = await asyncio.to_thread(get_pending_deposit, payment_id)
         
         if not pending_info:
-            await send_message_with_retry(context.bot, chat_id, f"âŒ No pending deposit found for payment ID: {payment_id}", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, f"❌ No pending deposit found for payment ID: {payment_id}", parse_mode=None)
             return
         
         user_id = pending_info['user_id']
@@ -6107,7 +6107,7 @@ async def handle_payment_recovery_id_message(update: Update, context: ContextTyp
         discount_code_used = pending_info.get('discount_code_used')
         
         if not basket_snapshot:
-            await send_message_with_retry(context.bot, chat_id, f"âŒ No basket snapshot found for payment {payment_id}", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, f"❌ No basket snapshot found for payment {payment_id}", parse_mode=None)
             return
         
         # For Solana payments, verify by checking the pending_deposits record
@@ -6121,7 +6121,7 @@ async def handle_payment_recovery_id_message(update: Update, context: ContextTyp
         # Admin should verify the transaction exists before recovering
         await send_message_with_retry(
             context.bot, chat_id, 
-            f"âš ï¸ Please verify this payment on Solana blockchain before proceeding.\n"
+            f"⚠️ Please verify this payment on Solana blockchain before proceeding.\n"
             f"Payment ID: {payment_id}\n"
             f"Expected Amount: ~{target_eur} EUR\n"
             f"Currency: {currency}\n\n"
@@ -6150,7 +6150,7 @@ async def handle_payment_recovery_id_message(update: Update, context: ContextTyp
             
         except Exception as e:
             logger.error(f"Error checking product availability: {e}")
-            await send_message_with_retry(context.bot, chat_id, f"âŒ Error checking product availability: {str(e)}", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, f"❌ Error checking product availability: {str(e)}", parse_mode=None)
             return
         finally:
             if conn:
@@ -6158,11 +6158,11 @@ async def handle_payment_recovery_id_message(update: Update, context: ContextTyp
         
         # If some products are unavailable, ask admin what to do
         if unavailable_products:
-            unavailable_list = "\n".join([f"â€¢ {prod}" for prod in unavailable_products])
+            unavailable_list = "\n".join([f"�€� {prod}" for prod in unavailable_products])
             await send_message_with_retry(context.bot, chat_id, 
-                f"âš ï¸ Some products are no longer available for payment {payment_id}:\n\n"
+                f"⚠️ Some products are no longer available for payment {payment_id}:\n\n"
                 f"{unavailable_list}\n\n"
-                f"â“ What would you like to do?\n"
+                f"�“ What would you like to do?\n"
                 f"1. Proceed anyway (user gets available products only)\n"
                 f"2. Cancel recovery (user keeps their money)\n"
                 f"3. Refund user and cancel recovery\n\n"
@@ -6179,13 +6179,13 @@ async def handle_payment_recovery_id_message(update: Update, context: ContextTyp
             return
         
         # All products available, proceed with recovery
-        await send_message_with_retry(context.bot, chat_id, f"âœ… All products available. Proceeding with recovery for payment {payment_id}...", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, f"�œ… All products available. Proceeding with recovery for payment {payment_id}...", parse_mode=None)
         
         # Create dummy context for processing
         dummy_context = ContextTypes.DEFAULT_TYPE(application=None, chat_id=user_id, user_id=user_id)
         
         # SECURITY LOG: Admin payment recovery attempt (all products available)
-        logger.warning(f"ðŸ” ADMIN RECOVERY: Admin {admin_id} attempting to recover payment {payment_id} for user {user_id} with {len(basket_snapshot)} products (all available)")
+        logger.warning(f"🔧 ADMIN RECOVERY: Admin {admin_id} attempting to recover payment {payment_id} for user {user_id} with {len(basket_snapshot)} products (all available)")
         
         # Attempt to recover the payment
         success = await payment.process_successful_crypto_purchase(
@@ -6193,15 +6193,15 @@ async def handle_payment_recovery_id_message(update: Update, context: ContextTyp
         )
         
         if success:
-            await send_message_with_retry(context.bot, chat_id, f"âœ… Successfully recovered payment {payment_id} for user {user_id}", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, f"�œ… Successfully recovered payment {payment_id} for user {user_id}", parse_mode=None)
             # Remove pending deposit
             await asyncio.to_thread(remove_pending_deposit, payment_id, trigger="manual_recovery")
         else:
-            await send_message_with_retry(context.bot, chat_id, f"âŒ Failed to recover payment {payment_id}. Check logs for details.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, f"❌ Failed to recover payment {payment_id}. Check logs for details.", parse_mode=None)
             
     except Exception as e:
         logger.error(f"Error in manual payment recovery: {e}", exc_info=True)
-        await send_message_with_retry(context.bot, chat_id, f"âŒ Error during recovery: {str(e)}", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, f"❌ Error during recovery: {str(e)}", parse_mode=None)
 
 async def handle_recovery_decision_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle admin's decision for payment recovery when products are unavailable"""
@@ -6235,7 +6235,7 @@ async def handle_recovery_decision_message(update: Update, context: ContextTypes
     try:
         if decision == '1':  # Proceed anyway
             await send_message_with_retry(context.bot, chat_id, 
-                f"âœ… Proceeding with recovery for payment {payment_id} (available products only)...", 
+                f"�œ… Proceeding with recovery for payment {payment_id} (available products only)...", 
                 parse_mode=None)
             
             # Filter out unavailable products from basket snapshot
@@ -6249,7 +6249,7 @@ async def handle_recovery_decision_message(update: Update, context: ContextTypes
             
             if not available_basket:
                 await send_message_with_retry(context.bot, chat_id, 
-                    f"âŒ No products available for payment {payment_id}. Cannot proceed.", 
+                    f"❌ No products available for payment {payment_id}. Cannot proceed.", 
                     parse_mode=None)
                 return
             
@@ -6257,7 +6257,7 @@ async def handle_recovery_decision_message(update: Update, context: ContextTypes
             dummy_context = ContextTypes.DEFAULT_TYPE(application=None, chat_id=user_id, user_id=user_id)
             
             # SECURITY LOG: Admin payment recovery attempt
-            logger.warning(f"ðŸ” ADMIN RECOVERY: Admin {admin_id} attempting to recover payment {payment_id} for user {user_id} with {len(available_basket)} products")
+            logger.warning(f"🔧 ADMIN RECOVERY: Admin {admin_id} attempting to recover payment {payment_id} for user {user_id} with {len(available_basket)} products")
             
             # Process with available products only
             success = await payment.process_successful_crypto_purchase(
@@ -6266,19 +6266,19 @@ async def handle_recovery_decision_message(update: Update, context: ContextTypes
             
             if success:
                 await send_message_with_retry(context.bot, chat_id, 
-                    f"âœ… Successfully recovered payment {payment_id} for user {user_id} (available products only)", 
+                    f"�œ… Successfully recovered payment {payment_id} for user {user_id} (available products only)", 
                     parse_mode=None)
                 # Remove pending deposit
                 await asyncio.to_thread(remove_pending_deposit, payment_id, trigger="manual_recovery_partial")
             else:
                 await send_message_with_retry(context.bot, chat_id, 
-                    f"âŒ Failed to recover payment {payment_id}. Check logs for details.", 
+                    f"❌ Failed to recover payment {payment_id}. Check logs for details.", 
                     parse_mode=None)
         
         elif decision == '2':  # Cancel recovery (user keeps money)
             await send_message_with_retry(context.bot, chat_id, 
-                f"âŒ Recovery cancelled for payment {payment_id}. User keeps their money.\n\n"
-                f"âš ï¸ Products remain available for other customers.", 
+                f"❌ Recovery cancelled for payment {payment_id}. User keeps their money.\n\n"
+                f"⚠️ Products remain available for other customers.", 
                 parse_mode=None)
             
             # Remove pending deposit without processing
@@ -6286,8 +6286,8 @@ async def handle_recovery_decision_message(update: Update, context: ContextTypes
         
         elif decision == '3':  # Refund user and cancel recovery
             await send_message_with_retry(context.bot, chat_id, 
-                f"ðŸ’° Refund initiated for payment {payment_id}. User will receive their money back.\n\n"
-                f"âš ï¸ Manual refund required: Send SOL to user's wallet address.", 
+                f"👤 Refund initiated for payment {payment_id}. User will receive their money back.\n\n"
+                f"⚠️ Manual refund required: Send SOL to user's wallet address.", 
                 parse_mode=None)
             
             # Remove pending deposit
@@ -6297,7 +6297,7 @@ async def handle_recovery_decision_message(update: Update, context: ContextTypes
         
         else:
             await send_message_with_retry(context.bot, chat_id, 
-                f"âŒ Invalid choice '{decision}'. Please use '1', '2', or '3'.", 
+                f"❌ Invalid choice '{decision}'. Please use '1', '2', or '3'.", 
                 parse_mode=None)
             
             # Restore state to await decision again
@@ -6310,7 +6310,7 @@ async def handle_recovery_decision_message(update: Update, context: ContextTypes
             
     except Exception as e:
         logger.error(f"Error handling recovery decision: {e}", exc_info=True)
-        await send_message_with_retry(context.bot, chat_id, f"âŒ Error processing decision: {str(e)}", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, f"❌ Error processing decision: {str(e)}", parse_mode=None)
 
 
 async def handle_adm_edit_type_name_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -6321,26 +6321,26 @@ async def handle_adm_edit_type_name_message(update: Update, context: ContextType
     new_type_name = update.message.text.strip()
     if not new_type_name:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Please enter a valid type name.", parse_mode=None)
+            "❌ Please enter a valid type name.", parse_mode=None)
         return
     
     old_type_name = context.user_data.get("edit_old_type_name")
     if not old_type_name:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            "âŒ Error: No type being edited. Please start over.", parse_mode=None)
+            "❌ Error: No type being edited. Please start over.", parse_mode=None)
         return
     
     # Check if new name already exists
     load_all_data()
     if new_type_name in PRODUCT_TYPES and new_type_name != old_type_name:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            f"âŒ Product type '{new_type_name}' already exists. Please choose a different name.", parse_mode=None)
+            f"❌ Product type '{new_type_name}' already exists. Please choose a different name.", parse_mode=None)
         return
     
     # If name is the same, just cancel
     if new_type_name == old_type_name:
         await send_message_with_retry(context.bot, update.effective_chat.id, 
-            f"â„¹ï¸ Name is the same as current name. No changes made.", parse_mode=None)
+            f"�„�️ Name is the same as current name. No changes made.", parse_mode=None)
         # Return to edit menu
         await handle_adm_edit_type_menu(update, context, [old_type_name])
         return
@@ -6350,12 +6350,12 @@ async def handle_adm_edit_type_name_message(update: Update, context: ContextType
     context.user_data["state"] = "awaiting_edit_type_name_confirm"
     
     keyboard = [
-        [InlineKeyboardButton("âœ… Confirm Change", callback_data="adm_confirm_type_name_change")],
-        [InlineKeyboardButton("âŒ Cancel", callback_data=f"adm_edit_type_menu|{old_type_name}")]
+        [InlineKeyboardButton("�œ… Confirm Change", callback_data="adm_confirm_type_name_change")],
+        [InlineKeyboardButton("❌ Cancel", callback_data=f"adm_edit_type_menu|{old_type_name}")]
     ]
     
     await send_message_with_retry(context.bot, update.effective_chat.id, 
-        f"âš ï¸ CONFIRM TYPE NAME CHANGE\n\n"
+        f"⚠️ CONFIRM TYPE NAME CHANGE\n\n"
         f"Old Name: {old_type_name}\n"
         f"New Name: {new_type_name}\n\n"
         f"This will update ALL products and reseller discounts using this type!\n\n"
@@ -6413,20 +6413,20 @@ async def handle_adm_confirm_type_name_change(update: Update, context: ContextTy
                         old_value=old_type_name, new_value=new_type_name)
         
         # Show success message
-        success_msg = (f"âœ… Type name changed successfully!\n\n"
+        success_msg = (f"�œ… Type name changed successfully!\n\n"
                       f"Old Name: {old_type_name}\n"
                       f"New Name: {new_type_name}\n\n"
                       f"Updated: {products_updated} products, {reseller_updated} reseller discounts")
         
         keyboard = [
-            [InlineKeyboardButton("âœï¸ Change Emoji", callback_data=f"adm_change_type_emoji|{new_type_name}")],
-            [InlineKeyboardButton("ðŸ“ Change Name", callback_data=f"adm_change_type_name|{new_type_name}")],
-            [InlineKeyboardButton("ðŸ—‘ï¸ Delete Type", callback_data=f"adm_delete_type|{new_type_name}")],
-            [InlineKeyboardButton("â¬…ï¸ Back to Manage Types", callback_data="adm_manage_types")]
+            [InlineKeyboardButton("✅️ Change Emoji", callback_data=f"adm_change_type_emoji|{new_type_name}")],
+            [InlineKeyboardButton("📦 Change Name", callback_data=f"adm_change_type_name|{new_type_name}")],
+            [InlineKeyboardButton("�Ÿ—‘️ Delete Type", callback_data=f"adm_delete_type|{new_type_name}")],
+            [InlineKeyboardButton("✅️ Back to Manage Types", callback_data="adm_manage_types")]
         ]
         
         await query.edit_message_text(
-            f"{success_msg}\n\nðŸ§© Editing Type: {new_type_name}\n\nWhat would you like to do?",
+            f"{success_msg}\n\n💥 Editing Type: {new_type_name}\n\nWhat would you like to do?",
             reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None
         )
         
@@ -6435,7 +6435,7 @@ async def handle_adm_confirm_type_name_change(update: Update, context: ContextTy
             conn.rollback()
         logger.error(f"Error changing type name from '{old_type_name}' to '{new_type_name}': {e}")
         await query.edit_message_text(
-            f"âŒ Error changing type name: {str(e)}\n\nPlease try again.",
+            f"❌ Error changing type name: {str(e)}\n\nPlease try again.",
             parse_mode=None
         )
     except Exception as e:
@@ -6443,7 +6443,7 @@ async def handle_adm_confirm_type_name_change(update: Update, context: ContextTy
             conn.rollback()
         logger.error(f"Unexpected error changing type name: {e}")
         await query.edit_message_text(
-            f"âŒ Unexpected error: {str(e)}\n\nPlease try again.",
+            f"❌ Unexpected error: {str(e)}\n\nPlease try again.",
             parse_mode=None
         )
     finally:
@@ -6467,23 +6467,23 @@ async def handle_adm_analyze_logs_start(update: Update, context: ContextTypes.DE
     # Set state for file upload
     context.user_data['state'] = 'awaiting_render_logs'
     
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        "ðŸ“‹ **RENDER LOG ANALYSIS** (Secondary Admin)\n\n"
-        "ðŸ” This tool analyzes render logs to find customers who bought multiple items "
+        "�Ÿ“‹ **RENDER LOG ANALYSIS** (Secondary Admin)\n\n"
+        "🔧 This tool analyzes render logs to find customers who bought multiple items "
         "but only received 1 item due to the delivery bug.\n\n"
-        "ðŸ“ **Upload your render log file** (.txt or .log, max 20MB)\n\n"
-        "âš ï¸ **What this tool does:**\n"
-        "â€¢ Searches for payment completion patterns in logs\n"
-        "â€¢ If no patterns found, analyzes recent database purchases\n"
-        "â€¢ Identifies multi-item purchases with missing products\n" 
-        "â€¢ Shows missing products with full details\n"
-        "â€¢ Displays product photos/videos/text\n"
-        "â€¢ Lists affected customers\n\n"
-        "ðŸ’¡ **Tip**: Upload logs from when the delivery bug was active, or the tool will analyze recent database records.\n\n"
-        "ðŸ›¡ï¸ **SAFE**: Analysis only - no automatic sending!"
+        "📦 **Upload your render log file** (.txt or .log, max 20MB)\n\n"
+        "⚠️ **What this tool does:**\n"
+        "�€� Searches for payment completion patterns in logs\n"
+        "�€� If no patterns found, analyzes recent database purchases\n"
+        "�€� Identifies multi-item purchases with missing products\n" 
+        "�€� Shows missing products with full details\n"
+        "�€� Displays product photos/videos/text\n"
+        "�€� Lists affected customers\n\n"
+        "👤 **Tip**: Upload logs from when the delivery bug was active, or the tool will analyze recent database records.\n\n"
+        "🛒 **SAFE**: Analysis only - no automatic sending!"
     )
     
     await query.edit_message_text(message, reply_markup=reply_markup, parse_mode=None)
@@ -6507,13 +6507,13 @@ async def handle_adm_render_logs_message(update: Update, context: ContextTypes.D
     
     # Check if message has a document
     if not update.message.document:
-        keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await send_message_with_retry(
             context.bot, 
             update.effective_chat.id,
-            "âŒ Please upload a text file (.txt or .log) containing your render logs.\n\n"
+            "❌ Please upload a text file (.txt or .log) containing your render logs.\n\n"
             "Try again by clicking 'Analyze Render Logs' in the admin menu.",
             reply_markup=reply_markup,
             parse_mode=None
@@ -6524,13 +6524,13 @@ async def handle_adm_render_logs_message(update: Update, context: ContextTypes.D
     
     # Validate file type
     if not (document.file_name.endswith('.txt') or document.file_name.endswith('.log')):
-        keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await send_message_with_retry(
             context.bot,
             update.effective_chat.id, 
-            f"âŒ Invalid file type: {document.file_name}\n\n"
+            f"❌ Invalid file type: {document.file_name}\n\n"
             "Please upload a .txt or .log file containing render logs.",
             reply_markup=reply_markup,
             parse_mode=None
@@ -6539,13 +6539,13 @@ async def handle_adm_render_logs_message(update: Update, context: ContextTypes.D
     
     # Validate file size (max 20MB)
     if document.file_size > 20 * 1024 * 1024:
-        keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await send_message_with_retry(
             context.bot,
             update.effective_chat.id,
-            f"âŒ File too large: {document.file_size / (1024*1024):.1f}MB\n\n"
+            f"❌ File too large: {document.file_size / (1024*1024):.1f}MB\n\n"
             "Please upload a file smaller than 20MB.",
             reply_markup=reply_markup,
             parse_mode=None
@@ -6557,10 +6557,10 @@ async def handle_adm_render_logs_message(update: Update, context: ContextTypes.D
         processing_msg = await send_message_with_retry(
             context.bot,
             update.effective_chat.id,
-            "ðŸ”„ Processing render logs...\n\n"
-            "ðŸ“Š Analyzing purchase data\n"
-            "ðŸ” Identifying missing products\n"
-            "ðŸ“‹ Generating report...",
+            "�Ÿ”„ Processing render logs...\n\n"
+            "�Ÿ“Š Analyzing purchase data\n"
+            "🔧 Identifying missing products\n"
+            "�Ÿ“‹ Generating report...",
             parse_mode=None
         )
         
@@ -6600,13 +6600,13 @@ async def handle_adm_render_logs_message(update: Update, context: ContextTypes.D
     except Exception as e:
         logger.error(f"Error processing render logs: {e}", exc_info=True)
         
-        keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await send_message_with_retry(
             context.bot,
             update.effective_chat.id,
-            f"âŒ Error processing log file: {str(e)}\n\n"
+            f"❌ Error processing log file: {str(e)}\n\n"
             "Please try again with a valid render log file.",
             reply_markup=reply_markup,
             parse_mode=None
@@ -6736,12 +6736,12 @@ async def analyze_render_logs(log_content: str) -> dict:
 async def send_log_analysis_results(bot, chat_id: int, analysis_result: dict):
     """Send log analysis results to admin - SIMPLE VERSION"""
     if "error" in analysis_result:
-        keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await send_message_with_retry(
             bot, chat_id,
-            f"âŒ Analysis failed: {analysis_result['error']}",
+            f"❌ Analysis failed: {analysis_result['error']}",
             reply_markup=reply_markup,
             parse_mode=None
         )
@@ -6753,13 +6753,13 @@ async def send_log_analysis_results(bot, chat_id: int, analysis_result: dict):
     note = analysis_result.get("note", "")
     
     if not affected_users:
-        keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         if note:
-            message = f"âœ… **LOG ANALYSIS COMPLETE** ðŸ”\n\n{note}\n\nNo multi-item purchases with missing products found. All customers appear to have received their complete orders."
+            message = f"�œ… **LOG ANALYSIS COMPLETE** 🔧\n\n{note}\n\nNo multi-item purchases with missing products found. All customers appear to have received their complete orders."
         else:
-            message = "âœ… **LOG ANALYSIS COMPLETE** ðŸ”\n\nNo multi-item purchases with missing products found. All customers appear to have received their complete orders."
+            message = "�œ… **LOG ANALYSIS COMPLETE** 🔧\n\nNo multi-item purchases with missing products found. All customers appear to have received their complete orders."
         
         await send_message_with_retry(
             bot, chat_id,
@@ -6771,13 +6771,13 @@ async def send_log_analysis_results(bot, chat_id: int, analysis_result: dict):
     
     # Send summary
     summary_msg = (
-        f"âœ… **LOG ANALYSIS COMPLETE** ðŸ”\n\n"
-        f"**ðŸ“Š SUMMARY:**\n"
-        f"â€¢ **Affected Users:** {len(affected_users)}\n"
-        f"â€¢ **Missing Products:** {total_missing}\n"
-        f"â€¢ **Total Value:** â‚¬{total_value:.2f}\n\n"
+        f"�œ… **LOG ANALYSIS COMPLETE** 🔧\n\n"
+        f"**�Ÿ“Š SUMMARY:**\n"
+        f"�€� **Affected Users:** {len(affected_users)}\n"
+        f"�€� **Missing Products:** {total_missing}\n"
+        f"�€� **Total Value:** �‚�{total_value:.2f}\n\n"
         f"{note}\n\n"
-        f"**ðŸ“‹ MISSING PRODUCTS DETAILS:**"
+        f"**�Ÿ“‹ MISSING PRODUCTS DETAILS:**"
     )
     
     await send_message_with_retry(
@@ -6796,21 +6796,21 @@ async def send_log_analysis_results(bot, chat_id: int, analysis_result: dict):
         total_paid = user_data.get("total_paid", 0.0)
         purchase_date = user_data.get("purchase_date", "Unknown")
         
-        all_products_text += f"\nðŸ‘¤ **USER:** @{username}\n"
-        all_products_text += f"ðŸ†” ID: {user_id}\n"
-        all_products_text += f"ðŸ’° Total Paid: â‚¬{total_paid:.2f}\n"
-        all_products_text += f"ðŸ“… Date: {purchase_date}\n"
-        all_products_text += f"ðŸ“¦ Missing Products: {len(missing_products)}\n\n"
+        all_products_text += f"\n�Ÿ‘� **USER:** @{username}\n"
+        all_products_text += f"�Ÿ†” ID: {user_id}\n"
+        all_products_text += f"👤 Total Paid: �‚�{total_paid:.2f}\n"
+        all_products_text += f"�Ÿ“… Date: {purchase_date}\n"
+        all_products_text += f"📦 Missing Products: {len(missing_products)}\n\n"
         
         for i, product in enumerate(missing_products, 1):
             product_count += 1
             all_products_text += f"**{product_count}. {product['name']}**\n"
             all_products_text += f"   Type: {product['type']}\n"
-            all_products_text += f"   Price: â‚¬{product['price']}\n"
+            all_products_text += f"   Price: �‚�{product['price']}\n"
             all_products_text += f"   Location: {product['location']}\n"
             all_products_text += f"   Details: {product['original_text']}\n\n"
         
-        all_products_text += "â”€" * 40 + "\n"
+        all_products_text += "🔴" * 40 + "\n"
     
     # Send all products (split if too long)
     if len(all_products_text) > 4000:
@@ -6821,7 +6821,7 @@ async def send_log_analysis_results(bot, chat_id: int, analysis_result: dict):
         await send_message_with_retry(bot, chat_id, all_products_text, parse_mode=None)
     
     # Add back button
-    keyboard = [[InlineKeyboardButton("ðŸ”™ Back to Admin Menu", callback_data="admin_menu")]]
+    keyboard = [[InlineKeyboardButton("�Ÿ”™ Back to Admin Menu", callback_data="admin_menu")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await send_message_with_retry(bot, chat_id, "Analysis complete!", reply_markup=reply_markup, parse_mode=None)
 
@@ -6836,14 +6836,14 @@ async def send_user_missing_products(bot, chat_id: int, user_id: int, user_data:
     
     # User header
     user_header = (
-        f"ðŸ‘¤ **AFFECTED CUSTOMER**\n"
-        f"â€¢ ID: `{user_id}`\n"
-        f"â€¢ Username: @{username}\n"
-        f"â€¢ Name: {first_name}\n"
-        f"â€¢ Missing Products: {len(missing_products)}\n"
-        f"â€¢ Total Paid: â‚¬{total_paid:.2f}\n"
-        f"â€¢ Purchase Date: {purchase_date}\n"
-        f"{'â”€' * 30}\n"
+        f"�Ÿ‘� **AFFECTED CUSTOMER**\n"
+        f"�€� ID: `{user_id}`\n"
+        f"�€� Username: @{username}\n"
+        f"�€� Name: {first_name}\n"
+        f"�€� Missing Products: {len(missing_products)}\n"
+        f"�€� Total Paid: �‚�{total_paid:.2f}\n"
+        f"�€� Purchase Date: {purchase_date}\n"
+        f"{'🔴' * 30}\n"
     )
     
     await send_message_with_retry(bot, chat_id, user_header, parse_mode=None)
@@ -6852,14 +6852,14 @@ async def send_user_missing_products(bot, chat_id: int, user_id: int, user_data:
     for i, product in enumerate(missing_products, 1):
         # Product header
         product_header = (
-            f"ðŸ“¦ **MISSING PRODUCT #{i}**\n"
-            f"â€¢ ID: {product['product_id']}\n"
-            f"â€¢ Name: {product['name']}\n"
-            f"â€¢ Type: {product['type']}\n"
-            f"â€¢ Price: â‚¬{product['price']:.2f}\n"
-            f"â€¢ Location: {product['location']}\n"
-            f"â€¢ Purchase Date: {product['purchase_date']}\n"
-            f"{'â”€' * 20}\n"
+            f"📦 **MISSING PRODUCT #{i}**\n"
+            f"�€� ID: {product['product_id']}\n"
+            f"�€� Name: {product['name']}\n"
+            f"�€� Type: {product['type']}\n"
+            f"�€� Price: �‚�{product['price']:.2f}\n"
+            f"�€� Location: {product['location']}\n"
+            f"�€� Purchase Date: {product['purchase_date']}\n"
+            f"{'🔴' * 20}\n"
         )
         
         await send_message_with_retry(bot, chat_id, product_header, parse_mode=None)
@@ -6883,13 +6883,13 @@ async def send_user_missing_products(bot, chat_id: int, user_id: int, user_data:
         if product["original_text"]:
             await send_message_with_retry(
                 bot, chat_id,
-                f"ðŸ“ **Original Product Text:**\n{product['original_text']}",
+                f"📦 **Original Product Text:**\n{product['original_text']}",
                 parse_mode=None
             )
         
         # Separator between products
         if i < len(missing_products):
-            await send_message_with_retry(bot, chat_id, "â”€" * 30, parse_mode=None)
+            await send_message_with_retry(bot, chat_id, "🔴" * 30, parse_mode=None)
 
 
 async def analyze_logs_alternative(log_content: str) -> dict:
@@ -6964,7 +6964,7 @@ async def analyze_logs_alternative(log_content: str) -> dict:
                             "type": product_type,
                             "price": product_price,
                             "location": f"{city}, {district}",
-                            "original_text": f"Product: {product_name}\nType: {product_type}\nPrice: â‚¬{product_price}\nLocation: {city}, {district}",
+                            "original_text": f"Product: {product_name}\nType: {product_type}\nPrice: �‚�{product_price}\nLocation: {city}, {district}",
                             "media_files": [],  # No media available from purchase records
                             "purchase_date": last_purchase
                         })
@@ -7003,17 +7003,17 @@ async def handle_adm_bulk_edit_prices_start(update: Update, context: ContextType
     load_all_data()  # Ensure PRODUCT_TYPES is up-to-date
     
     if not PRODUCT_TYPES:
-        msg = "ðŸ’° Bulk Edit Prices\n\nNo product types available."
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]
+        msg = "👤 Bulk Edit Prices\n\nNo product types available."
+        keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]
         return await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     
-    msg = "ðŸ’° Bulk Edit Prices\n\nSelect the product type you want to update:"
+    msg = "👤 Bulk Edit Prices\n\nSelect the product type you want to update:"
     keyboard = []
     
     for type_name, emoji in sorted(PRODUCT_TYPES.items()):
         keyboard.append([InlineKeyboardButton(f"{emoji} {type_name}", callback_data=f"adm_bulk_price_type|{type_name}")])
     
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -7029,14 +7029,14 @@ async def handle_adm_bulk_price_type(update: Update, context: ContextTypes.DEFAU
     product_type = params[0]
     context.user_data['bulk_price_type'] = product_type
     
-    emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
-    msg = f"ðŸ’° Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\n\nSelect the scope for price update:"
+    emoji = PRODUCT_TYPES.get(product_type, "📦")
+    msg = f"👤 Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\n\nSelect the scope for price update:"
     
     keyboard = [
-        [InlineKeyboardButton("ðŸŒ All Cities and Districts", callback_data="adm_bulk_price_scope|all")],
-        [InlineKeyboardButton("ðŸ™ï¸ Specific City (all districts)", callback_data="adm_bulk_price_scope|city")],
-        [InlineKeyboardButton("ðŸ“ Specific City + District", callback_data="adm_bulk_price_scope|district")],
-        [InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_bulk_edit_prices_start")]
+        [InlineKeyboardButton("🌐 All Cities and Districts", callback_data="adm_bulk_price_scope|all")],
+        [InlineKeyboardButton("🏳️ Specific City (all districts)", callback_data="adm_bulk_price_scope|city")],
+        [InlineKeyboardButton("📦 Specific City + District", callback_data="adm_bulk_price_scope|district")],
+        [InlineKeyboardButton("✅️ Back", callback_data="adm_bulk_edit_prices_start")]
     ]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -7054,24 +7054,24 @@ async def handle_adm_bulk_price_scope(update: Update, context: ContextTypes.DEFA
     scope = params[0]
     context.user_data['bulk_price_scope'] = scope
     product_type = context.user_data.get('bulk_price_type', 'Unknown')
-    emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
+    emoji = PRODUCT_TYPES.get(product_type, "📦")
     
     if scope == "all":
         # Skip to price input for all locations
-        msg = f"ðŸ’° Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: All Cities and Districts\n\nEnter the new price (in EUR):"
+        msg = f"👤 Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: All Cities and Districts\n\nEnter the new price (in EUR):"
         context.user_data['state'] = 'awaiting_bulk_price_value'
-        keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]]
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     
     elif scope == "city" or scope == "district":
         # Show city selection
         if not CITIES:
             msg = "No cities configured. Please add cities first."
-            keyboard = [[InlineKeyboardButton("â¬…ï¸ Back", callback_data="adm_bulk_edit_prices_start")]]
+            keyboard = [[InlineKeyboardButton("✅️ Back", callback_data="adm_bulk_edit_prices_start")]]
             return await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
         scope_text = "City (all districts)" if scope == "city" else "City + District"
-        msg = f"ðŸ’° Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: {scope_text}\n\nSelect a city:"
+        msg = f"👤 Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: {scope_text}\n\nSelect a city:"
         
         sorted_city_ids = sorted(CITIES.keys(), key=lambda city_id: CITIES.get(city_id, ''))
         keyboard = []
@@ -7079,11 +7079,11 @@ async def handle_adm_bulk_price_scope(update: Update, context: ContextTypes.DEFA
         for city_id in sorted_city_ids:
             city_name = CITIES.get(city_id, 'Unknown')
             if scope == "city":
-                keyboard.append([InlineKeyboardButton(f"ðŸ™ï¸ {city_name}", callback_data=f"adm_bulk_price_city|{city_id}")])
+                keyboard.append([InlineKeyboardButton(f"🏳️ {city_name}", callback_data=f"adm_bulk_price_city|{city_id}")])
             else:  # district scope
-                keyboard.append([InlineKeyboardButton(f"ðŸ™ï¸ {city_name}", callback_data=f"adm_bulk_price_city_for_district|{city_id}")])
+                keyboard.append([InlineKeyboardButton(f"🏳️ {city_name}", callback_data=f"adm_bulk_price_city_for_district|{city_id}")])
         
-        keyboard.append([InlineKeyboardButton("â¬…ï¸ Back", callback_data=f"adm_bulk_price_type|{product_type}")])
+        keyboard.append([InlineKeyboardButton("✅️ Back", callback_data=f"adm_bulk_price_type|{product_type}")])
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -7101,11 +7101,11 @@ async def handle_adm_bulk_price_city(update: Update, context: ContextTypes.DEFAU
     
     product_type = context.user_data.get('bulk_price_type', 'Unknown')
     city_name = CITIES.get(city_id, 'Unknown')
-    emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
+    emoji = PRODUCT_TYPES.get(product_type, "📦")
     
-    msg = f"ðŸ’° Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: {city_name} (all districts)\n\nEnter the new price (in EUR):"
+    msg = f"👤 Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: {city_name} (all districts)\n\nEnter the new price (in EUR):"
     context.user_data['state'] = 'awaiting_bulk_price_value'
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -7123,25 +7123,25 @@ async def handle_adm_bulk_price_city_for_district(update: Update, context: Conte
     
     product_type = context.user_data.get('bulk_price_type', 'Unknown')
     city_name = CITIES.get(city_id, 'Unknown')
-    emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
+    emoji = PRODUCT_TYPES.get(product_type, "📦")
     
     # Show district selection
     city_districts = DISTRICTS.get(city_id, {})
     if not city_districts:
         msg = f"No districts found in {city_name}."
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back", callback_data=f"adm_bulk_price_type|{product_type}")]]
+        keyboard = [[InlineKeyboardButton("✅️ Back", callback_data=f"adm_bulk_price_type|{product_type}")]]
         return await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     
-    msg = f"ðŸ’° Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: City + District\nCity: {city_name}\n\nSelect a district:"
+    msg = f"👤 Bulk Edit Prices\n\nProduct Type: {emoji} {product_type}\nScope: City + District\nCity: {city_name}\n\nSelect a district:"
     
     sorted_district_ids = sorted(city_districts.keys(), key=lambda dist_id: city_districts.get(dist_id, ''))
     keyboard = []
     
     for district_id in sorted_district_ids:
         district_name = city_districts.get(district_id, 'Unknown')
-        keyboard.append([InlineKeyboardButton(f"ðŸ“ {district_name}", callback_data=f"adm_bulk_price_district|{district_id}")])
+        keyboard.append([InlineKeyboardButton(f"📦 {district_name}", callback_data=f"adm_bulk_price_district|{district_id}")])
     
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back", callback_data=f"adm_bulk_price_type|{product_type}")])
+    keyboard.append([InlineKeyboardButton("✅️ Back", callback_data=f"adm_bulk_price_type|{product_type}")])
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -7161,7 +7161,7 @@ async def handle_adm_bulk_price_district(update: Update, context: ContextTypes.D
     city_id = context.user_data.get('bulk_price_city', '')
     city_name = CITIES.get(city_id, 'Unknown')
     district_name = DISTRICTS.get(city_id, {}).get(district_id, 'Unknown')
-    emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
+    emoji = PRODUCT_TYPES.get(product_type, "📦")
     
     # Database stores city/district NAMES, not IDs!
     # Convert IDs to names for database query
@@ -7193,28 +7193,28 @@ async def handle_adm_bulk_price_district(update: Update, context: ContextTypes.D
             logger.warning(f"No products found for price editor. Searched: type='{product_type}', city='{city_id}', district='{district_id}'")
             logger.warning(f"Sample of existing products in DB: {sample_data}")
             
-            msg = f"âŒ No products found:\n\nType: {emoji} {product_type}\nLocation: {city_name} - {district_name}"
-            keyboard = [[InlineKeyboardButton("â¬…ï¸ Back", callback_data=f"adm_bulk_price_city_for_district|{city_id}")]]
+            msg = f"❌ No products found:\n\nType: {emoji} {product_type}\nLocation: {city_name} - {district_name}"
+            keyboard = [[InlineKeyboardButton("✅️ Back", callback_data=f"adm_bulk_price_city_for_district|{city_id}")]]
             return await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
         # Show list of products to select from
-        msg = f"ðŸ’° Edit Individual Product Price\n\n"
+        msg = f"👤 Edit Individual Product Price\n\n"
         msg += f"Type: {emoji} {product_type}\n"
         msg += f"Location: {city_name} - {district_name}\n\n"
         msg += f"Select the product to edit:\n"
         
         keyboard = []
         for product in products:
-            product_label = f"{product['size']} - â‚¬{product['price']:.2f} (Stock: {product['available']})"
+            product_label = f"{product['size']} - �‚�{product['price']:.2f} (Stock: {product['available']})"
             keyboard.append([InlineKeyboardButton(product_label, callback_data=f"adm_edit_single_price|{product['id']}")])
         
-        keyboard.append([InlineKeyboardButton("â¬…ï¸ Back", callback_data=f"adm_bulk_price_city_for_district|{city_id}")])
+        keyboard.append([InlineKeyboardButton("✅️ Back", callback_data=f"adm_bulk_price_city_for_district|{city_id}")])
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
     except Exception as e:
         logger.error(f"Error fetching products for price edit: {e}", exc_info=True)
-        msg = "âŒ Error loading products. Please try again."
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin", callback_data="admin_menu")]]
+        msg = "❌ Error loading products. Please try again."
+        keyboard = [[InlineKeyboardButton("✅️ Back to Admin", callback_data="admin_menu")]]
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     finally:
         if conn:
@@ -7244,8 +7244,8 @@ async def handle_adm_edit_single_price(update: Update, context: ContextTypes.DEF
         product = c.fetchone()
         
         if not product:
-            msg = "âŒ Product not found. It may have been deleted."
-            keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin", callback_data="admin_menu")]]
+            msg = "❌ Product not found. It may have been deleted."
+            keyboard = [[InlineKeyboardButton("✅️ Back to Admin", callback_data="admin_menu")]]
             return await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
         # Store the criteria (not just product_id) so we can update ALL matching products
@@ -7271,25 +7271,25 @@ async def handle_adm_edit_single_price(update: Update, context: ContextTypes.DEF
         district_name = product['district']  # Already the name
         
         # Get emoji from PRODUCT_TYPES
-        emoji = PRODUCT_TYPES.get(product['product_type'], "ðŸ“¦")
+        emoji = PRODUCT_TYPES.get(product['product_type'], "📦")
         
-        msg = f"ðŸ’° Edit Product Price\n\n"
+        msg = f"👤 Edit Product Price\n\n"
         msg += f"Type: {emoji} {product['product_type']}\n"
         msg += f"Size: {product['size']}\n"
         msg += f"Location: {city_name} - {district_name}\n"
-        msg += f"Current Price: â‚¬{product['price']:.2f}\n"
+        msg += f"Current Price: �‚�{product['price']:.2f}\n"
         msg += f"Total Stock: {total_stock} items ({product_count} products)\n\n"
-        msg += f"âš ï¸ This will update ALL {product_count} products of this size in this location.\n\n"
+        msg += f"⚠️ This will update ALL {product_count} products of this size in this location.\n\n"
         msg += f"Enter the new price (in EUR):"
         
         context.user_data['state'] = 'awaiting_single_price_edit'
-        keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]]
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
     except Exception as e:
         logger.error(f"Error fetching product {product_id} for price edit: {e}", exc_info=True)
-        msg = "âŒ Error loading product. Please try again."
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin", callback_data="admin_menu")]]
+        msg = "❌ Error loading product. Please try again."
+        keyboard = [[InlineKeyboardButton("✅️ Back to Admin", callback_data="admin_menu")]]
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     finally:
         if conn:
@@ -7311,10 +7311,10 @@ async def handle_adm_single_price_edit_message(update: Update, context: ContextT
     try:
         new_price = float(update.message.text.strip())
         if new_price <= 0:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Price must be greater than 0. Please try again:", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Price must be greater than 0. Please try again:", parse_mode=None)
             return
     except ValueError:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Invalid price format. Please enter a valid number (e.g., 7.50):", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Invalid price format. Please enter a valid number (e.g., 7.50):", parse_mode=None)
         return
     
     # Get the stored criteria
@@ -7324,7 +7324,7 @@ async def handle_adm_single_price_edit_message(update: Update, context: ContextT
     district = context.user_data.get('edit_price_district')
     
     if not all([product_type, size, city, district]):
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Session expired. Please start again.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Session expired. Please start again.", parse_mode=None)
         context.user_data.pop('state', None)
         return
     
@@ -7343,7 +7343,7 @@ async def handle_adm_single_price_edit_message(update: Update, context: ContextT
         old_price_result = c.fetchone()
         
         if not old_price_result:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Products not found.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Products not found.", parse_mode=None)
             context.user_data.pop('state', None)
             return
         
@@ -7365,7 +7365,7 @@ async def handle_adm_single_price_edit_message(update: Update, context: ContextT
         district_name = district
         
         # Get emoji from PRODUCT_TYPES
-        emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
+        emoji = PRODUCT_TYPES.get(product_type, "📦")
         
         log_admin_action(
             admin_id=user_id,
@@ -7377,21 +7377,21 @@ async def handle_adm_single_price_edit_message(update: Update, context: ContextT
             new_value=float(new_price)
         )
         
-        success_msg = f"âœ… Price Updated Successfully!\n\n"
+        success_msg = f"�œ… Price Updated Successfully!\n\n"
         success_msg += f"Product: {emoji} {product_type} - {size}\n"
         success_msg += f"Location: {city_name} - {district_name}\n"
         success_msg += f"Updated: {updated_count} products\n\n"
-        success_msg += f"Old Price: â‚¬{old_price:.2f}\n"
-        success_msg += f"New Price: â‚¬{new_price:.2f}"
+        success_msg += f"Old Price: �‚�{old_price:.2f}\n"
+        success_msg += f"New Price: �‚�{new_price:.2f}"
         
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]
         await send_message_with_retry(context.bot, chat_id, success_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
-        logger.info(f"Admin {user_id} updated price for {updated_count} products ({product_type} - {size} in {city}/{district}) from â‚¬{old_price:.2f} to â‚¬{new_price:.2f}")
+        logger.info(f"Admin {user_id} updated price for {updated_count} products ({product_type} - {size} in {city}/{district}) from �‚�{old_price:.2f} to �‚�{new_price:.2f}")
         
     except Exception as e:
         logger.error(f"Error updating prices: {e}", exc_info=True)
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error updating price. Please try again.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error updating price. Please try again.", parse_mode=None)
     finally:
         if conn:
             conn.close()
@@ -7414,10 +7414,10 @@ async def handle_adm_bulk_price_value_message(update: Update, context: ContextTy
     try:
         new_price = float(update.message.text.strip())
         if new_price <= 0:
-            await send_message_with_retry(context.bot, chat_id, "âŒ Error: Price must be greater than 0. Please try again:", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Error: Price must be greater than 0. Please try again:", parse_mode=None)
             return
     except ValueError:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Invalid price format. Please enter a valid number (e.g., 7.50):", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Invalid price format. Please enter a valid number (e.g., 7.50):", parse_mode=None)
         return
     
     # Store price
@@ -7429,7 +7429,7 @@ async def handle_adm_bulk_price_value_message(update: Update, context: ContextTy
     city_id = context.user_data.get('bulk_price_city', '')
     district_id = context.user_data.get('bulk_price_district', '')
     
-    emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
+    emoji = PRODUCT_TYPES.get(product_type, "📦")
     
     # Build query to count affected products
     conn = None
@@ -7455,7 +7455,7 @@ async def handle_adm_bulk_price_value_message(update: Update, context: ContextTy
         results = c.fetchall()
         
         if not results:
-            msg = f"âŒ No products found matching criteria:\n\nProduct Type: {emoji} {product_type}\n"
+            msg = f"❌ No products found matching criteria:\n\nProduct Type: {emoji} {product_type}\n"
             if scope == "city":
                 msg += f"City: {CITIES.get(city_id, 'Unknown')}\n"
             elif scope == "district":
@@ -7463,7 +7463,7 @@ async def handle_adm_bulk_price_value_message(update: Update, context: ContextTy
             else:
                 msg += "Scope: All Cities\n"
             
-            keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]
+            keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]
             await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
             context.user_data.pop('state', None)
             return
@@ -7483,27 +7483,27 @@ async def handle_adm_bulk_price_value_message(update: Update, context: ContextTy
         else:  # district
             scope_desc = f"{CITIES.get(city_id, 'Unknown')} - {DISTRICTS.get(city_id, {}).get(district_id, 'Unknown')}"
         
-        msg = f"ðŸ“‹ Preview: Bulk Price Update\n\n"
+        msg = f"�Ÿ“‹ Preview: Bulk Price Update\n\n"
         msg += f"Product Type: {emoji} {product_type}\n"
         msg += f"Scope: {scope_desc}\n"
-        msg += f"New Price: â‚¬{new_price:.2f}\n\n"
-        msg += f"âœ… This will update {total_count} product(s)\n\n"
+        msg += f"New Price: �‚�{new_price:.2f}\n\n"
+        msg += f"�œ… This will update {total_count} product(s)\n\n"
         
         if len(results) <= 5:
             msg += "Breakdown by location:\n"
             for row in results:
                 city_name = CITIES.get(row['city'], row['city'])
                 district_name = DISTRICTS.get(row['city'], {}).get(row['district'], row['district'])
-                msg += f"â€¢ {city_name} - {district_name}: {row['count']} product(s)\n"
+                msg += f"�€� {city_name} - {district_name}: {row['count']} product(s)\n"
         else:
             msg += f"Across {len(results)} location(s)\n"
         
-        msg += f"\nCurrent price range: â‚¬{price_range_min:.2f} - â‚¬{price_range_max:.2f}\n\n"
-        msg += "âš ï¸ Confirm to apply changes"
+        msg += f"\nCurrent price range: �‚�{price_range_min:.2f} - �‚�{price_range_max:.2f}\n\n"
+        msg += "⚠️ Confirm to apply changes"
         
         keyboard = [
-            [InlineKeyboardButton("âœ… Confirm Update", callback_data="adm_bulk_price_confirm")],
-            [InlineKeyboardButton("âŒ Cancel", callback_data="admin_menu")]
+            [InlineKeyboardButton("�œ… Confirm Update", callback_data="adm_bulk_price_confirm")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="admin_menu")]
         ]
         
         await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -7511,7 +7511,7 @@ async def handle_adm_bulk_price_value_message(update: Update, context: ContextTy
         
     except Exception as e:
         logger.error(f"Error in bulk price preview for admin {user_id}: {e}", exc_info=True)
-        await send_message_with_retry(context.bot, chat_id, "âŒ Database error occurred. Please try again.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Database error occurred. Please try again.", parse_mode=None)
         context.user_data.pop('state', None)
     finally:
         if conn:
@@ -7535,7 +7535,7 @@ async def handle_adm_bulk_price_confirm(update: Update, context: ContextTypes.DE
     
     if not product_type or not new_price:
         await query.answer("Error: Missing required data. Please start over.", show_alert=True)
-        return await query.edit_message_text("âŒ Error: Session data lost. Please try again.", parse_mode=None)
+        return await query.edit_message_text("❌ Error: Session data lost. Please try again.", parse_mode=None)
     
     conn = None
     try:
@@ -7572,30 +7572,30 @@ async def handle_adm_bulk_price_confirm(update: Update, context: ContextTypes.DE
             admin_id=user_id,
             action=ACTION_BULK_PRICE_UPDATE,
             target_user_id=None,
-            reason=f"Type: {product_type}, Scope: {scope_desc}, New Price: â‚¬{new_price:.2f}",
+            reason=f"Type: {product_type}, Scope: {scope_desc}, New Price: �‚�{new_price:.2f}",
             amount_change=None,
             old_value=None,
             new_value=float(new_price)
         )
         
-        emoji = PRODUCT_TYPES.get(product_type, "ðŸ“¦")
-        success_msg = f"âœ… Bulk Price Update Complete!\n\n"
+        emoji = PRODUCT_TYPES.get(product_type, "📦")
+        success_msg = f"�œ… Bulk Price Update Complete!\n\n"
         success_msg += f"Product Type: {emoji} {product_type}\n"
-        success_msg += f"New Price: â‚¬{new_price:.2f}\n"
+        success_msg += f"New Price: �‚�{new_price:.2f}\n"
         success_msg += f"Scope: {scope_desc}\n\n"
-        success_msg += f"âœ… Updated {row_count} product(s)"
+        success_msg += f"�œ… Updated {row_count} product(s)"
         
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]
+        keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]
         await query.edit_message_text(success_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
         
-        logger.info(f"Admin {user_id} bulk updated prices: {row_count} products of type '{product_type}' to â‚¬{new_price:.2f} (scope: {scope_desc})")
+        logger.info(f"Admin {user_id} bulk updated prices: {row_count} products of type '{product_type}' to �‚�{new_price:.2f} (scope: {scope_desc})")
         
     except Exception as e:
         logger.error(f"Error executing bulk price update for admin {user_id}: {e}", exc_info=True)
         if conn and conn.in_transaction:
             conn.rollback()
-        error_msg = "âŒ Error: Failed to update prices. Please try again or contact support."
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]]
+        error_msg = "❌ Error: Failed to update prices. Please try again or contact support."
+        keyboard = [[InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]]
         await query.edit_message_text(error_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     finally:
         if conn:

@@ -124,9 +124,9 @@ def get_reseller_discount(user_id: int, product_type: str) -> Decimal:
                 discount_res = c.fetchone()
                 if discount_res:
                     discount = Decimal(str(discount_res['discount_percentage']))
-                    logger.info(f"âœ… Found reseller discount for user {user_id}, type '{product_type}': {discount}%")
+                    logger.info(f"�œ… Found reseller discount for user {user_id}, type '{product_type}': {discount}%")
                 else:
-                    logger.info(f"âŒ No reseller discount found for user {user_id}, type '{product_type}' (user is reseller but no specific discount set)")
+                    logger.info(f"❌ No reseller discount found for user {user_id}, type '{product_type}' (user is reseller but no specific discount set)")
             else:
                 logger.info(f"User {user_id} is not a reseller (is_reseller={is_reseller}), returning 0% discount")
             
@@ -191,25 +191,25 @@ async def handle_manage_resellers_menu(update: Update, context: ContextTypes.DEF
     finally:
         if conn: conn.close()
 
-    msg = "ðŸ‘¥ **RESELLER MANAGEMENT**\n\n"
-    msg += f"ðŸ“Š Active Resellers: **{total_resellers}**\n\n"
+    msg = "�Ÿ‘� **RESELLER MANAGEMENT**\n\n"
+    msg += f"�Ÿ“Š Active Resellers: **{total_resellers}**\n\n"
     
     if recent_resellers:
         msg += "Recent Resellers:\n"
         for r in recent_resellers:
             username = r['username'] or f"ID_{r['user_id']}"
             discount_count = r['discount_count']
-            status_icon = "âœ…" if discount_count > 0 else "âš ï¸"
+            status_icon = "�œ…" if discount_count > 0 else "⚠️"
             msg += f"  {status_icon} @{username} ({discount_count} discounts)\n"
         msg += "\n"
     
-    msg += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
-    msg += "ðŸ’¡ **Quick Actions:**"
+    msg += "🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧\n"
+    msg += "👤 **Quick Actions:**"
 
     keyboard = [
-        [InlineKeyboardButton("ðŸ” Find User (ID or @username)", callback_data="reseller_search_user")],
-        [InlineKeyboardButton("ðŸ“‹ View All Resellers", callback_data="manage_reseller_discounts_select_reseller|0")],
-        [InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")]
+        [InlineKeyboardButton("🔧 Find User (ID or @username)", callback_data="reseller_search_user")],
+        [InlineKeyboardButton("�Ÿ“‹ View All Resellers", callback_data="manage_reseller_discounts_select_reseller|0")],
+        [InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")]
     ]
 
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
@@ -223,12 +223,12 @@ async def handle_reseller_search_user(update: Update, context: ContextTypes.DEFA
 
     context.user_data['state'] = 'awaiting_reseller_manage_id'
 
-    prompt_msg = ("ðŸ” **Find User**\n\n"
+    prompt_msg = ("🔧 **Find User**\n\n"
                   "Enter one of the following:\n"
-                  "â€¢ **User ID** (e.g., `123456789`)\n"
-                  "â€¢ **Username** (e.g., `@johndoe` or `johndoe`)\n\n"
-                  "ðŸ’¡ Tip: You can copy user ID from their Telegram profile or from purchase notifications.")
-    keyboard = [[InlineKeyboardButton("â¬…ï¸ Back", callback_data="manage_resellers_menu")]]
+                  "�€� **User ID** (e.g., `123456789`)\n"
+                  "�€� **Username** (e.g., `@johndoe` or `johndoe`)\n\n"
+                  "👤 Tip: You can copy user ID from their Telegram profile or from purchase notifications.")
+    keyboard = [[InlineKeyboardButton("✅️ Back", callback_data="manage_resellers_menu")]]
 
     await query.edit_message_text(prompt_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     await query.answer("Enter User ID or @username in chat.")
@@ -256,7 +256,7 @@ async def handle_reseller_manage_id_message(update: Update, context: ContextType
         try:
             target_user_id = int(search_text)
             if target_user_id == admin_id:
-                await send_message_with_retry(context.bot, chat_id, "âŒ You cannot manage your own reseller status.", parse_mode=None)
+                await send_message_with_retry(context.bot, chat_id, "❌ You cannot manage your own reseller status.", parse_mode=None)
                 return
         except ValueError:
             search_by_username = True
@@ -289,25 +289,25 @@ async def handle_reseller_manage_id_message(update: Update, context: ContextType
                 target_user_id = user_info['user_id']
             elif len(multiple_results) > 1:
                 # Show selection list
-                msg = f"ðŸ” Found {len(multiple_results)} users matching '{search_text}':\n\n"
+                msg = f"🔧 Found {len(multiple_results)} users matching '{search_text}':\n\n"
                 keyboard = []
                 for user in multiple_results:
                     uname = user['username'] or f"ID_{user['user_id']}"
-                    is_res = "âœ…" if user['is_reseller'] == 1 else "âŒ"
+                    is_res = "�œ…" if user['is_reseller'] == 1 else "�Œ"
                     purchases = user['total_purchases'] or 0
                     keyboard.append([InlineKeyboardButton(
                         f"{is_res} @{uname} ({purchases} purchases)", 
                         callback_data=f"reseller_view_user|{user['user_id']}"
                     )])
-                keyboard.append([InlineKeyboardButton("â¬…ï¸ Search Again", callback_data="reseller_search_user")])
-                keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Menu", callback_data="manage_resellers_menu")])
+                keyboard.append([InlineKeyboardButton("✅️ Search Again", callback_data="reseller_search_user")])
+                keyboard.append([InlineKeyboardButton("✅️ Back to Menu", callback_data="manage_resellers_menu")])
                 
                 await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
                 return
             else:
                 await send_message_with_retry(context.bot, chat_id, 
-                    f"âŒ No users found matching '{search_text}'.\n\nðŸ’¡ Tips:\nâ€¢ Make sure the user has used /start in this bot\nâ€¢ Try searching by User ID instead", 
-                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ðŸ” Try Again", callback_data="reseller_search_user")]]),
+                    f"❌ No users found matching '{search_text}'.\n\n👤 Tips:\n�€� Make sure the user has used /start in this bot\n�€� Try searching by User ID instead", 
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔧 Try Again", callback_data="reseller_search_user")]]),
                     parse_mode=None)
                 return
         else:
@@ -317,15 +317,15 @@ async def handle_reseller_manage_id_message(update: Update, context: ContextType
             
     except sqlite3.Error as e:
         logger.error(f"DB error searching user: {e}")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Database error.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Database error.", parse_mode=None)
         return
     finally:
         if conn: conn.close()
 
     if not user_info:
         await send_message_with_retry(context.bot, chat_id, 
-            f"âŒ User ID {target_user_id} not found.\n\nðŸ’¡ The user must have pressed /start in this bot first.",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ðŸ” Try Again", callback_data="reseller_search_user")]]),
+            f"❌ User ID {target_user_id} not found.\n\n👤 The user must have pressed /start in this bot first.",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔧 Try Again", callback_data="reseller_search_user")]]),
             parse_mode=None)
         return
 
@@ -360,39 +360,39 @@ async def _display_reseller_user_profile(bot, chat_id, user_info, edit_message_i
         if conn: conn.close()
     
     # Build message
-    status_icon = "âœ…" if is_reseller else "âŒ"
-    msg = f"ðŸ‘¤ **USER PROFILE**\n\n"
+    status_icon = "�œ…" if is_reseller else "�Œ"
+    msg = f"�Ÿ‘� **USER PROFILE**\n\n"
     msg += f"**Username:** @{username}\n"
     msg += f"**User ID:** `{target_user_id}`\n"
     msg += f"**Balance:** {format_currency(Decimal(str(balance)))} EUR\n"
     msg += f"**Purchases:** {purchases}\n\n"
-    msg += f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+    msg += f"🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧\n"
     msg += f"**Reseller Status:** {status_icon} {'ACTIVE' if is_reseller else 'INACTIVE'}\n"
     
     if is_reseller and discounts:
         msg += f"\n**Current Discounts:**\n"
         for d in discounts:
             emoji = PRODUCT_TYPES.get(d['product_type'], DEFAULT_PRODUCT_EMOJI)
-            msg += f"  â€¢ {emoji} {d['product_type']}: **{d['discount_percentage']:.1f}%**\n"
+            msg += f"  �€� {emoji} {d['product_type']}: **{d['discount_percentage']:.1f}%**\n"
     elif is_reseller:
-        msg += f"\nâš ï¸ No discounts configured yet!\n"
+        msg += f"\n⚠️ No discounts configured yet!\n"
     
-    msg += f"\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
+    msg += f"\n🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧"
     
     # Build keyboard
     keyboard = []
     
     if is_reseller:
-        keyboard.append([InlineKeyboardButton("ðŸš« Disable Reseller", callback_data=f"reseller_toggle_status|{target_user_id}|0")])
+        keyboard.append([InlineKeyboardButton("🚨 Disable Reseller", callback_data=f"reseller_toggle_status|{target_user_id}|0")])
         # Two discount options: individual per-type OR quick global
-        keyboard.append([InlineKeyboardButton("ðŸ·ï¸ Per-Type Discounts", callback_data=f"reseller_manage_specific|{target_user_id}")])
-        keyboard.append([InlineKeyboardButton("âš¡ Set ALL Types Same %", callback_data=f"reseller_quick_discount|{target_user_id}")])
+        keyboard.append([InlineKeyboardButton("💥️ Per-Type Discounts", callback_data=f"reseller_manage_specific|{target_user_id}")])
+        keyboard.append([InlineKeyboardButton("⚠ Set ALL Types Same %", callback_data=f"reseller_quick_discount|{target_user_id}")])
     else:
-        keyboard.append([InlineKeyboardButton("âœ… Enable as Reseller", callback_data=f"reseller_toggle_status|{target_user_id}|0")])
-        keyboard.append([InlineKeyboardButton("âš¡ Enable + Set Discount", callback_data=f"reseller_quick_enable|{target_user_id}")])
+        keyboard.append([InlineKeyboardButton("�œ… Enable as Reseller", callback_data=f"reseller_toggle_status|{target_user_id}|0")])
+        keyboard.append([InlineKeyboardButton("⚠ Enable + Set Discount", callback_data=f"reseller_quick_enable|{target_user_id}")])
     
-    keyboard.append([InlineKeyboardButton("ðŸ” Search Another", callback_data="reseller_search_user")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Menu", callback_data="manage_resellers_menu")])
+    keyboard.append([InlineKeyboardButton("🔧 Search Another", callback_data="reseller_search_user")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Menu", callback_data="manage_resellers_menu")])
     
     await send_message_with_retry(bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
@@ -468,16 +468,16 @@ async def handle_reseller_quick_enable(update: Update, context: ContextTypes.DEF
         if conn: conn.close()
     
     # Show quick discount options
-    msg = f"âœ… **@{username}** is now a Reseller!\n\n"
-    msg += "âš¡ **Quick Setup:** Select a discount to apply to ALL product types:\n"
+    msg = f"�œ… **@{username}** is now a Reseller!\n\n"
+    msg += "⚠ **Quick Setup:** Select a discount to apply to ALL product types:\n"
     
     keyboard = []
     for preset in QUICK_DISCOUNT_PRESETS:
-        keyboard.append([InlineKeyboardButton(f"ðŸ·ï¸ {preset}% off ALL types", callback_data=f"reseller_apply_global|{target_user_id}|{preset}")])
+        keyboard.append([InlineKeyboardButton(f"💥️ {preset}% off ALL types", callback_data=f"reseller_apply_global|{target_user_id}|{preset}")])
     
-    keyboard.append([InlineKeyboardButton("âœï¸ Custom Discount", callback_data=f"reseller_custom_global|{target_user_id}")])
-    keyboard.append([InlineKeyboardButton("â­ï¸ Skip (set later)", callback_data=f"reseller_view_user|{target_user_id}")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back", callback_data="manage_resellers_menu")])
+    keyboard.append([InlineKeyboardButton("✅️ Custom Discount", callback_data=f"reseller_custom_global|{target_user_id}")])
+    keyboard.append([InlineKeyboardButton("⏭️ Skip (set later)", callback_data=f"reseller_view_user|{target_user_id}")])
+    keyboard.append([InlineKeyboardButton("✅️ Back", callback_data="manage_resellers_menu")])
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     await query.answer("Reseller enabled!")
@@ -509,16 +509,16 @@ async def handle_reseller_quick_discount(update: Update, context: ContextTypes.D
     finally:
         if conn: conn.close()
     
-    msg = f"âš¡ **Quick Discount for @{username}**\n\n"
+    msg = f"⚠ **Quick Discount for @{username}**\n\n"
     msg += "Select a discount to apply to **ALL** product types:\n\n"
-    msg += "ðŸ’¡ This will replace any existing discounts."
+    msg += "👤 This will replace any existing discounts."
     
     keyboard = []
     for preset in QUICK_DISCOUNT_PRESETS:
-        keyboard.append([InlineKeyboardButton(f"ðŸ·ï¸ {preset}% off ALL types", callback_data=f"reseller_apply_global|{target_user_id}|{preset}")])
+        keyboard.append([InlineKeyboardButton(f"💥️ {preset}% off ALL types", callback_data=f"reseller_apply_global|{target_user_id}|{preset}")])
     
-    keyboard.append([InlineKeyboardButton("âœï¸ Custom Percentage", callback_data=f"reseller_custom_global|{target_user_id}")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back", callback_data=f"reseller_view_user|{target_user_id}")])
+    keyboard.append([InlineKeyboardButton("✅️ Custom Percentage", callback_data=f"reseller_custom_global|{target_user_id}")])
+    keyboard.append([InlineKeyboardButton("✅️ Back", callback_data=f"reseller_view_user|{target_user_id}")])
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     await query.answer()
@@ -583,15 +583,15 @@ async def handle_reseller_apply_global(update: Update, context: ContextTypes.DEF
     finally:
         if conn: conn.close()
     
-    msg = f"âœ… **Global Discount Applied!**\n\n"
+    msg = f"�œ… **Global Discount Applied!**\n\n"
     msg += f"**Reseller:** @{username}\n"
     msg += f"**Discount:** {discount_percent}% off\n"
     msg += f"**Applied to:** {applied_count} product types\n\n"
     msg += "The reseller will now see discounted prices for all products!"
     
     keyboard = [
-        [InlineKeyboardButton("ðŸ‘¤ View Profile", callback_data=f"reseller_view_user|{target_user_id}")],
-        [InlineKeyboardButton("â¬…ï¸ Back to Menu", callback_data="manage_resellers_menu")]
+        [InlineKeyboardButton("�Ÿ‘� View Profile", callback_data=f"reseller_view_user|{target_user_id}")],
+        [InlineKeyboardButton("✅️ Back to Menu", callback_data="manage_resellers_menu")]
     ]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
@@ -612,11 +612,11 @@ async def handle_reseller_custom_global(update: Update, context: ContextTypes.DE
     context.user_data['state'] = 'awaiting_reseller_global_percent'
     context.user_data['reseller_mgmt_target_id'] = target_user_id
     
-    msg = "âœï¸ **Custom Global Discount**\n\n"
+    msg = "✅️ **Custom Global Discount**\n\n"
     msg += "Enter the discount percentage (0-100):\n"
     msg += "Example: `15` for 15% off all products"
     
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data=f"reseller_view_user|{target_user_id}")]]
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data=f"reseller_view_user|{target_user_id}")]]
     
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     await query.answer("Enter percentage in chat.")
@@ -634,7 +634,7 @@ async def handle_reseller_global_percent_message(update: Update, context: Contex
     target_user_id = context.user_data.get('reseller_mgmt_target_id')
     
     if target_user_id is None:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost.", parse_mode=None)
         context.user_data.pop('state', None)
         return
     
@@ -679,25 +679,25 @@ async def handle_reseller_global_percent_message(update: Update, context: Contex
         except sqlite3.Error as e:
             logger.error(f"Error applying global discount: {e}")
             if conn: conn.rollback()
-            await send_message_with_retry(context.bot, chat_id, "âŒ Database error!", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ Database error!", parse_mode=None)
             return
         finally:
             if conn: conn.close()
         
-        msg = f"âœ… **Global Discount Applied!**\n\n"
+        msg = f"�œ… **Global Discount Applied!**\n\n"
         msg += f"**Reseller:** @{username}\n"
         msg += f"**Discount:** {percentage}% off\n"
         msg += f"**Applied to:** {applied_count} product types"
         
         keyboard = [
-            [InlineKeyboardButton("ðŸ‘¤ View Profile", callback_data=f"reseller_view_user|{target_user_id}")],
-            [InlineKeyboardButton("â¬…ï¸ Back to Menu", callback_data="manage_resellers_menu")]
+            [InlineKeyboardButton("�Ÿ‘� View Profile", callback_data=f"reseller_view_user|{target_user_id}")],
+            [InlineKeyboardButton("✅️ Back to Menu", callback_data="manage_resellers_menu")]
         ]
         
         await send_message_with_retry(context.bot, chat_id, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
         
     except ValueError:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Invalid percentage. Enter a number between 0 and 100.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Invalid percentage. Enter a number between 0 and 100.", parse_mode=None)
 
 
 async def handle_reseller_toggle_status(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
@@ -781,12 +781,12 @@ async def handle_manage_reseller_discounts_select_reseller(update: Update, conte
         resellers = c.fetchall()
     except sqlite3.Error as e:
         logger.error(f"DB error fetching active resellers: {e}")
-        await query.edit_message_text("âŒ DB Error fetching resellers.", parse_mode=None)
+        await query.edit_message_text("❌ DB Error fetching resellers.", parse_mode=None)
         return
     finally:
         if conn: conn.close()
 
-    msg = "ðŸ‘¤ Manage Reseller Discounts\n\nSelect an active reseller to set their discounts:\n"
+    msg = "�Ÿ‘� Manage Reseller Discounts\n\nSelect an active reseller to set their discounts:\n"
     keyboard = []
     item_buttons = []
 
@@ -795,18 +795,18 @@ async def handle_manage_reseller_discounts_select_reseller(update: Update, conte
     else:
         for r in resellers:
             username = r['username'] or f"ID_{r['user_id']}"
-            item_buttons.append([InlineKeyboardButton(f"ðŸ‘¤ @{username}", callback_data=f"reseller_manage_specific|{r['user_id']}")])
+            item_buttons.append([InlineKeyboardButton(f"�Ÿ‘� @{username}", callback_data=f"reseller_manage_specific|{r['user_id']}")])
         keyboard.extend(item_buttons)
         # Pagination
         total_pages = math.ceil(max(0, total_resellers) / USERS_PER_PAGE_DISCOUNT_SELECT)
         current_page = (offset // USERS_PER_PAGE_DISCOUNT_SELECT) + 1
         nav_buttons = []
-        if current_page > 1: nav_buttons.append(InlineKeyboardButton("â¬…ï¸ Prev", callback_data=f"manage_reseller_discounts_select_reseller|{max(0, offset - USERS_PER_PAGE_DISCOUNT_SELECT)}"))
-        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton("Next âž¡ï¸", callback_data=f"manage_reseller_discounts_select_reseller|{offset + USERS_PER_PAGE_DISCOUNT_SELECT}"))
+        if current_page > 1: nav_buttons.append(InlineKeyboardButton("✅️ Prev", callback_data=f"manage_reseller_discounts_select_reseller|{max(0, offset - USERS_PER_PAGE_DISCOUNT_SELECT)}"))
+        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton("Next �ž�️", callback_data=f"manage_reseller_discounts_select_reseller|{offset + USERS_PER_PAGE_DISCOUNT_SELECT}"))
         if nav_buttons: keyboard.append(nav_buttons)
         msg += f"\nPage {current_page}/{total_pages}"
 
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
@@ -816,7 +816,7 @@ async def handle_manage_reseller_discounts_select_reseller(update: Update, conte
         else: await query.answer()
     except Exception as e:
         logger.error(f"Error display reseller selection list: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error displaying list.", parse_mode=None)
+        await query.edit_message_text("❌ Error displaying list.", parse_mode=None)
 
 
 # --- Manage Specific Reseller Discounts ---
@@ -845,14 +845,14 @@ async def handle_manage_specific_reseller_discounts(update: Update, context: Con
         discounts = c.fetchall()
     except sqlite3.Error as e:
         logger.error(f"DB error fetching discounts for reseller {target_reseller_id}: {e}")
-        await query.edit_message_text("âŒ DB Error fetching discounts.", parse_mode=None)
+        await query.edit_message_text("❌ DB Error fetching discounts.", parse_mode=None)
         return
     finally:
         if conn: conn.close()
 
     load_all_data()  # Ensure PRODUCT_TYPES is fresh
     
-    msg = f"ðŸ·ï¸ **Per-Type Discounts**\n"
+    msg = f"💥️ **Per-Type Discounts**\n"
     msg += f"**Reseller:** @{username}\n\n"
     
     keyboard = []
@@ -865,23 +865,23 @@ async def handle_manage_specific_reseller_discounts(update: Update, context: Con
     for p_type, emoji in sorted(PRODUCT_TYPES.items()):
         if p_type in discount_dict:
             percentage = discount_dict[p_type]
-            msg += f"  âœ… {emoji} {p_type}: **{percentage:.1f}%** off\n"
+            msg += f"  �œ… {emoji} {p_type}: **{percentage:.1f}%** off\n"
             keyboard.append([
-                InlineKeyboardButton(f"âœï¸ {emoji} {p_type} ({percentage:.1f}%)", callback_data=f"reseller_edit_discount|{target_reseller_id}|{p_type}"),
-                InlineKeyboardButton("ðŸ—‘ï¸", callback_data=f"reseller_delete_discount_confirm|{target_reseller_id}|{p_type}")
+                InlineKeyboardButton(f"✅️ {emoji} {p_type} ({percentage:.1f}%)", callback_data=f"reseller_edit_discount|{target_reseller_id}|{p_type}"),
+                InlineKeyboardButton("�Ÿ—‘️", callback_data=f"reseller_delete_discount_confirm|{target_reseller_id}|{p_type}")
             ])
         else:
-            msg += f"  âŒ {emoji} {p_type}: No discount\n"
+            msg += f"  ❌ {emoji} {p_type}: No discount\n"
             keyboard.append([
-                InlineKeyboardButton(f"âž• Add {emoji} {p_type}", callback_data=f"reseller_add_discount_enter_percent_direct|{target_reseller_id}|{p_type}")
+                InlineKeyboardButton(f"�ž• Add {emoji} {p_type}", callback_data=f"reseller_add_discount_enter_percent_direct|{target_reseller_id}|{p_type}")
             ])
     
-    msg += f"\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
-    msg += f"ðŸ’¡ Tip: Use 'Set ALL Types' for same % on everything"
+    msg += f"\n🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧🔧\n"
+    msg += f"👤 Tip: Use 'Set ALL Types' for same % on everything"
 
-    keyboard.append([InlineKeyboardButton("âš¡ Set ALL Types Same %", callback_data=f"reseller_quick_discount|{target_reseller_id}")])
-    keyboard.append([InlineKeyboardButton("ðŸ‘¤ Back to Profile", callback_data=f"reseller_view_user|{target_reseller_id}")])
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Menu", callback_data="manage_resellers_menu")])
+    keyboard.append([InlineKeyboardButton("⚠ Set ALL Types Same %", callback_data=f"reseller_quick_discount|{target_reseller_id}")])
+    keyboard.append([InlineKeyboardButton("�Ÿ‘� Back to Profile", callback_data=f"reseller_view_user|{target_reseller_id}")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Menu", callback_data="manage_resellers_menu")])
 
     try:
         await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
@@ -892,7 +892,7 @@ async def handle_manage_specific_reseller_discounts(update: Update, context: Con
         else: await query.answer()
     except Exception as e:
         logger.error(f"Error display specific reseller discounts: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error displaying discounts.", parse_mode=None)
+        await query.edit_message_text("❌ Error displaying discounts.", parse_mode=None)
 
 
 
@@ -911,7 +911,7 @@ async def handle_reseller_add_discount_select_type(update: Update, context: Cont
     load_all_data() # Ensure PRODUCT_TYPES is fresh
 
     if not PRODUCT_TYPES:
-        await query.edit_message_text("âŒ No product types configured. Please add types via 'Manage Product Types'.", parse_mode=None)
+        await query.edit_message_text("❌ No product types configured. Please add types via 'Manage Product Types'.", parse_mode=None)
         return
 
     keyboard = []
@@ -925,7 +925,7 @@ async def handle_reseller_add_discount_select_type(update: Update, context: Cont
         keyboard.append([InlineKeyboardButton(f"{emoji} {type_name}", callback_data=callback_data_short)])
 
     # Cancel button still needs the target_id to go back correctly
-    keyboard.append([InlineKeyboardButton("âŒ Cancel", callback_data=f"reseller_manage_specific|{target_reseller_id}")])
+    keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data=f"reseller_manage_specific|{target_reseller_id}")])
     await query.edit_message_text("Select Product Type for new discount rule:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 
@@ -957,7 +957,7 @@ async def handle_reseller_add_discount_enter_percent(update: Update, context: Co
 
     await query.edit_message_text(
         f"Enter discount percentage for {emoji} {product_type} (e.g., 10 or 15.5):",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("âŒ Cancel", callback_data=cancel_callback)]]),
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data=cancel_callback)]]),
         parse_mode=None
     )
     await query.answer("Enter percentage in chat.")
@@ -980,7 +980,7 @@ async def handle_reseller_add_discount_enter_percent_direct(update: Update, cont
     context.user_data['reseller_mgmt_product_type'] = product_type
     context.user_data['reseller_mgmt_mode'] = 'add'
 
-    msg = f"ðŸ·ï¸ **Set Discount for {emoji} {product_type}**\n\n"
+    msg = f"💥️ **Set Discount for {emoji} {product_type}**\n\n"
     msg += "Enter the discount percentage (0-100):\n"
     msg += "Example: `15` for 15% off"
 
@@ -992,7 +992,7 @@ async def handle_reseller_add_discount_enter_percent_direct(update: Update, cont
     for preset in [5, 10, 15, 20, 25]:
         preset_row.append(InlineKeyboardButton(f"{preset}%", callback_data=f"reseller_set_type_preset|{target_reseller_id}|{product_type}|{preset}"))
     keyboard.append(preset_row)
-    keyboard.append([InlineKeyboardButton("âŒ Cancel", callback_data=cancel_callback)])
+    keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data=cancel_callback)])
 
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     await query.answer("Enter percentage or tap a preset.")
@@ -1039,7 +1039,7 @@ async def handle_reseller_set_type_preset(update: Update, context: ContextTypes.
     finally:
         if conn: conn.close()
     
-    await query.answer(f"âœ… Set {discount_percent}% for {product_type}!")
+    await query.answer(f"�œ… Set {discount_percent}% for {product_type}!")
     
     # Return to per-type view
     # Re-call the handler to refresh the view
@@ -1063,7 +1063,7 @@ async def handle_reseller_edit_discount(update: Update, context: ContextTypes.DE
     context.user_data['reseller_mgmt_product_type'] = product_type
     context.user_data['reseller_mgmt_mode'] = 'edit'
 
-    msg = f"âœï¸ **Edit Discount for {emoji} {product_type}**\n\n"
+    msg = f"✅️ **Edit Discount for {emoji} {product_type}**\n\n"
     msg += "Enter the new discount percentage (0-100):"
 
     cancel_callback = f"reseller_manage_specific|{target_reseller_id}"
@@ -1074,7 +1074,7 @@ async def handle_reseller_edit_discount(update: Update, context: ContextTypes.DE
     for preset in [5, 10, 15, 20, 25]:
         preset_row.append(InlineKeyboardButton(f"{preset}%", callback_data=f"reseller_set_type_preset|{target_reseller_id}|{product_type}|{preset}"))
     keyboard.append(preset_row)
-    keyboard.append([InlineKeyboardButton("âŒ Cancel", callback_data=cancel_callback)])
+    keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data=cancel_callback)])
 
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     await query.answer("Enter new percentage or tap a preset.")
@@ -1095,14 +1095,14 @@ async def handle_reseller_percent_message(update: Update, context: ContextTypes.
 
     if target_user_id is None or not product_type:
         logger.error("State awaiting_reseller_discount_percent missing context data.")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost. Please start again.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost. Please start again.", parse_mode=None)
         context.user_data.pop('state', None)
         # Clean up other related context data as well
         context.user_data.pop('reseller_mgmt_target_id', None)
         context.user_data.pop('reseller_mgmt_product_type', None)
         context.user_data.pop('reseller_mgmt_mode', None)
         fallback_cb = "manage_reseller_discounts_select_reseller|0"
-        await send_message_with_retry(context.bot, chat_id, "Returning...", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data=fallback_cb)]]), parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "Returning...", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data=fallback_cb)]]), parse_mode=None)
         return
 
     back_callback = f"reseller_manage_specific|{target_user_id}"
@@ -1145,8 +1145,8 @@ async def handle_reseller_percent_message(update: Update, context: ContextTypes.
             )
 
             action_verb = "set" if old_value is None else "updated"
-            await send_message_with_retry(context.bot, chat_id, f"âœ… Discount rule {action_verb} for {product_type}: {percentage:.1f}%",
-                                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back", callback_data=back_callback)]]), parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, f"�œ… Discount rule {action_verb} for {product_type}: {percentage:.1f}%",
+                                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back", callback_data=back_callback)]]), parse_mode=None)
 
             # Clean up context after successful operation
             context.user_data.pop('state', None); context.user_data.pop('reseller_mgmt_target_id', None)
@@ -1155,7 +1155,7 @@ async def handle_reseller_percent_message(update: Update, context: ContextTypes.
         except sqlite3.Error as e: # Catch potential DB errors like IntegrityError implicitly
             logger.error(f"DB error {mode} reseller discount: {e}", exc_info=True)
             if conn and conn.in_transaction: conn.rollback()
-            await send_message_with_retry(context.bot, chat_id, "âŒ DB Error saving discount rule.", parse_mode=None)
+            await send_message_with_retry(context.bot, chat_id, "❌ DB Error saving discount rule.", parse_mode=None)
             context.user_data.pop('state', None) # Clear state on error
             # Clean up other related context data on error
             context.user_data.pop('reseller_mgmt_target_id', None)
@@ -1165,7 +1165,7 @@ async def handle_reseller_percent_message(update: Update, context: ContextTypes.
             if conn: conn.close()
 
     except ValueError:
-        await send_message_with_retry(context.bot, chat_id, "âŒ Invalid percentage. Enter a number between 0 and 100 (e.g., 10 or 15.5).", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Invalid percentage. Enter a number between 0 and 100 (e.g., 10 or 15.5).", parse_mode=None)
         # Keep state awaiting percentage
 
 
@@ -1184,11 +1184,11 @@ async def handle_reseller_delete_discount_confirm(update: Update, context: Conte
     # Set confirm action for handle_confirm_yes
     context.user_data["confirm_action"] = f"confirm_delete_reseller_discount|{target_reseller_id}|{product_type}"
 
-    msg = (f"âš ï¸ Confirm Deletion\n\n"
+    msg = (f"⚠️ Confirm Deletion\n\n"
            f"Delete the discount rule for {emoji} {product_type} for user ID {target_reseller_id}?\n\n"
-           f"ðŸš¨ This action is irreversible!")
-    keyboard = [[InlineKeyboardButton("âœ… Yes, Delete Rule", callback_data="confirm_yes"),
-                 InlineKeyboardButton("âŒ No, Cancel", callback_data=f"reseller_manage_specific|{target_reseller_id}")]]
+           f"🚨 This action is irreversible!")
+    keyboard = [[InlineKeyboardButton("�œ… Yes, Delete Rule", callback_data="confirm_yes"),
+                 InlineKeyboardButton("❌ No, Cancel", callback_data=f"reseller_manage_specific|{target_reseller_id}")]]
     await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
 

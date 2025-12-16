@@ -97,21 +97,21 @@ async def handle_viewer_admin_menu(update: Update, context: ContextTypes.DEFAULT
         if conn: conn.close() # Close connection if opened
 
     msg = (
-       f"ðŸ”§ Admin Dashboard (Viewer)\n\n"
-       f"ðŸ‘¥ Total Users: {total_users}\n"
-       f"ðŸ“¦ Active Products: {active_products}\n\n"
+       f"🔧 Admin Dashboard (Viewer)\n\n"
+       f"�Ÿ‘� Total Users: {total_users}\n"
+       f"📦 Active Products: {active_products}\n\n"
        "Select a report or log to view:"
     )
 
     # --- Keyboard Definition ---
     keyboard = [
-        [InlineKeyboardButton("ðŸ“¦ View Bot Stock", callback_data="view_stock")],
-        [InlineKeyboardButton("ðŸ“œ View Added Products Log", callback_data="viewer_added_products|0")],
-        [InlineKeyboardButton("ðŸš« View Reviews", callback_data="adm_manage_reviews|0")], # Reuse admin handler
-        [InlineKeyboardButton("ðŸ“‹ Analyze Render Logs", callback_data="adm_analyze_logs_start")], # Log analysis for secondary admins
+        [InlineKeyboardButton("📦 View Bot Stock", callback_data="view_stock")],
+        [InlineKeyboardButton("�Ÿ“œ View Added Products Log", callback_data="viewer_added_products|0")],
+        [InlineKeyboardButton("🚨 View Reviews", callback_data="adm_manage_reviews|0")], # Reuse admin handler
+        [InlineKeyboardButton("�Ÿ“‹ Analyze Render Logs", callback_data="adm_analyze_logs_start")], # Log analysis for secondary admins
        
-        # [InlineKeyboardButton("ðŸ‘¥ Manage Users", callback_data="adm_manage_users|0")], # Reuses admin handler
-        [InlineKeyboardButton("ðŸ  User Home Menu", callback_data="back_start")]
+        # [InlineKeyboardButton("�Ÿ‘� Manage Users", callback_data="adm_manage_users|0")], # Reuses admin handler
+        [InlineKeyboardButton("💥 User Home Menu", callback_data="back_start")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -168,12 +168,12 @@ async def handle_viewer_added_products(update: Update, context: ContextTypes.DEF
 
     except sqlite3.Error as e:
         logger.error(f"DB error fetching viewer added product log: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error fetching product log from database.", parse_mode=None)
+        await query.edit_message_text("❌ Error fetching product log from database.", parse_mode=None)
         return
     finally:
         if conn: conn.close()
 
-    msg_parts = ["ðŸ“œ Added Products Log\n"]
+    msg_parts = ["�Ÿ“œ Added Products Log\n"]
     keyboard = []
     item_buttons = []
 
@@ -188,7 +188,7 @@ async def handle_viewer_added_products(update: Update, context: ContextTypes.DEF
                 city_name, dist_name = product['city'], product['district']
                 type_name, size_name = product['product_type'], product['size']
                 price_str = format_currency(product['price'])
-                media_indicator = "ðŸ“¸" if product['media_count'] > 0 else "ðŸš«"
+                media_indicator = "📦" if product['media_count'] > 0 else "⚠"
                 added_date_str = "Unknown Date"
                 if product['added_date']:
                     try: added_date_str = datetime.fromisoformat(product['added_date']).strftime("%Y-%m-%d %H:%M")
@@ -197,15 +197,15 @@ async def handle_viewer_added_products(update: Update, context: ContextTypes.DEF
                 text_display = original_text_preview if original_text_preview else "No text provided"
                 item_msg = (
                     f"\nID {prod_id} | {added_date_str}\n"
-                    f"ðŸ“ {city_name} / {dist_name}\n"
-                    f"ðŸ“¦ {type_name} {size_name} ({price_str} â‚¬)\n"
-                    f"ðŸ“ Text: {text_display}\n"
+                    f"📦 {city_name} / {dist_name}\n"
+                    f"📦 {type_name} {size_name} ({price_str} �‚�)\n"
+                    f"📦 Text: {text_display}\n"
                     f"{media_indicator} Media Attached: {'Yes' if product['media_count'] > 0 else 'No'}\n"
                     f"---\n"
                 )
                 msg_parts.append(item_msg)
                 # Buttons
-                button_text = f"ðŸ–¼ï¸ View Media & Text #{prod_id}" if product['media_count'] > 0 else f"ðŸ“„ View Full Text #{prod_id}"
+                button_text = f"�Ÿ–�️ View Media & Text #{prod_id}" if product['media_count'] > 0 else f"�Ÿ“„ View Full Text #{prod_id}"
                 item_buttons.append([InlineKeyboardButton(button_text, callback_data=f"viewer_view_product_media|{prod_id}|{offset}")])
             except Exception as e:
                  logger.error(f"Error formatting viewer product log item ID {product['id'] if product else 'N/A'}: {e}")
@@ -215,25 +215,25 @@ async def handle_viewer_added_products(update: Update, context: ContextTypes.DEF
         total_pages = math.ceil(total_products / PRODUCTS_PER_PAGE_LOG)
         current_page = (offset // PRODUCTS_PER_PAGE_LOG) + 1
         nav_buttons = []
-        if current_page > 1: nav_buttons.append(InlineKeyboardButton("â¬…ï¸ Prev", callback_data=f"viewer_added_products|{max(0, offset - PRODUCTS_PER_PAGE_LOG)}"))
-        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton("âž¡ï¸ Next", callback_data=f"viewer_added_products|{offset + PRODUCTS_PER_PAGE_LOG}"))
+        if current_page > 1: nav_buttons.append(InlineKeyboardButton("✅️ Prev", callback_data=f"viewer_added_products|{max(0, offset - PRODUCTS_PER_PAGE_LOG)}"))
+        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton("�ž�️ Next", callback_data=f"viewer_added_products|{offset + PRODUCTS_PER_PAGE_LOG}"))
         if nav_buttons: keyboard.append(nav_buttons)
         msg_parts.append(f"\nPage {current_page}/{total_pages}")
 
     # Determine correct back button based on admin type
     back_callback = "admin_menu" if primary_admin else "viewer_admin_menu"
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data=back_callback)])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data=back_callback)])
 
     final_msg = "".join(msg_parts)
     try:
-        if len(final_msg) > 4090: final_msg = final_msg[:4090] + "\n\nâœ‚ï¸ ... Message truncated."
+        if len(final_msg) > 4090: final_msg = final_msg[:4090] + "\n\n�œ‚️ ... Message truncated."
         await query.edit_message_text(final_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
         if "message is not modified" in str(e).lower(): await query.answer()
         else: logger.error(f"Failed to edit viewer_added_products msg: {e}"); await query.answer("Error displaying product log.", show_alert=True)
     except Exception as e:
         logger.error(f"Unexpected error in handle_viewer_added_products: {e}", exc_info=True)
-        await query.edit_message_text("âŒ An unexpected error occurred.", parse_mode=None)
+        await query.edit_message_text("❌ An unexpected error occurred.", parse_mode=None)
 
 
 # --- View Product Media/Text Handler ---
@@ -273,7 +273,7 @@ async def handle_viewer_view_product_media(update: Update, context: ContextTypes
              product_name = prod_info['name'] or product_name
         else:
             await query.answer("Product not found.", show_alert=True)
-            try: await query.edit_message_text("Product not found.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back to Log", callback_data=back_button_callback)]]), parse_mode=None)
+            try: await query.edit_message_text("Product not found.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back to Log", callback_data=back_button_callback)]]), parse_mode=None)
             except telegram_error.BadRequest: pass
             return
         # Use column names
@@ -283,14 +283,14 @@ async def handle_viewer_view_product_media(update: Update, context: ContextTypes
     except sqlite3.Error as e:
         logger.error(f"DB error fetching media/text for product {product_id}: {e}", exc_info=True)
         await query.answer("Error fetching product details.", show_alert=True)
-        try: await query.edit_message_text("Error fetching product details.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back to Log", callback_data=back_button_callback)]]), parse_mode=None)
+        try: await query.edit_message_text("Error fetching product details.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back to Log", callback_data=back_button_callback)]]), parse_mode=None)
         except telegram_error.BadRequest: pass
         return
     finally:
         if conn: conn.close()
 
     await query.answer("Fetching details...")
-    try: await query.edit_message_text(f"â³ Fetching details for product ID {product_id}...", parse_mode=None)
+    try: await query.edit_message_text(f"⏳ Fetching details for product ID {product_id}...", parse_mode=None)
     except telegram_error.BadRequest: pass
 
     media_sent_count = 0
@@ -404,7 +404,7 @@ async def handle_viewer_view_product_media(update: Update, context: ContextTypes
         context.bot,
         chat_id,
         f"End of details for product ID {product_id}.",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("â¬…ï¸ Back to Log", callback_data=back_button_callback)]]),
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅️ Back to Log", callback_data=back_button_callback)]]),
         parse_mode=None # Use None
     )
 
@@ -452,12 +452,12 @@ async def _display_user_list(update: Update, context: ContextTypes.DEFAULT_TYPE,
 
     except sqlite3.Error as e:
         logger.error(f"DB error fetching user list for admin: {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error fetching user list.", parse_mode=None)
+        await query.edit_message_text("❌ Error fetching user list.", parse_mode=None)
         return
     finally:
         if conn: conn.close()
 
-    title = lang_data.get("manage_users_title", "ðŸ‘¤ Manage Users")
+    title = lang_data.get("manage_users_title", "�Ÿ‘� Manage Users")
     prompt = lang_data.get("manage_users_prompt", "Select a user to view details or manage:")
     msg_parts = [f"{title}\n\n{prompt}\n"]
     keyboard = []
@@ -473,8 +473,8 @@ async def _display_user_list(update: Update, context: ContextTypes.DEFAULT_TYPE,
             username = user['username'] or f"ID_{user_id_target}"
             balance_str = format_currency(user['balance'])
             status = get_user_status(user['total_purchases'])
-            banned_status = "ðŸš«" if user['is_banned'] else "âœ…"
-            item_msg = f"\nðŸ‘¤ @{username} (ID: {user_id_target})\n  ðŸ’° {balance_str}â‚¬ | {status} | {banned_status}"
+            banned_status = "⚠" if user['is_banned'] else "�œ…"
+            item_msg = f"\n�Ÿ‘� @{username} (ID: {user_id_target})\n  👤 {balance_str}�‚� | {status} | {banned_status}"
             msg_parts.append(item_msg)
             item_buttons.append([InlineKeyboardButton(f"View @{username}", callback_data=f"adm_view_user|{user_id_target}|{offset}")])
         keyboard.extend(item_buttons)
@@ -484,22 +484,22 @@ async def _display_user_list(update: Update, context: ContextTypes.DEFAULT_TYPE,
         nav_buttons = []
         prev_text = lang_data.get("prev_button", "Prev")
         next_text = lang_data.get("next_button", "Next")
-        if current_page > 1: nav_buttons.append(InlineKeyboardButton(f"â¬…ï¸ {prev_text}", callback_data=f"adm_manage_users|{max(0, offset - USERS_PER_PAGE)}"))
-        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton(f"{next_text} âž¡ï¸", callback_data=f"adm_manage_users|{offset + USERS_PER_PAGE}"))
+        if current_page > 1: nav_buttons.append(InlineKeyboardButton(f"✅️ {prev_text}", callback_data=f"adm_manage_users|{max(0, offset - USERS_PER_PAGE)}"))
+        if current_page < total_pages: nav_buttons.append(InlineKeyboardButton(f"{next_text} �ž�️", callback_data=f"adm_manage_users|{offset + USERS_PER_PAGE}"))
         if nav_buttons: keyboard.append(nav_buttons)
         msg_parts.append(f"\nPage {current_page}/{total_pages}")
 
-    keyboard.append([InlineKeyboardButton("â¬…ï¸ Back to Admin Menu", callback_data="admin_menu")])
+    keyboard.append([InlineKeyboardButton("✅️ Back to Admin Menu", callback_data="admin_menu")])
     final_msg = "".join(msg_parts)
     try:
-        if len(final_msg) > 4090: final_msg = final_msg[:4090] + "\n\nâœ‚ï¸ ... Message truncated."
+        if len(final_msg) > 4090: final_msg = final_msg[:4090] + "\n\n�œ‚️ ... Message truncated."
         await query.edit_message_text(final_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     except telegram_error.BadRequest as e:
         if "message is not modified" in str(e).lower(): await query.answer()
         else: logger.error(f"Failed to edit user list msg: {e}"); await query.answer("Error displaying user list.", show_alert=True)
     except Exception as e:
         logger.error(f"Unexpected error in _display_user_list: {e}", exc_info=True)
-        await query.edit_message_text("âŒ An unexpected error occurred.", parse_mode=None)
+        await query.edit_message_text("❌ An unexpected error occurred.", parse_mode=None)
 
 async def handle_view_user_profile(update: Update, context: ContextTypes.DEFAULT_TYPE, params=None):
     """Displays a specific user's profile with management options for admin."""
@@ -546,22 +546,22 @@ async def handle_view_user_profile(update: Update, context: ContextTypes.DEFAULT
         status = get_user_status(purchases_count)
         progress_bar = get_progress_bar(purchases_count)
         balance_str = format_currency(balance)
-        banned_str = lang_data.get("user_profile_is_banned", "Yes ðŸš«") if is_banned else lang_data.get("user_profile_not_banned", "No âœ…")
+        banned_str = lang_data.get("user_profile_is_banned", "Yes ⚠") if is_banned else lang_data.get("user_profile_not_banned", "No �œ…")
 
-        title_template = lang_data.get("view_user_profile_title", "ðŸ‘¤ User Profile: @{username} (ID: {user_id})")
+        title_template = lang_data.get("view_user_profile_title", "�Ÿ‘� User Profile: @{username} (ID: {user_id})")
         status_label = lang_data.get("user_profile_status", "Status")
         balance_label = lang_data.get("user_profile_balance", "Balance")
         purchases_label = lang_data.get("user_profile_purchases", "Total Purchases")
         banned_label = lang_data.get("user_profile_banned", "Banned Status")
 
         msg = (f"{title_template.format(username=username, user_id=target_user_id)}\n\n"
-               f"ðŸ‘¤ {status_label}: {status} {progress_bar}\n"
-               f"ðŸ’° {balance_label}: {balance_str} EUR\n"
-               f"ðŸ“¦ {purchases_label}: {purchases_count}\n" # Show total count still
-               f"ðŸš« {banned_label}: {banned_str}")
+               f"�Ÿ‘� {status_label}: {status} {progress_bar}\n"
+               f"👤 {balance_label}: {balance_str} EUR\n"
+               f"📦 {purchases_label}: {purchases_count}\n" # Show total count still
+               f"🚨 {banned_label}: {banned_str}")
 
         # Format and append purchase history
-        history_str = f"\n\nðŸ“œ Recent Purchases (Last {history_limit}):\n"
+        history_str = f"\n\n�Ÿ“œ Recent Purchases (Last {history_limit}):\n"
         if not recent_purchases:
             history_str += "  - No purchases found.\n"
         else:
@@ -576,13 +576,13 @@ async def handle_view_user_profile(update: Update, context: ContextTypes.DEFAULT
                 p_name = purchase['product_name'] or 'N/A'
                 p_size = purchase['product_size'] or 'N/A'
                 p_price = format_currency(purchase['price_paid'])
-                history_str += f"  - {date_str}: {p_emoji} {p_size} ({p_price}â‚¬)\n"
+                history_str += f"  - {date_str}: {p_emoji} {p_size} ({p_price}�‚�)\n"
 
         msg += history_str
 
-        adjust_balance_btn = lang_data.get("user_profile_button_adjust_balance", "ðŸ’° Adjust Balance")
-        ban_btn_text = lang_data.get("user_profile_button_unban", "âœ… Unban User") if is_banned else lang_data.get("user_profile_button_ban", "ðŸš« Ban User")
-        back_list_btn_text = lang_data.get("user_profile_button_back_list", "â¬…ï¸ Back to User List")
+        adjust_balance_btn = lang_data.get("user_profile_button_adjust_balance", "👤 Adjust Balance")
+        ban_btn_text = lang_data.get("user_profile_button_unban", "�œ… Unban User") if is_banned else lang_data.get("user_profile_button_ban", "🚨 Ban User")
+        back_list_btn_text = lang_data.get("user_profile_button_back_list", "✅️ Back to User List")
 
         keyboard = [
             [InlineKeyboardButton(adjust_balance_btn, callback_data=f"adm_adjust_balance_start|{target_user_id}|{offset}")],
@@ -596,10 +596,10 @@ async def handle_view_user_profile(update: Update, context: ContextTypes.DEFAULT
 
     except sqlite3.Error as e:
         logger.error(f"DB error fetching user profile for admin (target: {target_user_id}): {e}", exc_info=True)
-        await query.edit_message_text("âŒ Error fetching user profile.", parse_mode=None)
+        await query.edit_message_text("❌ Error fetching user profile.", parse_mode=None)
     except Exception as e:
         logger.error(f"Unexpected error viewing user profile (target: {target_user_id}): {e}", exc_info=True)
-        await query.edit_message_text("âŒ An unexpected error occurred.", parse_mode=None)
+        await query.edit_message_text("❌ An unexpected error occurred.", parse_mode=None)
     finally:
         if conn: conn.close()
 
@@ -635,7 +635,7 @@ async def handle_adjust_balance_start(update: Update, context: ContextTypes.DEFA
 
     prompt_template = lang_data.get("adjust_balance_prompt", "Reply with the amount to adjust balance for @{username} (ID: {user_id}).\nUse a positive number to add (e.g., 10.50) or a negative number to subtract (e.g., -5.00).")
     prompt_msg = prompt_template.format(username=username, user_id=target_user_id)
-    keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data=f"adm_view_user|{target_user_id}|{offset}")]] # Back to user profile
+    keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data=f"adm_view_user|{target_user_id}|{offset}")]] # Back to user profile
 
     await query.edit_message_text(prompt_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
     await query.answer("Enter adjustment amount.")
@@ -658,12 +658,12 @@ async def handle_adjust_balance_amount_message(update: Update, context: ContextT
 
     if target_user_id is None:
         logger.error("State is awaiting_balance_adjustment_amount but target user ID is missing.")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost. Cannot adjust balance.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost. Cannot adjust balance.", parse_mode=None)
         context.user_data.pop('state', None)
         return
 
     amount_text = update.message.text.strip().replace(',', '.')
-    invalid_amount_msg = lang_data.get("adjust_balance_invalid_amount", "âŒ Invalid amount. Please enter a non-zero number (e.g., 10.5 or -5).")
+    invalid_amount_msg = lang_data.get("adjust_balance_invalid_amount", "❌ Invalid amount. Please enter a non-zero number (e.g., 10.5 or -5).")
     reason_prompt_template = lang_data.get("adjust_balance_reason_prompt", "Please reply with a brief reason for this balance adjustment ({amount} EUR):")
 
     try:
@@ -675,7 +675,7 @@ async def handle_adjust_balance_amount_message(update: Update, context: ContextT
         context.user_data['state'] = 'awaiting_balance_adjustment_reason'
         amount_formatted = format_currency(amount_decimal)
         reason_prompt = reason_prompt_template.format(amount=amount_formatted)
-        keyboard = [[InlineKeyboardButton("âŒ Cancel", callback_data=back_callback)]]
+        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data=back_callback)]]
         await send_message_with_retry(context.bot, chat_id, reason_prompt, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
     except (ValueError, TypeError):
@@ -700,9 +700,9 @@ async def handle_adjust_balance_reason_message(update: Update, context: ContextT
     username = context.user_data.get('adjust_balance_username', f"ID_{target_user_id}")
     back_callback = f"adm_view_user|{target_user_id}|{offset}"
 
-    reason_empty_msg = lang_data.get("adjust_balance_reason_empty", "âŒ Reason cannot be empty. Please provide a reason.")
-    success_template = lang_data.get("adjust_balance_success", "âœ… Balance adjusted successfully for @{username}. New balance: {new_balance} EUR.")
-    db_error_msg = lang_data.get("adjust_balance_db_error", "âŒ Database error adjusting balance.")
+    reason_empty_msg = lang_data.get("adjust_balance_reason_empty", "❌ Reason cannot be empty. Please provide a reason.")
+    success_template = lang_data.get("adjust_balance_success", "�œ… Balance adjusted successfully for @{username}. New balance: {new_balance} EUR.")
+    db_error_msg = lang_data.get("adjust_balance_db_error", "❌ Database error adjusting balance.")
 
     if not reason:
         await send_message_with_retry(context.bot, chat_id, reason_empty_msg, parse_mode=None)
@@ -710,7 +710,7 @@ async def handle_adjust_balance_reason_message(update: Update, context: ContextT
 
     if target_user_id is None or amount_float is None:
         logger.error("State is awaiting_balance_adjustment_reason but target user ID or amount is missing.")
-        await send_message_with_retry(context.bot, chat_id, "âŒ Error: Context lost. Cannot adjust balance.", parse_mode=None)
+        await send_message_with_retry(context.bot, chat_id, "❌ Error: Context lost. Cannot adjust balance.", parse_mode=None)
         context.user_data.pop('state', None); context.user_data.pop('adjust_balance_target_user_id', None); context.user_data.pop('adjust_balance_amount', None)
         context.user_data.pop('adjust_balance_offset', None); context.user_data.pop('adjust_balance_username', None)
         return
@@ -749,7 +749,7 @@ async def handle_adjust_balance_reason_message(update: Update, context: ContextT
         context.user_data.pop('adjust_balance_offset', None); context.user_data.pop('adjust_balance_username', None)
 
         success_msg = success_template.format(username=username, new_balance=format_currency(new_balance_float))
-        keyboard = [[InlineKeyboardButton("â¬…ï¸ Back to User Profile", callback_data=back_callback)]]
+        keyboard = [[InlineKeyboardButton("✅️ Back to User Profile", callback_data=back_callback)]]
         await send_message_with_retry(context.bot, chat_id, success_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=None)
 
     except sqlite3.Error as e:
@@ -778,7 +778,7 @@ async def handle_toggle_ban_user(update: Update, context: ContextTypes.DEFAULT_T
     conn = None
 
     if is_primary_admin(target_user_id):
-        cannot_ban_admin_msg = lang_data.get("ban_cannot_ban_admin", "âŒ Cannot ban the primary admin.")
+        cannot_ban_admin_msg = lang_data.get("ban_cannot_ban_admin", "❌ Cannot ban the primary admin.")
         await query.answer(cannot_ban_admin_msg, show_alert=True)
         return
 
@@ -810,7 +810,7 @@ async def handle_toggle_ban_user(update: Update, context: ContextTypes.DEFAULT_T
             new_value=new_ban_status
         )
 
-        success_msg_template = lang_data.get("unban_success", "âœ… User @{username} (ID: {user_id}) has been unbanned.") if new_ban_status == 0 else lang_data.get("ban_success", "ðŸš« User @{username} (ID: {user_id}) has been banned.")
+        success_msg_template = lang_data.get("unban_success", "�œ… User @{username} (ID: {user_id}) has been unbanned.") if new_ban_status == 0 else lang_data.get("ban_success", "🚨 User @{username} (ID: {user_id}) has been banned.")
         success_msg = success_msg_template.format(username=username, user_id=target_user_id)
         await query.answer(success_msg)
         # Refresh the user profile view
@@ -819,7 +819,7 @@ async def handle_toggle_ban_user(update: Update, context: ContextTypes.DEFAULT_T
     except sqlite3.Error as e:
         logger.error(f"DB error toggling ban status for user {target_user_id}: {e}", exc_info=True)
         if conn and conn.in_transaction: conn.rollback()
-        error_msg = lang_data.get("ban_db_error", "âŒ Database error updating ban status.")
+        error_msg = lang_data.get("ban_db_error", "❌ Database error updating ban status.")
         await query.answer(error_msg, show_alert=True)
     except Exception as e:
         logger.error(f"Unexpected error toggling ban status for user {target_user_id}: {e}", exc_info=True)
