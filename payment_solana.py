@@ -368,18 +368,42 @@ async def _process_payment_result(result, context):
                 
                 if deposit_info:
                     is_purchase = deposit_info['is_purchase']
-                    stored_bot_id = deposit_info['bot_id'] if 'bot_id' in deposit_info.keys() else None
+                    
+                    # Robust bot_id retrieval - try multiple access methods
+                    stored_bot_id = None
+                    try:
+                        # Try direct dict-style access
+                        stored_bot_id = deposit_info['bot_id']
+                        logger.info(f"📱 Retrieved bot_id from deposit: {stored_bot_id}")
+                    except (KeyError, IndexError) as e:
+                        logger.warning(f"Could not get bot_id from deposit_info: {e}")
+                        # Try converting to dict first
+                        try:
+                            deposit_dict = dict(deposit_info)
+                            stored_bot_id = deposit_dict.get('bot_id')
+                            logger.info(f"📱 Retrieved bot_id from dict conversion: {stored_bot_id}")
+                        except Exception as dict_e:
+                            logger.warning(f"Dict conversion also failed: {dict_e}")
                     
                     if is_purchase:
-                        basket_snapshot = deposit_info['basket_snapshot'] if 'basket_snapshot' in deposit_info.keys() else None
+                        basket_snapshot = None
+                        try:
+                            basket_snapshot = deposit_info['basket_snapshot']
+                        except (KeyError, IndexError):
+                            pass
                         if isinstance(basket_snapshot, str):
                             try:
                                 basket_snapshot = json.loads(basket_snapshot)
                             except:
                                 pass
                             
-                        discount_code = deposit_info['discount_code'] if 'discount_code' in deposit_info.keys() else None
+                        discount_code = None
+                        try:
+                            discount_code = deposit_info['discount_code']
+                        except (KeyError, IndexError):
+                            pass
                         
+                        logger.info(f"📱 Calling process_successful_crypto_purchase with bot_id={stored_bot_id}")
                         await process_successful_crypto_purchase(user_id, basket_snapshot, discount_code, order_id, context, bot_id=stored_bot_id)
                         # CRITICAL: Remove pending_deposit to prevent recovery job from re-processing
                         from utils import remove_pending_deposit
@@ -387,6 +411,7 @@ async def _process_payment_result(result, context):
                     else:
                         # Refill
                         amount_eur = Decimal(str(deposit_info['target_eur_amount'])) if deposit_info['target_eur_amount'] else Decimal("0.0")
+                        logger.info(f"📱 Calling process_successful_refill with bot_id={stored_bot_id}")
                         await process_successful_refill(user_id, amount_eur, order_id, context, bot_id=stored_bot_id)
                         # CRITICAL: Remove pending_deposit to prevent recovery job from re-processing
                         from utils import remove_pending_deposit
