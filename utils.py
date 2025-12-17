@@ -1127,8 +1127,8 @@ def _ensure_db_dir():
     if _db_dir_created:
         return
     
-        db_dir = os.path.dirname(DATABASE_PATH)
-        if db_dir:
+    db_dir = os.path.dirname(DATABASE_PATH)
+    if db_dir:
         try:
             os.makedirs(db_dir, exist_ok=True)
         except OSError as e:
