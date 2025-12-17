@@ -369,22 +369,33 @@ async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_T
 
 # --- Process Successful Refill ---
 async def process_successful_refill(user_id: int, amount_to_add_eur: Decimal, payment_id: str, context: ContextTypes.DEFAULT_TYPE, bot_id: str | None = None) -> bool:
-    # Get bot - use specific bot_id if provided and context is None
+    # CRITICAL: Always prioritize stored bot_id for multi-bot delivery
     bot = None
-    if context is not None and hasattr(context, 'bot'):
-        bot = context.bot
-    elif bot_id:
-        try:
-            import main
-            if hasattr(main, 'telegram_apps') and main.telegram_apps and bot_id in main.telegram_apps:
+    try:
+        import main
+        if bot_id and hasattr(main, 'telegram_apps') and main.telegram_apps:
+            if bot_id in main.telegram_apps:
                 bot = main.telegram_apps[bot_id].bot
-                logger.info(f"Using bot {bot_id} for refill confirmation to user {user_id}")
-            elif hasattr(main, 'telegram_apps') and main.telegram_apps:
-                for b_id, app in main.telegram_apps.items():
-                    bot = app.bot
-                    break
-        except Exception as e:
-            logger.warning(f"Could not get bot instance for refill: {e}")
+                logger.info(f"✅ Using stored bot {bot_id} for refill confirmation to user {user_id}")
+            else:
+                logger.warning(f"Bot {bot_id} not found in telegram_apps for refill, keys: {list(main.telegram_apps.keys())}")
+                if context is not None and hasattr(context, 'bot') and context.bot:
+                    bot = context.bot
+                else:
+                    for b_id, app in main.telegram_apps.items():
+                        bot = app.bot
+                        break
+        elif context is not None and hasattr(context, 'bot') and context.bot:
+            bot = context.bot
+            logger.info(f"No stored bot_id for refill, using context.bot for user {user_id}")
+        elif hasattr(main, 'telegram_apps') and main.telegram_apps:
+            for b_id, app in main.telegram_apps.items():
+                bot = app.bot
+                break
+    except Exception as e:
+        logger.warning(f"Could not get bot instance for refill: {e}")
+        if context is not None and hasattr(context, 'bot'):
+            bot = context.bot
     
     user_lang = 'en'
     conn_lang = None
@@ -980,15 +991,15 @@ async def process_purchase_with_balance(user_id: int, amount_to_deduct: Decimal,
 async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list, discount_code_used: str | None, payment_id: str, context: ContextTypes.DEFAULT_TYPE, bot_id: str | None = None) -> bool:
     """Handles finalizing a purchase paid via crypto webhook."""
     
-    # Handle None context (from background job)
+    chat_id = user_id
+    lang = "en"
     bot = None
-    if context is not None:
-        chat_id = getattr(context, '_chat_id', None) or getattr(context, '_user_id', None) or user_id
-        lang = context.user_data.get("lang", "en") if context.user_data else "en"
-        bot = context.bot if hasattr(context, 'bot') else None
-    else:
-        chat_id = user_id
-        # Get user language from database
+    
+    # Get language from context or database
+    if context is not None and hasattr(context, 'user_data') and context.user_data:
+        lang = context.user_data.get("lang", "en")
+    if not lang or lang == "en":
+        # Fallback: Get from DB
         try:
             conn = get_db_connection()
             c = conn.cursor()
@@ -999,29 +1010,41 @@ async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list
         except Exception as e:
             logger.warning(f"Could not fetch user language for {user_id}: {e}")
             lang = "en"
-        
-        # Get bot from main module - use specific bot_id if provided
-        try:
-            import main
-            if bot_id and hasattr(main, 'telegram_apps') and main.telegram_apps:
-                # Use the specific bot the user interacted with
-                if bot_id in main.telegram_apps:
-                    bot = main.telegram_apps[bot_id].bot
-                    logger.info(f"Using bot {bot_id} for delivery to user {user_id}")
+    
+    # CRITICAL: Always use stored bot_id if provided (for multi-bot delivery)
+    # This ensures delivery goes through the same bot user purchased from
+    try:
+        import main
+        if bot_id and hasattr(main, 'telegram_apps') and main.telegram_apps:
+            # Use the specific bot the user interacted with
+            if bot_id in main.telegram_apps:
+                bot = main.telegram_apps[bot_id].bot
+                logger.info(f"✅ Using stored bot {bot_id} for delivery to user {user_id}")
+            else:
+                logger.warning(f"Bot {bot_id} not found in telegram_apps keys: {list(main.telegram_apps.keys())}")
+                # Fallback to context.bot or first available
+                if context is not None and hasattr(context, 'bot') and context.bot:
+                    bot = context.bot
+                    logger.warning(f"Falling back to context.bot for user {user_id}")
                 else:
-                    logger.warning(f"Bot {bot_id} not found in telegram_apps, using first available")
                     for b_id, app in main.telegram_apps.items():
                         bot = app.bot
+                        logger.warning(f"Falling back to first available bot {b_id}")
                         break
-            elif hasattr(main, 'telegram_app') and main.telegram_app:
-                bot = main.telegram_app.bot
-            elif hasattr(main, 'telegram_apps') and main.telegram_apps:
-                # Fallback: Get first bot from multi-bot setup
-                for b_id, app in main.telegram_apps.items():
-                    bot = app.bot
-                    break
-        except Exception as e:
-            logger.warning(f"Could not get bot instance: {e}")
+        elif context is not None and hasattr(context, 'bot') and context.bot:
+            # No bot_id stored, use context.bot
+            bot = context.bot
+            logger.info(f"No stored bot_id, using context.bot for user {user_id}")
+        elif hasattr(main, 'telegram_app') and main.telegram_app:
+            bot = main.telegram_app.bot
+        elif hasattr(main, 'telegram_apps') and main.telegram_apps:
+            for b_id, app in main.telegram_apps.items():
+                bot = app.bot
+                break
+    except Exception as e:
+        logger.warning(f"Could not get bot instance: {e}")
+        if context is not None and hasattr(context, 'bot'):
+            bot = context.bot
     
     lang_data = LANGUAGES.get(lang, LANGUAGES['en'])
 
