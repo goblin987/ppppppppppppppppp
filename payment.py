@@ -1015,6 +1015,8 @@ async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list
     # This ensures delivery goes through the same bot user purchased from
     try:
         import main
+        logger.info(f"🔍 DEBUG: bot_id={bot_id}, has_telegram_apps={hasattr(main, 'telegram_apps')}, telegram_apps_keys={list(main.telegram_apps.keys()) if hasattr(main, 'telegram_apps') and main.telegram_apps else 'empty'}")
+        
         if bot_id and hasattr(main, 'telegram_apps') and main.telegram_apps:
             # Use the specific bot the user interacted with
             if bot_id in main.telegram_apps:
@@ -1032,9 +1034,9 @@ async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list
                         logger.warning(f"Falling back to first available bot {b_id}")
                         break
         elif context is not None and hasattr(context, 'bot') and context.bot:
-            # No bot_id stored, use context.bot
+            # No bot_id stored or telegram_apps not available, use context.bot
             bot = context.bot
-            logger.info(f"No stored bot_id, using context.bot for user {user_id}")
+            logger.info(f"telegram_apps not available or no bot_id, using context.bot for user {user_id}")
         elif hasattr(main, 'telegram_app') and main.telegram_app:
             bot = main.telegram_app.bot
         elif hasattr(main, 'telegram_apps') and main.telegram_apps:
