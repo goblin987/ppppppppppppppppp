@@ -1431,6 +1431,7 @@ def init_db():
             if 'is_purchase' not in pending_cols: c.execute("ALTER TABLE pending_deposits ADD COLUMN is_purchase INTEGER DEFAULT 0")
             if 'basket_snapshot_json' not in pending_cols: c.execute("ALTER TABLE pending_deposits ADD COLUMN basket_snapshot_json TEXT DEFAULT NULL")
             if 'discount_code_used' not in pending_cols: c.execute("ALTER TABLE pending_deposits ADD COLUMN discount_code_used TEXT DEFAULT NULL")
+            if 'bot_id' not in pending_cols: c.execute("ALTER TABLE pending_deposits ADD COLUMN bot_id TEXT DEFAULT NULL")
 
             # Admin Log table
             c.execute('''CREATE TABLE IF NOT EXISTS admin_log (
@@ -1669,7 +1670,7 @@ def mark_queue_item_processed(payment_id: str, success: bool, error_message: str
 
 
 # --- Pending Deposit DB Helpers (Synchronous - Modified) ---
-def add_pending_deposit(payment_id: str, user_id: int, currency: str, target_eur_amount: float, expected_crypto_amount: float, is_purchase: bool = False, basket_snapshot: list | None = None, discount_code: str | None = None):
+def add_pending_deposit(payment_id: str, user_id: int, currency: str, target_eur_amount: float, expected_crypto_amount: float, is_purchase: bool = False, basket_snapshot: list | None = None, discount_code: str | None = None, bot_id: str | None = None):
     basket_json = json.dumps(basket_snapshot) if basket_snapshot else None
     try:
         with get_db_connection() as conn:
@@ -1678,16 +1679,16 @@ def add_pending_deposit(payment_id: str, user_id: int, currency: str, target_eur
                 INSERT INTO pending_deposits (
                     payment_id, user_id, currency, target_eur_amount,
                     expected_crypto_amount, created_at, is_purchase,
-                    basket_snapshot_json, discount_code_used
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    basket_snapshot_json, discount_code_used, bot_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 payment_id, user_id, currency.lower(), target_eur_amount,
                 expected_crypto_amount, datetime.now(timezone.utc).isoformat(),
-                1 if is_purchase else 0, basket_json, discount_code
+                1 if is_purchase else 0, basket_json, discount_code, bot_id
                 ))
             conn.commit()
             log_type = "direct purchase" if is_purchase else "refill"
-            logger.info(f"Added pending {log_type} deposit {payment_id} for user {user_id} ({target_eur_amount:.2f} EUR / exp: {expected_crypto_amount} {currency}). Basket items: {len(basket_snapshot) if basket_snapshot else 0}.")
+            logger.info(f"Added pending {log_type} deposit {payment_id} for user {user_id} ({target_eur_amount:.2f} EUR / exp: {expected_crypto_amount} {currency}). Basket items: {len(basket_snapshot) if basket_snapshot else 0}. Bot: {bot_id}")
             return True
     except sqlite3.IntegrityError:
         logger.warning(f"Attempted to add duplicate pending deposit ID: {payment_id}")
@@ -1703,7 +1704,7 @@ def get_pending_deposit(payment_id: str):
             # Fetch all needed columns, including the new ones
             c.execute("""
                 SELECT user_id, currency, target_eur_amount, expected_crypto_amount,
-                       is_purchase, basket_snapshot_json, discount_code_used
+                       is_purchase, basket_snapshot_json, discount_code_used, bot_id
                 FROM pending_deposits WHERE payment_id = ?
             """, (payment_id,))
             row = c.fetchone()

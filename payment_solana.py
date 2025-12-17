@@ -363,11 +363,12 @@ async def _process_payment_result(result, context):
                 # Trigger Payment Success Logic
                 from payment import process_successful_crypto_purchase, process_successful_refill
                 
-                c.execute("SELECT is_purchase, basket_snapshot_json as basket_snapshot, discount_code_used as discount_code, target_eur_amount FROM pending_deposits WHERE payment_id = ?", (order_id,))
+                c.execute("SELECT is_purchase, basket_snapshot_json as basket_snapshot, discount_code_used as discount_code, target_eur_amount, bot_id FROM pending_deposits WHERE payment_id = ?", (order_id,))
                 deposit_info = c.fetchone()
                 
                 if deposit_info:
                     is_purchase = deposit_info['is_purchase']
+                    stored_bot_id = deposit_info['bot_id'] if 'bot_id' in deposit_info.keys() else None
                     
                     if is_purchase:
                         basket_snapshot = deposit_info['basket_snapshot'] if 'basket_snapshot' in deposit_info.keys() else None
@@ -379,14 +380,14 @@ async def _process_payment_result(result, context):
                             
                         discount_code = deposit_info['discount_code'] if 'discount_code' in deposit_info.keys() else None
                         
-                        await process_successful_crypto_purchase(user_id, basket_snapshot, discount_code, order_id, context)
+                        await process_successful_crypto_purchase(user_id, basket_snapshot, discount_code, order_id, context, bot_id=stored_bot_id)
                         # CRITICAL: Remove pending_deposit to prevent recovery job from re-processing
                         from utils import remove_pending_deposit
                         remove_pending_deposit(order_id, trigger="crypto_payment_success")
                     else:
                         # Refill
                         amount_eur = Decimal(str(deposit_info['target_eur_amount'])) if deposit_info['target_eur_amount'] else Decimal("0.0")
-                        await process_successful_refill(user_id, amount_eur, order_id, context)
+                        await process_successful_refill(user_id, amount_eur, order_id, context, bot_id=stored_bot_id)
                         # CRITICAL: Remove pending_deposit to prevent recovery job from re-processing
                         from utils import remove_pending_deposit
                         remove_pending_deposit(order_id, trigger="refill_payment_success")

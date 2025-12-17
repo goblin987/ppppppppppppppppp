@@ -125,6 +125,8 @@ async def handle_select_refill_crypto(update: Update, context: ContextTypes.DEFA
     
     # Store pending deposit for tracking (refill - not a purchase)
     if 'error' not in payment_result:
+        # Get bot_id to track which bot user is interacting with
+        bot_id = str(context.bot.id) if context and hasattr(context, 'bot') and context.bot else None
         add_pending_deposit(
             payment_id=order_id,
             user_id=user_id,
@@ -133,7 +135,8 @@ async def handle_select_refill_crypto(update: Update, context: ContextTypes.DEFA
             expected_crypto_amount=float(payment_result.get('pay_amount', 0)),
             is_purchase=False,
             basket_snapshot=None,
-            discount_code=None
+            discount_code=None,
+            bot_id=bot_id
         )
 
     if 'error' in payment_result:
@@ -212,16 +215,19 @@ async def handle_select_basket_crypto(update: Update, context: ContextTypes.DEFA
     
     # Store pending deposit with basket info for tracking
     if 'error' not in payment_result:
+        # Get bot_id to track which bot user is interacting with
+        bot_id = str(context.bot.id) if context and hasattr(context, 'bot') and context.bot else None
         add_pending_deposit(
             payment_id=order_id,
             user_id=user_id,
             currency='sol',
             target_eur_amount=float(final_total_eur_decimal),
             expected_crypto_amount=float(payment_result.get('pay_amount', 0)),
-        is_purchase=True,
-        basket_snapshot=basket_snapshot,
-        discount_code=discount_code_used
-    )
+            is_purchase=True,
+            basket_snapshot=basket_snapshot,
+            discount_code=discount_code_used,
+            bot_id=bot_id
+        )
 
     # Store snapshot temporarily BEFORE clearing context, in case we need it for un-reserving
     snapshot_before_clear = context.user_data.get('basket_pay_snapshot')
@@ -362,8 +368,24 @@ async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_T
 
 
 # --- Process Successful Refill ---
-async def process_successful_refill(user_id: int, amount_to_add_eur: Decimal, payment_id: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
-    bot = context.bot
+async def process_successful_refill(user_id: int, amount_to_add_eur: Decimal, payment_id: str, context: ContextTypes.DEFAULT_TYPE, bot_id: str | None = None) -> bool:
+    # Get bot - use specific bot_id if provided and context is None
+    bot = None
+    if context is not None and hasattr(context, 'bot'):
+        bot = context.bot
+    elif bot_id:
+        try:
+            import main
+            if hasattr(main, 'telegram_apps') and main.telegram_apps and bot_id in main.telegram_apps:
+                bot = main.telegram_apps[bot_id].bot
+                logger.info(f"Using bot {bot_id} for refill confirmation to user {user_id}")
+            elif hasattr(main, 'telegram_apps') and main.telegram_apps:
+                for b_id, app in main.telegram_apps.items():
+                    bot = app.bot
+                    break
+        except Exception as e:
+            logger.warning(f"Could not get bot instance for refill: {e}")
+    
     user_lang = 'en'
     conn_lang = None
     try:
@@ -385,7 +407,7 @@ async def process_successful_refill(user_id: int, amount_to_add_eur: Decimal, pa
         return False
 
     # Use the separate crediting function
-    return await credit_user_balance(user_id, amount_to_add_eur, f"Refill payment {payment_id}", context)
+    return await credit_user_balance(user_id, amount_to_add_eur, f"Refill payment {payment_id}", context, bot=bot)
 
 
 # --- HELPER: Finalize Purchase (Send Caption Separately) ---
@@ -955,7 +977,7 @@ async def process_purchase_with_balance(user_id: int, amount_to_deduct: Decimal,
         return False
 
 # --- Process Successful Crypto Purchase (Uses Helper) ---
-async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list, discount_code_used: str | None, payment_id: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
+async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list, discount_code_used: str | None, payment_id: str, context: ContextTypes.DEFAULT_TYPE, bot_id: str | None = None) -> bool:
     """Handles finalizing a purchase paid via crypto webhook."""
     
     # Handle None context (from background job)
@@ -978,14 +1000,24 @@ async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list
             logger.warning(f"Could not fetch user language for {user_id}: {e}")
             lang = "en"
         
-        # Get bot from main module
+        # Get bot from main module - use specific bot_id if provided
         try:
             import main
-            if hasattr(main, 'telegram_app') and main.telegram_app:
+            if bot_id and hasattr(main, 'telegram_apps') and main.telegram_apps:
+                # Use the specific bot the user interacted with
+                if bot_id in main.telegram_apps:
+                    bot = main.telegram_apps[bot_id].bot
+                    logger.info(f"Using bot {bot_id} for delivery to user {user_id}")
+                else:
+                    logger.warning(f"Bot {bot_id} not found in telegram_apps, using first available")
+                    for b_id, app in main.telegram_apps.items():
+                        bot = app.bot
+                        break
+            elif hasattr(main, 'telegram_app') and main.telegram_app:
                 bot = main.telegram_app.bot
             elif hasattr(main, 'telegram_apps') and main.telegram_apps:
-                # Get first bot from multi-bot setup
-                for bot_id, app in main.telegram_apps.items():
+                # Fallback: Get first bot from multi-bot setup
+                for b_id, app in main.telegram_apps.items():
                     bot = app.bot
                     break
         except Exception as e:
@@ -1025,7 +1057,7 @@ async def process_successful_crypto_purchase(user_id: int, basket_snapshot: list
 
 
 # --- NEW: Helper Function to Credit User Balance (Moved from Previous Response) ---
-async def credit_user_balance(user_id: int, amount_eur: Decimal, reason: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
+async def credit_user_balance(user_id: int, amount_eur: Decimal, reason: str, context: ContextTypes.DEFAULT_TYPE, bot=None) -> bool:
     """Adds funds to a user's balance and notifies them."""
     if not isinstance(amount_eur, Decimal) or amount_eur <= Decimal('0.0'):
         logger.error(f"Invalid amount provided to credit_user_balance for user {user_id}: {amount_eur}")
@@ -1075,17 +1107,17 @@ async def credit_user_balance(user_id: int, amount_eur: Decimal, reason: str, co
         )
 
         # Notify User
-        bot_instance = None
-        if context is not None and hasattr(context, 'bot'):
+        bot_instance = bot  # Use passed bot if provided
+        if bot_instance is None and context is not None and hasattr(context, 'bot'):
             bot_instance = context.bot
-        else:
+        if bot_instance is None:
             # Get bot from main module for background jobs
             try:
                 import main
                 if hasattr(main, 'telegram_app') and main.telegram_app:
                     bot_instance = main.telegram_app.bot
                 elif hasattr(main, 'telegram_apps') and main.telegram_apps:
-                    for bot_id, app in main.telegram_apps.items():
+                    for b_id, app in main.telegram_apps.items():
                         bot_instance = app.bot
                         break
             except Exception:

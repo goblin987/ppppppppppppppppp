@@ -2383,13 +2383,16 @@ async def handle_refill_amount_message(update: Update, context: ContextTypes.DEF
         
         if payment_result:
             # Add to pending deposits for tracking
+            # Get bot_id to track which bot user is interacting with
+            bot_id = str(context.bot.id) if context and hasattr(context, 'bot') and context.bot else None
             add_pending_deposit(
                 payment_id=order_id,
                 user_id=user_id,
                 target_eur_amount=float(refill_amount_decimal),
                 currency='SOL',
                 expected_crypto_amount=payment_result.get('pay_amount'),
-                is_purchase=False  # This is a refill
+                is_purchase=False,  # This is a refill
+                bot_id=bot_id
             )
             
             # Display invoice - send new message since we don't have a callback query
