@@ -865,6 +865,10 @@ def main() -> None:
         telegram_apps[bot_id] = application
         applications.append(application)
         
+        # Register bot in shared registry for multi-bot delivery
+        from utils import register_bot
+        register_bot(bot_id, application.bot)
+        
         logger.info(f"✅ Bot {bot_index + 1} (ID: {bot_id}) application created")
     
     # Keep backward compatibility - telegram_app points to first bot

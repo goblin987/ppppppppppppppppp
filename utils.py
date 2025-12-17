@@ -134,6 +134,25 @@ for bot_info in BOT_TOKENS:
     logger.info(f"Telegram webhook for Bot {bot_info['index']+1} (ID: {bot_info['bot_id']}): {WEBHOOK_URL}/telegram/{bot_info['token']}")
 
 
+# --- Bot Registry (for multi-bot delivery) ---
+# This dict stores bot instances keyed by bot_id (string)
+# Populated by main.py after bots are created
+BOT_REGISTRY: dict = {}
+
+def register_bot(bot_id: str, bot_instance):
+    """Register a bot instance for multi-bot delivery."""
+    BOT_REGISTRY[bot_id] = bot_instance
+    logger.info(f"📱 Registered bot {bot_id} in BOT_REGISTRY. Total bots: {len(BOT_REGISTRY)}")
+
+def get_bot_by_id(bot_id: str):
+    """Get a bot instance by its ID."""
+    bot = BOT_REGISTRY.get(bot_id)
+    if bot:
+        logger.info(f"📱 Found bot {bot_id} in BOT_REGISTRY")
+    else:
+        logger.warning(f"📱 Bot {bot_id} not found in BOT_REGISTRY. Available: {list(BOT_REGISTRY.keys())}")
+    return bot
+
 # --- Constants ---
 THEMES = {
     "default": {"product": "💎", "basket": "🛒", "review": "📝"},
