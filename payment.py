@@ -218,10 +218,10 @@ async def handle_select_basket_crypto(update: Update, context: ContextTypes.DEFA
             currency='sol',
             target_eur_amount=float(final_total_eur_decimal),
             expected_crypto_amount=float(payment_result.get('pay_amount', 0)),
-            is_purchase=True,
-            basket_snapshot=basket_snapshot,
-            discount_code=discount_code_used
-        )
+        is_purchase=True,
+        basket_snapshot=basket_snapshot,
+        discount_code=discount_code_used
+    )
 
     # Store snapshot temporarily BEFORE clearing context, in case we need it for un-reserving
     snapshot_before_clear = context.user_data.get('basket_pay_snapshot')
@@ -242,12 +242,12 @@ async def handle_select_basket_crypto(update: Update, context: ContextTypes.DEFA
 
         # Un-reserve items if payment creation failed
         logger.info(f"Payment creation failed ({error_code}). Un-reserving items from snapshot.")
-        try:
-            await asyncio.to_thread(_unreserve_basket_items, snapshot_before_clear)
-        except NameError:
-            logger.critical("CRITICAL: _unreserve_basket_items function call failed due to NameError!")
-        except Exception as unreserve_e:
-            logger.error(f"Error occurred during item un-reservation: {unreserve_e}")
+            try:
+                await asyncio.to_thread(_unreserve_basket_items, snapshot_before_clear)
+            except NameError:
+                 logger.critical("CRITICAL: _unreserve_basket_items function call failed due to NameError!")
+            except Exception as unreserve_e:
+                 logger.error(f"Error occurred during item un-reservation: {unreserve_e}")
 
         error_message_to_user = failed_invoice_creation_msg
         try:
@@ -255,7 +255,7 @@ async def handle_select_basket_crypto(update: Update, context: ContextTypes.DEFA
         except Exception as edit_e:
             logger.error(f"Failed to edit message with basket payment creation error: {edit_e}")
             await send_message_with_retry(context.bot, chat_id, error_message_to_user, reply_markup=back_button_markup, parse_mode=None)
-    else:
+             else:
         logger.info(f"Solana basket payment created successfully for user {user_id}. Order ID: {order_id}")
         await display_solana_invoice(update, context, payment_result, is_purchase=True)
         # Important: DO NOT clear the user's actual basket here.
@@ -266,11 +266,11 @@ async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_T
     """Displays the Solana payment invoice details. Can handle both callback queries and text messages."""
     # Use provided query or get from update
     if query is None:
-        query = update.callback_query
+    query = update.callback_query
     
     # Get chat_id from query or update
     if query and query.message:
-        chat_id = query.message.chat_id
+    chat_id = query.message.chat_id
     else:
         chat_id = update.effective_chat.id
     
@@ -283,7 +283,7 @@ async def display_solana_invoice(update: Update, context: ContextTypes.DEFAULT_T
         pay_currency = payment_data.get('pay_currency', 'SOL').upper()
         payment_id = payment_data.get('payment_id')
         exchange_rate = payment_data.get('exchange_rate')
-        
+
         if not pay_address or not pay_amount or not payment_id:
             logger.error(f"Missing critical data in Solana payment response: {payment_data}")
             raise ValueError("Missing payment address, amount, or ID")
@@ -570,8 +570,8 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
     if db_update_successful:
         # Clear basket from context if available
         if context is not None and hasattr(context, 'user_data') and context.user_data is not None:
-            context.user_data['basket'] = []
-            context.user_data.pop('applied_discount', None)
+        context.user_data['basket'] = []
+        context.user_data.pop('applied_discount', None)
 
         # Fetch Media BEFORE attempting delivery
         media_details = defaultdict(list)
@@ -866,8 +866,8 @@ async def _finalize_purchase(user_id: int, basket_snapshot: list, discount_code_
             return False # Indicate partial failure
     else: # Purchase failed at DB level
         if context is not None and hasattr(context, 'user_data') and context.user_data is not None:
-            context.user_data['basket'] = []
-            context.user_data.pop('applied_discount', None)
+        context.user_data['basket'] = []
+        context.user_data.pop('applied_discount', None)
         if chat_id and bot: await send_message_with_retry(bot, chat_id, lang_data.get("error_processing_purchase_contact_support", "❌ Error processing purchase."), parse_mode=None)
         return False
 

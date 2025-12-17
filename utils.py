@@ -106,12 +106,12 @@ for idx, bot_token in enumerate(BOT_TOKENS):
     if ':' not in bot_token:
         logger.critical(f"CRITICAL ERROR: Token {idx+1} format is invalid (missing colon). Token: {bot_token[:10]}...")
         raise SystemExit(f"Token {idx+1} format is invalid.")
-    
+
     token_parts = bot_token.split(':')
     if len(token_parts) != 2 or not token_parts[0].isdigit() or len(token_parts[1]) < 30:
         logger.critical(f"CRITICAL ERROR: Token {idx+1} format is invalid. Expected format: 'bot_id:secret_key'")
         raise SystemExit(f"Token {idx+1} format is invalid.")
-    
+
     VALIDATED_BOT_TOKENS.append({
         'token': bot_token,
         'bot_id': token_parts[0],
@@ -1101,7 +1101,7 @@ CITIES = {}
 DISTRICTS = {}
 PRODUCT_TYPES = {}
 DEFAULT_PRODUCT_EMOJI = "💎" # Fallback emoji
-SIZES = ["2g", "5g"]
+SIZES = ["0.5g", "1g", "2g", "5g"]
 BOT_MEDIA = {'type': None, 'path': None}
 currency_price_cache = {}
 min_amount_cache = {}
@@ -1127,8 +1127,8 @@ def _ensure_db_dir():
     if _db_dir_created:
         return
     
-    db_dir = os.path.dirname(DATABASE_PATH)
-    if db_dir:
+        db_dir = os.path.dirname(DATABASE_PATH)
+        if db_dir:
         try:
             os.makedirs(db_dir, exist_ok=True)
         except OSError as e:
@@ -1163,8 +1163,8 @@ def get_db_connection():
     conn.execute("PRAGMA cache_size=10000;")
     # Memory-mapped I/O for faster reads
     conn.execute("PRAGMA mmap_size=268435456;")  # 256MB
-    conn.row_factory = sqlite3.Row
-    return conn
+        conn.row_factory = sqlite3.Row
+        return conn
 
 def return_db_connection(conn):
     """Close a connection (compatibility function - just closes it)."""
@@ -1921,7 +1921,7 @@ def _get_lang_data(context: ContextTypes.DEFAULT_TYPE) -> tuple[str, dict]:
     """
     lang = "en"  # Default
     if context is not None and hasattr(context, 'user_data') and context.user_data is not None:
-        lang = context.user_data.get("lang", "en")
+    lang = context.user_data.get("lang", "en")
     # Uses LANGUAGES dict defined above in this file
     lang_data = LANGUAGES.get(lang, LANGUAGES['en'])
     if lang not in LANGUAGES:
