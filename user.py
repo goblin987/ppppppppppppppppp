@@ -294,7 +294,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Build and Send/Edit Menu
     lang, lang_data = _get_lang_data(context)
     try:
-    full_welcome, reply_markup = _build_start_menu_content(user_id, username, lang_data, context)
+        full_welcome, reply_markup = _build_start_menu_content(user_id, username, lang_data, context)
     except Exception as e:
         logger.error(f"start: CRITICAL - _build_start_menu_content failed for user {user_id}: {e}", exc_info=True)
         # Create a fallback menu
@@ -339,7 +339,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
              result = await send_message_with_retry(context.bot, chat_id, full_welcome, reply_markup=reply_markup, parse_mode=None)
              if result:
                  logger.info(f"start: Error recovery message sent to {user_id}")
-    else:
+             else:
                  logger.error(f"start: FAILED error recovery message for {user_id}!")
     else:
         logger.info(f"start: Sending welcome menu to user {user_id}...")

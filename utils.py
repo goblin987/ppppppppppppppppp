@@ -1163,8 +1163,8 @@ def get_db_connection():
     conn.execute("PRAGMA cache_size=10000;")
     # Memory-mapped I/O for faster reads
     conn.execute("PRAGMA mmap_size=268435456;")  # 256MB
-        conn.row_factory = sqlite3.Row
-        return conn
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def return_db_connection(conn):
     """Close a connection (compatibility function - just closes it)."""
@@ -1921,7 +1921,7 @@ def _get_lang_data(context: ContextTypes.DEFAULT_TYPE) -> tuple[str, dict]:
     """
     lang = "en"  # Default
     if context is not None and hasattr(context, 'user_data') and context.user_data is not None:
-    lang = context.user_data.get("lang", "en")
+        lang = context.user_data.get("lang", "en")
     # Uses LANGUAGES dict defined above in this file
     lang_data = LANGUAGES.get(lang, LANGUAGES['en'])
     if lang not in LANGUAGES:
